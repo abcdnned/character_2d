@@ -1,9 +1,11 @@
+use bevy::prelude::*;
+use std::collections::HashMap;
+
 #[derive(Component)]
 struct Move {
     pub move_metadata: MoveMetadata,
     pub move_time: f32,
     current_phase: MovePhase,
-    next_move: MoveMetadata,
 }
 
 pub enum MovePhase {
@@ -12,12 +14,14 @@ pub enum MovePhase {
     Recovery,
 }
 
+#[derive(Clone)]
 pub enum MoveType { // MoveType determine how weapon moves
     Swing,
     Stub,
     DashStub,
 }
 
+#[derive(Clone)]
 enum MoveInput {
     Attack,
 }
@@ -28,6 +32,7 @@ pub struct ExecuteMoveEvent {
     pub move_name: String,
 }
 
+#[derive(Clone)]
 pub struct MoveMetadata {
     name: String,
     start_pos: Vec2,
@@ -38,7 +43,7 @@ pub struct MoveMetadata {
     recovery_time: f32,
     pub move_type: MoveType,
     accept_input: MoveInput,
-    next_move: MoveMetadata,
+    next_move: Option<Box<MoveMetadata>>,
 }
 
 // The main plugin
@@ -51,7 +56,6 @@ impl Plugin for MovePlugin {
             .add_event::<ExecuteMoveEvent>()
             .add_systems(Update, (
                 handle_move_execution,
-                update_move_timers,
             ));
     }
 }
@@ -73,8 +77,8 @@ impl Default for MoveDatabase {
             startup_time: 0.15,
             active_time: 0.25,
             recovery_time: 0.35,
-            move_type: MoveType::Attack,
-            accept_input: MoveInput::Primary,
+            move_type: MoveType::Swing,
+            accept_input: MoveInput::Attack,
             next_move: None,
         };
         
@@ -93,7 +97,7 @@ fn handle_move_execution(
     for event in move_events.read() {
         if let Ok((entity, current_move)) = query.get_mut(event.entity) {
             if let Some(mut current) = current_move {
-                info!("Entity {:?} is busy executing move: {}", entity, current.move_name);
+                info!("Entity {:?} is busy executing move: {}", entity, current.move_metadata.name);
                 continue;
             }
             
@@ -102,10 +106,9 @@ fn handle_move_execution(
                 
                 // Create or update the current move component
                 let new_current_move = Move {
-                    move_metadata: move_data,
+                    move_metadata: move_data.clone(),
                     move_time: 0.0,
                     current_phase: MovePhase::Startup,
-                    next_move: empty,
                 };
                 
                 commands.entity(entity).insert(new_current_move);

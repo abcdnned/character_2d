@@ -20,13 +20,19 @@ const PLAYER_SPEED: f32 = 300.;
 const CAMERA_DECAY_RATE: f32 = 5.;
 
 #[derive(Component)]
-struct Player;
+pub struct Player;
+
+pub mod r#move;
+
+mod input;
+mod input_move_map;
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
+        .add_plugins(crate::input::InputPlugin)
         .add_systems(Startup, (setup_scene, setup_instructions, setup_camera))
-        .add_systems(Update, (move_player, update_camera).chain())
+        .add_systems(Update, (crate::input::handle_input, move_player, update_camera).chain())
         .run();
 }
 
@@ -92,26 +98,14 @@ fn update_camera(
 fn move_player(
     mut player: Single<&mut Transform, With<Player>>,
     time: Res<Time>,
-    kb_input: Res<ButtonInput<KeyCode>>,
+    mut move_events: EventReader<crate::input::MoveEvent>
 ) {
     let mut direction = Vec2::ZERO;
-
-    if kb_input.pressed(KeyCode::KeyW) {
-        direction.y += 1.;
+    
+    // Accumulate all movement events this frame
+    for event in move_events.read() {
+        direction += event.direction;
     }
-
-    if kb_input.pressed(KeyCode::KeyS) {
-        direction.y -= 1.;
-    }
-
-    if kb_input.pressed(KeyCode::KeyA) {
-        direction.x -= 1.;
-    }
-
-    if kb_input.pressed(KeyCode::KeyD) {
-        direction.x += 1.;
-    }
-
     // Progressively update the player's position over time. Normalize the
     // direction vector to prevent it from exceeding a magnitude of 1 when
     // moving diagonally.
