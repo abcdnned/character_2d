@@ -1,9 +1,14 @@
 use bevy::prelude::*;
 
-fn input_map_to_move(
-    mut player: Single<&mut Transform, With<crate::Player>>,
+pub fn input_map_to_move(
+    player: Single<(Entity, &mut Transform), With<crate::Player>>,
     mut action_events: EventReader<crate::input::ActionEvent>,
     mut move_events: EventWriter<crate::r#move::ExecuteMoveEvent>,
 ) {
-    // fire an ExecuteMoveEvent
+    for _action_event in action_events.read() {
+        move_events.write(crate::r#move::ExecuteMoveEvent {
+            entity: player.0,
+            move_name: "SwingLeft".to_string(),
+        });
+    }
 }
