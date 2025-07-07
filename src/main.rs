@@ -26,6 +26,7 @@ pub mod r#move;
 
 mod input;
 mod input_move_map;
+mod sword;
 
 fn main() {
     App::new()
@@ -139,6 +140,7 @@ fn equip_sword(
         parent.spawn((
             Transform::from_translation(offset).with_scale(Vec3::splat(scale)),
             Visibility::default(),
+            crate::sword::Sword::default(),
         )).with_children(|sword_parent| {
             // Blade - main sword blade
             sword_parent.spawn((
