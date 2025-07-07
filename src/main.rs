@@ -31,6 +31,7 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugins(crate::input::InputPlugin)
+        .add_plugins(crate::r#move::MovePlugin)
         .add_systems(Startup, (setup_scene, setup_instructions, setup_camera))
         .add_systems(Update, (crate::input::handle_input, crate::input_move_map::input_map_to_move, move_player, update_camera).chain())
         .run();

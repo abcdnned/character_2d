@@ -8,6 +8,7 @@ struct Move {
     current_phase: MovePhase,
 }
 
+#[derive(PartialEq, Debug, Clone, Copy)]
 pub enum MovePhase {
     Startup,
     Active, // accept next move during Active and Recorvery phase
@@ -56,6 +57,7 @@ impl Plugin for MovePlugin {
             .add_event::<ExecuteMoveEvent>()
             .add_systems(Update, (
                 handle_move_execution,
+                update_moves,
             ));
     }
 }
@@ -118,5 +120,41 @@ fn handle_move_execution(
                 warn!("Move '{}' not found in database", event.move_name);
             }
         }
+    }
+}
+
+fn update_moves(
+    mut commands: Commands,
+    mut query: Query<(Entity, &mut Move)>,
+    time: Res<Time>,
+) {
+    for (entity, mut current_move) in query.iter_mut() {
+        let delta_time = time.delta_secs();
+        current_move.move_time += delta_time;
+        
+        let metadata = &current_move.move_metadata;
+        let previous_phase = current_move.current_phase;
+        
+        // Determine the new phase based on move_time
+        let new_phase = if current_move.move_time < metadata.startup_time {
+            MovePhase::Startup
+        } else if current_move.move_time < metadata.startup_time + metadata.active_time {
+            MovePhase::Active
+        } else if current_move.move_time < metadata.startup_time + metadata.active_time + metadata.recovery_time {
+            MovePhase::Recovery
+        } else {
+            // Move is complete, remove the component
+            commands.entity(entity).remove::<Move>();
+            info!("Entity {:?} completed move: {}", entity, metadata.name);
+            continue;
+        };
+        
+        // Log phase changes
+        if previous_phase != new_phase {
+            info!("Entity {:?} move '{}' phase changed: {:?} -> {:?} (time: {:.3}s)", 
+                  entity, metadata.name, previous_phase, new_phase, current_move.move_time);
+        }
+        
+        current_move.current_phase = new_phase;
     }
 }
