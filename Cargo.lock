@@ -1581,6 +1581,7 @@ dependencies = [
  "avian2d",
  "bevy",
  "log",
+ "nalgebra",
  "tracing",
 ]
 

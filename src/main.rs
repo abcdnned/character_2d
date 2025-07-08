@@ -27,6 +27,8 @@ pub mod r#move;
 mod input;
 mod input_move_map;
 mod sword;
+mod lerp_animation;
+mod iterpolation;
 
 fn main() {
     App::new()

@@ -125,36 +125,54 @@ fn handle_move_execution(
 
 fn update_moves(
     mut commands: Commands,
-    mut query: Query<(Entity, &mut Move)>,
+    mut query: Query<(Entity, &mut Move, &mut Transform)>,
     time: Res<Time>,
 ) {
-    for (entity, mut current_move) in query.iter_mut() {
+    for (entity, mut current_move, mut transform) in query.iter_mut() {
         let delta_time = time.delta_secs();
         current_move.move_time += delta_time;
         
-        let metadata = &current_move.move_metadata;
         let previous_phase = current_move.current_phase;
         
         // Determine the new phase based on move_time
-        let new_phase = if current_move.move_time < metadata.startup_time {
+        let new_phase = if current_move.move_time < current_move.move_metadata.startup_time {
             MovePhase::Startup
-        } else if current_move.move_time < metadata.startup_time + metadata.active_time {
+        } else if current_move.move_time < current_move.move_metadata.startup_time + current_move.move_metadata.active_time {
             MovePhase::Active
-        } else if current_move.move_time < metadata.startup_time + metadata.active_time + metadata.recovery_time {
+        } else if current_move.move_time < current_move.move_metadata.startup_time + current_move.move_metadata.active_time + current_move.move_metadata.recovery_time {
             MovePhase::Recovery
         } else {
             // Move is complete, remove the component
             commands.entity(entity).remove::<Move>();
-            info!("Entity {:?} completed move: {}", entity, metadata.name);
+            info!("Entity {:?} completed move: {}", entity, current_move.move_metadata.name);
             continue;
         };
         
         // Log phase changes
         if previous_phase != new_phase {
             info!("Entity {:?} move '{}' phase changed: {:?} -> {:?} (time: {:.3}s)", 
-                  entity, metadata.name, previous_phase, new_phase, current_move.move_time);
+                  entity, current_move.move_metadata.name, previous_phase, new_phase, current_move.move_time);
         }
         
         current_move.current_phase = new_phase;
+
+        // Update entity position during active phase
+        if current_move.current_phase == MovePhase::Active {
+            // Calculate normalized time within the active phase (0.0 to 1.0)
+            let active_start_time = current_move.move_metadata.startup_time;
+            let active_elapsed = current_move.move_time - active_start_time;
+            let active_progress = (active_elapsed / current_move.move_metadata.active_time).clamp(0.0, 1.0);
+            
+            // Get position and rotation from cubic swing calculation
+            let (swing_offset, swing_rotation) = crate::lerp_animation::calculate_vertical_swing_cubic(active_progress);
+            
+            // Apply the swing offset to the start position
+            let new_position = current_move.move_metadata.start_pos + swing_offset;
+            
+            // Update transform
+            transform.translation.x = new_position.x;
+            transform.translation.y = new_position.y;
+            transform.rotation = Quat::from_rotation_z(current_move.move_metadata.start_rotation + swing_rotation);
+        }
     }
 }
