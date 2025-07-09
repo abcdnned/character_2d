@@ -18,6 +18,7 @@ const PLAYER_SPEED: f32 = 300.;
 
 /// How quickly should the camera snap to the desired location.
 const CAMERA_DECAY_RATE: f32 = 5.;
+const PLAYER_ROTATION_SPEED: f32 = 10.0; // Rotation speed in radians per second
 
 #[derive(Component)]
 pub struct Player;
@@ -94,11 +95,6 @@ fn update_camera(
         .smooth_nudge(&direction, CAMERA_DECAY_RATE, time.delta_secs());
 }
 
-/// Update the player position with keyboard inputs.
-/// Note that the approach used here is for demonstration purposes only,
-/// as the point of this example is to showcase the camera tracking feature.
-///
-/// A more robust solution for player movement can be found in `examples/movement/physics_in_fixed_timestep.rs`.
 fn move_player(
     mut player: Single<&mut Transform, With<Player>>,
     time: Res<Time>,
@@ -110,11 +106,42 @@ fn move_player(
     for event in move_events.read() {
         direction += event.direction;
     }
-    // Progressively update the player's position over time. Normalize the
-    // direction vector to prevent it from exceeding a magnitude of 1 when
-    // moving diagonally.
-    let move_delta = direction.normalize_or_zero() * PLAYER_SPEED * time.delta_secs();
-    player.translation += move_delta.extend(0.);
+    
+    // Only process movement and rotation if there's input
+    if direction.length_squared() > 0.0 {
+        // Normalize the direction vector to prevent it from exceeding a magnitude of 1 when
+        // moving diagonally.
+        let normalized_direction = direction.normalize();
+        
+        // Apply movement
+        let move_delta = normalized_direction * PLAYER_SPEED * time.delta_secs();
+        player.translation += move_delta.extend(0.);
+        
+        // Calculate rotation to face movement direction
+        let player_forward = (player.rotation * Vec3::Y).xy();
+        let forward_dot_movement = player_forward.dot(normalized_direction);
+        
+        // If not already facing the movement direction
+        if (forward_dot_movement - 1.0).abs() > f32::EPSILON {
+            let player_right = (player.rotation * Vec3::X).xy();
+            let right_dot_movement = player_right.dot(normalized_direction);
+            
+            // Determine rotation direction (negate for Bevy's coordinate system)
+            let rotation_sign = -f32::copysign(1.0, right_dot_movement);
+            
+            // Calculate maximum rotation angle to prevent overshooting
+            let max_angle = std::f32::consts::PI.min(
+                forward_dot_movement.clamp(-1.0, 1.0).acos()
+            );
+            
+            // Calculate actual rotation angle with speed limit
+            let rotation_angle = rotation_sign * 
+                (PLAYER_ROTATION_SPEED * time.delta_secs()).min(max_angle);
+            
+            // Apply rotation
+            player.rotate_z(rotation_angle);
+        }
+    }
 }
 
 fn equip_sword(
