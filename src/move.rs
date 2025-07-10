@@ -119,8 +119,8 @@ fn handle_move_execution(
 
 fn update_moves(
     mut commands: Commands,
-    mut query: Query<(Entity, &mut Move, &mut Transform, &crate::sword::Sword)>,
-    mut player: Single<&mut Transform, With<crate::Player>>,
+    mut query: Query<(Entity, &mut Move, &mut Transform, &crate::sword::Sword), Without<crate::Player>>,
+    player: Single<&Transform, With<crate::Player>>,
     time: Res<Time>,
 ) {
     for (entity, mut current_move, mut transform, sword) in query.iter_mut() {
