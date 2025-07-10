@@ -120,6 +120,7 @@ fn handle_move_execution(
 fn update_moves(
     mut commands: Commands,
     mut query: Query<(Entity, &mut Move, &mut Transform, &crate::sword::Sword)>,
+    mut player: Single<&mut Transform, With<crate::Player>>,
     time: Res<Time>,
 ) {
     for (entity, mut current_move, mut transform, sword) in query.iter_mut() {
@@ -163,7 +164,7 @@ fn update_moves(
             let active_progress = (active_elapsed / current_move.move_metadata.active_time).clamp(0.0, 1.0);
             
             // Get position and rotation from cubic swing calculation
-            let (swing_offset, swing_rotation) = crate::lerp_animation::calculate_vertical_swing_cubic(active_progress, current_move.move_metadata.radius);
+            let (swing_offset, swing_rotation) = crate::lerp_animation::calculate_vertical_swing_cubic(active_progress, current_move.move_metadata.radius, player.translation);
             
             // Apply the swing offset to the start position
             let new_position = swing_offset;
