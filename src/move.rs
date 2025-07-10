@@ -36,8 +36,6 @@ pub struct ExecuteMoveEvent {
 #[derive(Clone)]
 pub struct MoveMetadata {
     name: String,
-    start_pos: Vec2,
-    start_rotation: f32,
     radius: f32, // parameter to move weapon
     pub startup_time: f32,
     pub active_time: f32,
@@ -73,9 +71,7 @@ impl Default for MoveDatabase {
         
         let swing_left = MoveMetadata {
             name: "SwingLeft".to_string(),
-            start_pos: Vec2::new(-10.0, 0.0),
-            start_rotation: -45.0_f32.to_radians(),
-            radius: 80.0,
+            radius: 200.0,
             startup_time: 0.15,
             active_time: 0.25,
             recovery_time: 0.35,
@@ -104,8 +100,6 @@ fn handle_move_execution(
             }
             
             if let Some(move_data) = move_db.moves.get(&event.move_name) {
-                let total_time = move_data.startup_time + move_data.active_time + move_data.recovery_time;
-                
                 // Create or update the current move component
                 let new_current_move = Move {
                     move_metadata: move_data.clone(),
@@ -125,10 +119,10 @@ fn handle_move_execution(
 
 fn update_moves(
     mut commands: Commands,
-    mut query: Query<(Entity, &mut Move, &mut Transform)>,
+    mut query: Query<(Entity, &mut Move, &mut Transform, &crate::sword::Sword)>,
     time: Res<Time>,
 ) {
-    for (entity, mut current_move, mut transform) in query.iter_mut() {
+    for (entity, mut current_move, mut transform, sword) in query.iter_mut() {
         let delta_time = time.delta_secs();
         current_move.move_time += delta_time;
         
@@ -142,9 +136,14 @@ fn update_moves(
         } else if current_move.move_time < current_move.move_metadata.startup_time + current_move.move_metadata.active_time + current_move.move_metadata.recovery_time {
             MovePhase::Recovery
         } else {
-            // Move is complete, remove the component
+            // Move is complete, reset position to sword offset and remove the component
+            transform.translation.x = sword.offset.x;
+            transform.translation.y = sword.offset.y;
+            transform.translation.z = sword.offset.z;
+            transform.rotation = Quat::IDENTITY; // Reset rotation to default
+            
             commands.entity(entity).remove::<Move>();
-            info!("Entity {:?} completed move: {}", entity, current_move.move_metadata.name);
+            info!("Entity {:?} completed move: {} - position reset to offset", entity, current_move.move_metadata.name);
             continue;
         };
         
@@ -164,15 +163,15 @@ fn update_moves(
             let active_progress = (active_elapsed / current_move.move_metadata.active_time).clamp(0.0, 1.0);
             
             // Get position and rotation from cubic swing calculation
-            let (swing_offset, swing_rotation) = crate::lerp_animation::calculate_vertical_swing_cubic(active_progress);
+            let (swing_offset, swing_rotation) = crate::lerp_animation::calculate_vertical_swing_cubic(active_progress, current_move.move_metadata.radius);
             
             // Apply the swing offset to the start position
-            let new_position = current_move.move_metadata.start_pos + swing_offset;
+            let new_position = swing_offset;
             
             // Update transform
             transform.translation.x = new_position.x;
             transform.translation.y = new_position.y;
-            transform.rotation = Quat::from_rotation_z(current_move.move_metadata.start_rotation + swing_rotation);
+            transform.rotation = Quat::from_rotation_z(swing_rotation);
         }
     }
 }

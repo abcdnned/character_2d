@@ -3,8 +3,8 @@ use bevy::color::palettes::basic::*;
 
 #[derive(Component, Default)]
 pub struct Sword {
-    offset: Vec3,
-    scale: f32,
+    pub offset: Vec3,
+    pub scale: f32,
 }
 impl Sword {
     pub fn new(offset: Vec3, scale: f32) -> Self {

@@ -4,11 +4,10 @@ use std::f32::consts::PI;
 use crate::iterpolation::*;
 use crate::constants::*;
 
-pub fn calculate_vertical_swing_cubic(t: f32) -> (Vec2, f32) {
+pub fn calculate_vertical_swing_cubic(t: f32, r: f32) -> (Vec2, f32) {
     // Vertical swing using cubic bezier curve
     let progress = smooth_step(t);
     
-    let r = SWING_RADIUS;
     // Define cubic bezier control points for a pronounced U-shaped arc
     let p0 = Point2::new(0.0, 0.0);      // Start relative to start_pos
     let p1 = Point2::new(00.0, r);  // First control point (far left, slightly down)
