@@ -71,9 +71,9 @@ impl Default for MoveDatabase {
         
         let swing_left = MoveMetadata {
             name: "SwingLeft".to_string(),
-            radius: 200.0,
+            radius: 130.0,
             startup_time: 0.15,
-            active_time: 0.25,
+            active_time: 0.15,
             recovery_time: 0.35,
             move_type: MoveType::Swing,
             accept_input: MoveInput::Attack,
@@ -119,8 +119,7 @@ fn handle_move_execution(
 
 fn update_moves(
     mut commands: Commands,
-    mut query: Query<(Entity, &mut Move, &mut Transform, &crate::sword::Sword), Without<crate::Player>>,
-    player: Single<&Transform, With<crate::Player>>,
+    mut query: Query<(Entity, &mut Move, &mut Transform, &crate::sword::Sword)>,
     time: Res<Time>,
 ) {
     for (entity, mut current_move, mut transform, sword) in query.iter_mut() {
@@ -164,7 +163,7 @@ fn update_moves(
             let active_progress = (active_elapsed / current_move.move_metadata.active_time).clamp(0.0, 1.0);
             
             // Get position and rotation from cubic swing calculation
-            let (swing_offset, swing_rotation) = crate::lerp_animation::calculate_vertical_swing_cubic(active_progress, current_move.move_metadata.radius, player.translation);
+            let (swing_offset, swing_rotation) = crate::lerp_animation::calculate_vertical_swing_cubic(active_progress, current_move.move_metadata.radius);
             
             // Apply the swing offset to the start position
             let new_position = swing_offset;
