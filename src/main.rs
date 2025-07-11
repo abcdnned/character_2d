@@ -17,6 +17,7 @@ pub struct Player;
 
 pub mod r#move;
 
+mod enemy;
 mod input;
 mod input_move_map;
 mod sword;
@@ -43,16 +44,24 @@ fn setup_scene(
     // World where we move the player
     commands.spawn((
         Mesh2d(meshes.add(Rectangle::new(1000., 700.))),
-        MeshMaterial2d(materials.add(Color::srgb(0.2, 0.2, 0.3))),
+        MeshMaterial2d(materials.add(WORLD_COLOR)),
     ));
 
     // Player
     let player = commands.spawn((
         Player,
-        Mesh2d(meshes.add(Circle::new(25.))),
-        MeshMaterial2d(materials.add(Color::srgb(6.25, 9.4, 9.1))), // RGB values exceed 1 to achieve a bright color for the bloom effect
+        Mesh2d(meshes.add(Circle::new(MESH_RADIUS / 2.))),
+        MeshMaterial2d(materials.add(PLAYER_COLOR)), // RGB values exceed 1 to achieve a bright color for the bloom effect
         Transform::from_xyz(0., 0., 2.),
     )).id();
+
+    // Enemy - spawn a rectangle
+    commands.spawn((
+        crate::enemy::Enemy {},
+        Mesh2d(meshes.add(Rectangle::new(MESH_RADIUS, MESH_RADIUS))),
+        MeshMaterial2d(materials.add(ENEMY_COLOR)), // Red color for enemy
+        Transform::from_xyz(200., 150., 1.),
+    ));
 
     crate::sword::equip_sword(&mut commands, &mut meshes, &mut materials, player, Vec3::new(50.0, 40.0, 0.1), 0.5);
 }
