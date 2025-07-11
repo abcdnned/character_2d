@@ -2,11 +2,14 @@ use bevy::prelude::*;
 use std::collections::HashMap;
 
 #[derive(Component)]
-struct Move {
+pub struct Move {
     pub move_metadata: MoveMetadata,
     pub move_time: f32,
     current_phase: MovePhase,
 }
+
+#[derive(Component)]
+pub struct PlayerMove {}
 
 #[derive(PartialEq, Debug, Clone, Copy)]
 pub enum MovePhase {
@@ -91,6 +94,7 @@ fn handle_move_execution(
     mut move_events: EventReader<ExecuteMoveEvent>,
     move_db: Res<MoveDatabase>,
     mut query: Query<(Entity, Option<&mut Move>)>,
+    mut player_query: Query<Entity, With<crate::Player>>,
 ) {
     for event in move_events.read() {
         if let Ok((entity, current_move)) = query.get_mut(event.entity) {
@@ -109,6 +113,11 @@ fn handle_move_execution(
                 
                 commands.entity(entity).insert(new_current_move);
                 
+                // Add PlayerMove component to player when move starts (during startup phase)
+                if let Ok(player_entity) = player_query.single() {
+                    commands.entity(player_entity).insert(PlayerMove{});
+                    info!("Added PlayerMove component to player entity {:?}", player_entity);
+                }
                 info!("Entity {:?} started executing move: {}", entity, event.move_name);
             } else {
                 warn!("Move '{}' not found in database", event.move_name);
@@ -120,6 +129,7 @@ fn handle_move_execution(
 fn update_moves(
     mut commands: Commands,
     mut query: Query<(Entity, &mut Move, &mut Transform, &crate::sword::Sword)>,
+    mut player_query: Query<Entity, With<crate::Player>>,
     time: Res<Time>,
 ) {
     for (entity, mut current_move, mut transform, sword) in query.iter_mut() {
@@ -144,6 +154,12 @@ fn update_moves(
             
             commands.entity(entity).remove::<Move>();
             info!("Entity {:?} completed move: {} - position reset to offset", entity, current_move.move_metadata.name);
+            // Remove PlayerMove component from player if this entity belongs to a player
+            if let Ok(player_entity) = player_query.single() {
+                // Check if this sword entity belongs to the player (you might need to adjust this logic)
+                // This assumes the sword is a child of the player or has some relationship
+                commands.entity(player_entity).remove::<PlayerMove>();
+            }
             continue;
         };
         
@@ -154,6 +170,7 @@ fn update_moves(
         }
         
         current_move.current_phase = new_phase;
+
 
         // Update entity position during active phase
         if current_move.current_phase == MovePhase::Active {
