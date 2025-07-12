@@ -57,8 +57,13 @@ fn setup_scene(
         Mesh2d(meshes.add(Circle::new(MESH_RADIUS / 2.))),
         MeshMaterial2d(materials.add(PLAYER_COLOR)), // RGB values exceed 1 to achieve a bright color for the bloom effect
         Transform::from_xyz(0., 0., 2.),
-        RigidBody::KinematicPositionBased,
+        RigidBody::Dynamic,
         Collider::ball(MESH_RADIUS / 2.),
+        GravityScale(0.0),
+        Damping {
+            linear_damping: 1.0, // High resistance
+            angular_damping: 5.0,
+        },
         ActiveEvents::COLLISION_EVENTS,
     )).id();
 
@@ -69,12 +74,12 @@ fn setup_scene(
         MeshMaterial2d(materials.add(ENEMY_COLOR)), // Red color for enemy
         Transform::from_xyz(200., 150., 1.),
         RigidBody::Dynamic,
-    Damping {
-        linear_damping: 5.0,  // Resistance to linear motion
-        angular_damping: 5.0,
-    },
         Collider::cuboid(MESH_RADIUS / 2., MESH_RADIUS / 2.),
         GravityScale(0.0),
+        Damping {
+            linear_damping: 1.0, // High resistance
+            angular_damping: 5.0,
+        },
     ));
 
     crate::sword::equip_sword(&mut commands, &mut meshes, &mut materials, player, Vec3::new(50.0, 40.0, 0.1), 0.5);
