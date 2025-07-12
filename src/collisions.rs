@@ -1,7 +1,5 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
-use crate::Player;
-use crate::constants::*;
 
 pub fn handle_collisions(
     mut collision_events: EventReader<CollisionEvent>,

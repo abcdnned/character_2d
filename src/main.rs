@@ -12,6 +12,7 @@
 use bevy::{core_pipeline::bloom::Bloom, prelude::*};
 use crate::constants::*;
 use bevy_rapier2d::prelude::*;
+use crate::collider::*;
 
 #[derive(Component)]
 pub struct Player;
@@ -27,6 +28,7 @@ mod iterpolation;
 mod movement;
 mod constants;
 mod collisions;
+mod collider;
 
 fn main() {
     App::new()
@@ -54,32 +56,19 @@ fn setup_scene(
     // Player
     let player = commands.spawn((
         Player,
-        Mesh2d(meshes.add(Circle::new(MESH_RADIUS / 2.))),
+        Mesh2d(meshes.add(Circle::new(MESH_RADIUS))),
         MeshMaterial2d(materials.add(PLAYER_COLOR)), // RGB values exceed 1 to achieve a bright color for the bloom effect
         Transform::from_xyz(0., 0., 2.),
-        RigidBody::Dynamic,
-        Collider::ball(MESH_RADIUS / 2.),
-        GravityScale(0.0),
-        Damping {
-            linear_damping: 1.0, // High resistance
-            angular_damping: 5.0,
-        },
-        ActiveEvents::COLLISION_EVENTS,
+        DynamicPhysicsBundle::new_ball(MESH_RADIUS),
     )).id();
 
     // Enemy - spawn a rectangle
     commands.spawn((
         crate::enemy::Enemy {},
-        Mesh2d(meshes.add(Rectangle::new(MESH_RADIUS, MESH_RADIUS))),
+        Mesh2d(meshes.add(Rectangle::new(MESH_RADIUS * 2., MESH_RADIUS * 2.))),
         MeshMaterial2d(materials.add(ENEMY_COLOR)), // Red color for enemy
         Transform::from_xyz(200., 150., 1.),
-        RigidBody::Dynamic,
-        Collider::cuboid(MESH_RADIUS / 2., MESH_RADIUS / 2.),
-        GravityScale(0.0),
-        Damping {
-            linear_damping: 1.0, // High resistance
-            angular_damping: 5.0,
-        },
+        DynamicPhysicsBundle::new_box(MESH_RADIUS, MESH_RADIUS),
     ));
 
     crate::sword::equip_sword(&mut commands, &mut meshes, &mut materials, player, Vec3::new(50.0, 40.0, 0.1), 0.5);

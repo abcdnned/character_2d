@@ -13,4 +13,7 @@ pub const WORLD_COLOR: Color = Color::srgb(0.2, 0.2, 0.3);
 pub const PLAYER_COLOR: Color = Color::srgb(6.25, 9.4, 9.1);
 pub const ENEMY_COLOR: Color = Color::srgb_u8(109, 119, 129);
 
-pub const MESH_RADIUS: f32 = 50.0;
+pub const MESH_RADIUS: f32 = 25.0;
+
+pub const LINER_DAMPING: f32 = 2.0;
+pub const ANGULAR_DAMPING: f32 = 5.0;
