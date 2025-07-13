@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 bevy_rapier2d = "0.30"
 nalgebra = "0.33"
+ordered-float = "3.9.2"
 
 bevy = "0.16"
 # Set max log levels. This helps avoid unwanted low-severity log spam, which can affect performance.
