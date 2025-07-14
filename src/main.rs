@@ -29,7 +29,7 @@ mod movement;
 mod constants;
 mod collisions;
 mod collider;
-mod ui;
+mod health_bar;
 mod unit;
 
 fn main() {
