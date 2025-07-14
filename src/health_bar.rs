@@ -2,7 +2,7 @@
 
 use bevy::{
     app::Plugin,
-    color::palettes::css::{RED, DARK_RED}, 
+    color::palettes::css::*,
     prelude::*, 
     reflect::TypePath, 
     render::render_resource::*,
@@ -50,9 +50,9 @@ fn setup(
                     ..default()
                 },
                 MaterialNode(ui_materials.add(HealthBarMaterial {
-                    fill_ratio: Vec4::new(1.0, 0.0, 0.0, 0.0), // Start at full health
-                    health_color: LinearRgba::from(RED).to_f32_array().into(),
-                    border_color: LinearRgba::from(DARK_RED).to_f32_array().into(),
+                    fill_ratio: Vec4::new(0.5, 0.0, 0.0, 0.0), // Start at full health
+                    health_color: LinearRgba::from(WHITE).to_f32_array().into(),
+                    border_color: LinearRgba::from(WHITE_SMOKE).to_f32_array().into(),
                 })),
                 BorderRadius::all(Val::Px(5.0)),
                 HealthBar,
@@ -84,32 +84,23 @@ fn update_health_bar(
     mut materials: ResMut<Assets<HealthBarMaterial>>,
     mut hp_events: EventReader<HpChangeEvent>,
     health_bar_query: Query<&MaterialNode<HealthBarMaterial>, With<HealthBar>>,
-    player_query: Query<Entity, With<crate::Player>>,
+    player_query: Query<(Entity, &crate::unit::Hp), With<crate::Player>>,
 ) {
     for event in hp_events.read() {
         // Check if the event is for a player entity
-        if let Ok(player_entity) = player_query.single() {
+        if let Ok((player_entity, hp)) = player_query.single() {
             if event.entity == player_entity {
                 // Update all health bars
                 for material_handle in health_bar_query.iter() {
                     if let Some(material) = materials.get_mut(material_handle) {
-                        // Calculate fill ratio based on current health
-                        let fill_ratio = if event.max_hp > 0.0 {
-                            (event.new_hp / event.max_hp).clamp(0.0, 1.0)
+                        // Calculate fill ratio based on current health from the Hp component
+                        let fill_ratio = if hp.max_hp > 0.0 {
+                            (hp.hp / hp.max_hp).clamp(0.0, 1.0)
                         } else {
                             0.0
                         };
                         
                         material.fill_ratio.x = fill_ratio;
-                        
-                        // Optional: Change color based on health percentage
-                        if fill_ratio > 0.6 {
-                            material.health_color = LinearRgba::from(Color::srgb(0.0, 1.0, 0.0)).to_f32_array().into(); // Green
-                        } else if fill_ratio > 0.3 {
-                            material.health_color = LinearRgba::from(Color::srgb(1.0, 1.0, 0.0)).to_f32_array().into(); // Yellow
-                        } else {
-                            material.health_color = LinearRgba::from(RED).to_f32_array().into(); // Red
-                        }
                     }
                 }
             }

@@ -64,6 +64,7 @@ fn setup_scene(
         MeshMaterial2d(materials.add(PLAYER_COLOR)), // RGB values exceed 1 to achieve a bright color for the bloom effect
         Transform::from_xyz(0., 0., 2.),
         DynamicPhysicsBundle::new_ball(MESH_RADIUS),
+        crate::unit::Hp::new(50.0, 100.0),
     )).id();
 
     // Enemy - spawn a rectangle

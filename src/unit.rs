@@ -31,7 +31,7 @@ pub enum HpChangeType {
 }
 
 impl Hp {
-    pub fn new(max_hp: f32) -> Self {
+    pub fn new(hp: f32, max_hp: f32) -> Self {
         Self {
             hp: max_hp,
             max_hp,
@@ -46,7 +46,7 @@ impl Hp {
         let old_hp = self.hp;
         self.hp = (self.hp - amount).max(0.0);
         
-        event_writer.send(HpChangeEvent {
+        event_writer.write(HpChangeEvent {
             entity,
             old_hp,
             new_hp: self.hp,
@@ -59,7 +59,7 @@ impl Hp {
         let old_hp = self.hp;
         self.hp = (self.hp + amount).min(self.max_hp);
         
-        event_writer.send(HpChangeEvent {
+        event_writer.write(HpChangeEvent {
             entity,
             old_hp,
             new_hp: self.hp,
@@ -72,7 +72,7 @@ impl Hp {
         let old_hp = self.hp;
         self.hp = new_hp.clamp(0.0, self.max_hp);
         
-        event_writer.send(HpChangeEvent {
+        event_writer.write(HpChangeEvent {
             entity,
             old_hp,
             new_hp: self.hp,
