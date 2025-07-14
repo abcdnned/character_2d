@@ -12,7 +12,7 @@ use bevy::{
 use crate::unit::HpChangeEvent;
 
 /// This example uses a shader source file from the assets subdirectory
-const SHADER_ASSET_PATH: &str = "shaders/custom_ui_material.wgsl";
+const SHADER_ASSET_PATH: &str = "shaders\\health_bar_material.wgsl";
 
 pub struct HealthBarPlugin;
 
@@ -25,7 +25,7 @@ impl Plugin for HealthBarPlugin {
 }
 
 #[derive(Component)]
-struct HealthBar;
+pub struct HealthBar;
 
 fn setup(
     mut commands: Commands,
@@ -45,7 +45,7 @@ fn setup(
             parent.spawn((
                 Node {
                     width: Val::Px(400.0), // Health bar width
-                    height: Val::Px(30.0), // Health bar height
+                    height: Val::Px(15.0), // Health bar height
                     border: UiRect::all(Val::Px(2.0)),
                     ..default()
                 },
@@ -88,7 +88,7 @@ fn update_health_bar(
 ) {
     for event in hp_events.read() {
         // Check if the event is for a player entity
-        if let Ok(player_entity) = player_query.get_single() {
+        if let Ok(player_entity) = player_query.single() {
             if event.entity == player_entity {
                 // Update all health bars
                 for material_handle in health_bar_query.iter() {

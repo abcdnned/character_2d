@@ -1,5 +1,13 @@
 use bevy::prelude::*;
 
+pub struct UnitPlugin;
+
+impl Plugin for UnitPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_event::<HpChangeEvent>();
+    }
+}
+
 #[derive(Component)]
 pub struct Hp {
     pub hp: f32,

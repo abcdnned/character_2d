@@ -1,4 +1,4 @@
-// shaders/custom_ui_material.wgsl
+// shaders/health_bar_material.wgsl
 
 // Draws a simple health bar
 #import bevy_ui::ui_vertex_output::UiVertexOutput

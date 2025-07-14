@@ -37,6 +37,8 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugins(crate::input::InputPlugin)
         .add_plugins(crate::r#move::MovePlugin)
+        .add_plugins(crate::health_bar::HealthBarPlugin)
+        .add_plugins(crate::unit::UnitPlugin)
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
         .add_plugins(RapierDebugRenderPlugin::default())
         .add_systems(Startup, (setup_scene, setup_instructions, setup_camera))
