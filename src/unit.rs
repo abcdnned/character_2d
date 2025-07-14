@@ -14,6 +14,19 @@ pub struct Hp {
     pub max_hp: f32,
 }
 
+#[derive(Component)]
+pub struct Name {
+    pub name: String,
+}
+
+impl Name {
+    pub fn new(name: impl Into<String>) -> Self {
+        Self {
+            name: name.into(),
+        }
+    }
+}
+
 #[derive(Event)]
 pub struct HpChangeEvent {
     pub entity: Entity,

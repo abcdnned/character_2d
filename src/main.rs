@@ -74,6 +74,8 @@ fn setup_scene(
         MeshMaterial2d(materials.add(ENEMY_COLOR)), // Red color for enemy
         Transform::from_xyz(200., 150., 1.),
         DynamicPhysicsBundle::new_box(MESH_RADIUS, MESH_RADIUS),
+        crate::unit::Hp::new(30.0, 30.0),
+        crate::unit::Name::new("Guard"),
     ));
 
     crate::sword::equip_sword(&mut commands, &mut meshes, &mut materials, player, Vec3::new(50.0, 40.0, 0.1), 0.5);
