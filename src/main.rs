@@ -31,6 +31,7 @@ mod collisions;
 mod collider;
 mod health_bar;
 mod unit;
+mod damage;
 
 fn main() {
     App::new()
