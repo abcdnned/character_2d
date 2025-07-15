@@ -38,21 +38,3 @@ impl DynamicPhysicsBundle {
         }
     }
 }
-
-#[derive(Bundle)]
-pub struct KinematicPhysicsBundle {
-    pub rigid_body: RigidBody,
-    pub collider: Collider,
-    pub sensor: Sensor,
-}
-
-impl KinematicPhysicsBundle {
-    /// Creates a kinematic box collider
-    pub fn new_box(half_width: f32, half_height: f32) -> Self {
-        Self {
-            rigid_body: RigidBody::KinematicPositionBased,
-            collider: Collider::cuboid(half_width, half_height),
-            sensor: Sensor,
-        }
-    }
-}

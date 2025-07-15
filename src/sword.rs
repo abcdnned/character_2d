@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy::color::palettes::basic::*;
-use crate::collider::KinematicPhysicsBundle;
+use bevy_rapier2d::prelude::*;
 
 #[derive(Component, Default)]
 pub struct Sword {
@@ -40,13 +40,17 @@ pub fn equip_sword(
             Transform::from_translation(offset).with_scale(Vec3::splat(scale)),
             Visibility::default(),
             crate::sword::Sword::new(offset, scale),
-            // Add kinematic collider for the entire sword
-            // The collider encompasses the full sword dimensions (blade + handle + pommel)
-            KinematicPhysicsBundle::new_box(
-                (20.0 * scale) / 2.0,  // half_width (blade width scaled)
-                (275.0 * scale) / 2.0, // half_height (total sword length scaled)
-            ),
         )).with_children(|sword_parent| {
+            // Add collider as a separate child entity (sensor only, no physics control)
+            sword_parent.spawn((
+                Transform::from_xyz(0.0, 70.0, 0.0), // Offset to center the collider on the sword
+                Collider::cuboid(
+                    (40.0 * scale) / 2.0,  // half_width (blade width scaled)
+                    (450.0 * scale) / 2.0, // half_height (total sword length scaled)
+                ),
+                ActiveEvents::COLLISION_EVENTS,
+                Sensor, // Makes it a sensor (no physics forces, just collision detection)
+            ));
             // Blade - main sword blade
             sword_parent.spawn((
                 Mesh2d(blade_mesh),
