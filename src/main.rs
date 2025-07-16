@@ -32,6 +32,7 @@ mod collider;
 mod health_bar;
 mod unit;
 mod damage;
+mod physics;
 
 fn main() {
     App::new()
@@ -43,7 +44,7 @@ fn main() {
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
         .add_plugins(RapierDebugRenderPlugin::default())
         .add_systems(Startup, (setup_scene, setup_instructions, setup_camera))
-        .add_systems(Update, (crate::input::handle_input, crate::input_move_map::input_map_to_move, crate::movement::move_player, crate::collisions::handle_collisions, update_camera).chain())
+        .add_systems(Update, (crate::input::handle_input, crate::input_move_map::input_map_to_move, crate::movement::move_player, crate::collisions::handle_collisions, crate::physics::update_knockback_timers, update_camera).chain())
         .run();
 }
 
@@ -75,6 +76,7 @@ fn setup_scene(
         MeshMaterial2d(materials.add(ENEMY_COLOR)), // Red color for enemy
         Transform::from_xyz(200., 150., 1.),
         DynamicPhysicsBundle::new_box(MESH_RADIUS, MESH_RADIUS),
+        Velocity::zero(),
         crate::unit::Hp::new(30.0, 30.0),
         crate::unit::Name::new("Guard"),
     ));
