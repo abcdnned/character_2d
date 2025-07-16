@@ -5,30 +5,22 @@ use bevy::prelude::*;
 pub struct Damage {
     pub amount: f32,
     pub damage_type: DamageType,
+    pub source: Entity,
 }
 
 impl Damage {
     /// Create a new damage component with specified amount and type
-    pub fn new(amount: f32, damage_type: DamageType) -> Self {
+    pub fn new(amount: f32, damage_type: DamageType, source: Entity) -> Self {
         Self {
             amount,
             damage_type,
+            source,
         }
     }
     
     /// Create a physical damage component
-    pub fn physical(amount: f32) -> Self {
-        Self::new(amount, DamageType::Physical)
-    }
-    
-    /// Create a magical damage component
-    pub fn magical(amount: f32) -> Self {
-        Self::new(amount, DamageType::Magical)
-    }
-    
-    /// Create a fire damage component
-    pub fn fire(amount: f32) -> Self {
-        Self::new(amount, DamageType::Fire)
+    pub fn physical(amount: f32, entity: Entity) -> Self {
+        Self::new(amount, DamageType::Physical, entity)
     }
     
     /// Get the damage amount
@@ -49,12 +41,6 @@ impl Damage {
     /// Multiply damage by a factor (for critical hits, weakness, etc.)
     pub fn multiply(&mut self, factor: f32) {
         self.amount *= factor;
-    }
-}
-
-impl Default for Damage {
-    fn default() -> Self {
-        Self::physical(10.0)
     }
 }
 

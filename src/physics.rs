@@ -38,7 +38,7 @@ pub fn apply_knockback_force(
     enemy_entity: Entity,
     enemy_velocity: &mut Velocity,
     enemy_transform: &Transform,
-    weapon_transform: &Transform,
+    source_transform: &Transform,
     weapon_knockback: &WeaponKnockback,
     commands: &mut Commands,
 ) {
@@ -46,7 +46,7 @@ pub fn apply_knockback_force(
     let (force, duration) = (weapon_knockback.force, weapon_knockback.duration);
     
     // Calculate knockback direction (from weapon to enemy)
-    let direction = (enemy_transform.translation - weapon_transform.translation).normalize();
+    let direction = (enemy_transform.translation - source_transform.translation).normalize();
     let knockback_velocity = Vec2::new(direction.x, direction.y) * force;
     
     // Apply knockback velocity

@@ -50,7 +50,7 @@ pub fn equip_sword(
                 ),
                 ActiveEvents::COLLISION_EVENTS,
                 Sensor, // Makes it a sensor (no physics forces, just collision detection)
-                crate::damage::Damage::physical(25.0),
+                crate::damage::Damage::physical(25.0, parent_entity),
                 crate::physics::WeaponKnockback::new(800.0, 2.25),
             ));
             // Blade - main sword blade
