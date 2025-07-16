@@ -1,9 +1,9 @@
-use bevy::prelude::*;
-use bevy_rapier2d::prelude::*;
 use crate::damage::Damage;
-use crate::unit::Hp;
 use crate::enemy::Enemy;
 use crate::physics::*;
+use crate::unit::Hp;
+use bevy::prelude::*;
+use bevy_rapier2d::prelude::*;
 
 pub fn handle_collisions(
     mut collision_events: EventReader<CollisionEvent>,
@@ -54,11 +54,9 @@ fn process_hit(
     weapon_knockback_query: &Query<&WeaponKnockback>,
     commands: &mut Commands,
 ) {
-    if let (Ok(damage), Ok(mut hp)) = (
-        damage_query.get(attacker),
-        hp_query.get_mut(target),
-    ) {
-        if let Ok((enemy_entity, mut enemy_velocity, enemy_transform)) = enemy_query.get_mut(target) {
+    if let (Ok(damage), Ok(mut hp)) = (damage_query.get(attacker), hp_query.get_mut(target)) {
+        if let Ok((enemy_entity, mut enemy_velocity, enemy_transform)) = enemy_query.get_mut(target)
+        {
             let damage_amount = damage.get_amount();
             let old_hp = hp.hp;
 

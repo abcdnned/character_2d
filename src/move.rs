@@ -19,7 +19,8 @@ pub enum MovePhase {
 }
 
 #[derive(Clone)]
-pub enum MoveType { // MoveType determine how weapon moves
+pub enum MoveType {
+    // MoveType determine how weapon moves
     Swing,
     Stub,
     DashStub,
@@ -53,13 +54,9 @@ pub struct MovePlugin;
 
 impl Plugin for MovePlugin {
     fn build(&self, app: &mut App) {
-        app
-            .init_resource::<MoveDatabase>()
+        app.init_resource::<MoveDatabase>()
             .add_event::<ExecuteMoveEvent>()
-            .add_systems(Update, (
-                handle_move_execution,
-                update_moves,
-            ));
+            .add_systems(Update, (handle_move_execution, update_moves));
     }
 }
 
@@ -71,7 +68,7 @@ pub struct MoveDatabase {
 impl Default for MoveDatabase {
     fn default() -> Self {
         let mut moves = HashMap::new();
-        
+
         let swing_left = MoveMetadata {
             name: "SwingLeft".to_string(),
             radius: 130.0,
@@ -82,9 +79,9 @@ impl Default for MoveDatabase {
             accept_input: MoveInput::Attack,
             next_move: None,
         };
-        
+
         moves.insert("SwingLeft".to_string(), swing_left);
-        
+
         Self { moves }
     }
 }
@@ -99,10 +96,13 @@ fn handle_move_execution(
     for event in move_events.read() {
         if let Ok((entity, current_move)) = query.get_mut(event.entity) {
             if let Some(mut current) = current_move {
-                info!("Entity {:?} is busy executing move: {}", entity, current.move_metadata.name);
+                info!(
+                    "Entity {:?} is busy executing move: {}",
+                    entity, current.move_metadata.name
+                );
                 continue;
             }
-            
+
             if let Some(move_data) = move_db.moves.get(&event.move_name) {
                 // Create or update the current move component
                 let new_current_move = Move {
@@ -110,15 +110,21 @@ fn handle_move_execution(
                     move_time: 0.0,
                     current_phase: MovePhase::Startup,
                 };
-                
+
                 commands.entity(entity).insert(new_current_move);
-                
+
                 // Add PlayerMove component to player when move starts (during startup phase)
                 if let Ok(player_entity) = player_query.single() {
-                    commands.entity(player_entity).insert(PlayerMove{});
-                    info!("Added PlayerMove component to player entity {:?}", player_entity);
+                    commands.entity(player_entity).insert(PlayerMove {});
+                    info!(
+                        "Added PlayerMove component to player entity {:?}",
+                        player_entity
+                    );
                 }
-                info!("Entity {:?} started executing move: {}", entity, event.move_name);
+                info!(
+                    "Entity {:?} started executing move: {}",
+                    entity, event.move_name
+                );
             } else {
                 warn!("Move '{}' not found in database", event.move_name);
             }
@@ -135,15 +141,21 @@ fn update_moves(
     for (entity, mut current_move, mut transform, sword) in query.iter_mut() {
         let delta_time = time.delta_secs();
         current_move.move_time += delta_time;
-        
+
         let previous_phase = current_move.current_phase;
-        
+
         // Determine the new phase based on move_time
         let new_phase = if current_move.move_time < current_move.move_metadata.startup_time {
             MovePhase::Startup
-        } else if current_move.move_time < current_move.move_metadata.startup_time + current_move.move_metadata.active_time {
+        } else if current_move.move_time
+            < current_move.move_metadata.startup_time + current_move.move_metadata.active_time
+        {
             MovePhase::Active
-        } else if current_move.move_time < current_move.move_metadata.startup_time + current_move.move_metadata.active_time + current_move.move_metadata.recovery_time {
+        } else if current_move.move_time
+            < current_move.move_metadata.startup_time
+                + current_move.move_metadata.active_time
+                + current_move.move_metadata.recovery_time
+        {
             MovePhase::Recovery
         } else {
             // Move is complete, reset position to sword offset and remove the component
@@ -151,9 +163,12 @@ fn update_moves(
             transform.translation.y = sword.offset.y;
             transform.translation.z = sword.offset.z;
             transform.rotation = Quat::IDENTITY; // Reset rotation to default
-            
+
             commands.entity(entity).remove::<Move>();
-            info!("Entity {:?} completed move: {} - position reset to offset", entity, current_move.move_metadata.name);
+            info!(
+                "Entity {:?} completed move: {} - position reset to offset",
+                entity, current_move.move_metadata.name
+            );
             // Remove PlayerMove component from player if this entity belongs to a player
             if let Ok(player_entity) = player_query.single() {
                 // Check if this sword entity belongs to the player (you might need to adjust this logic)
@@ -162,29 +177,39 @@ fn update_moves(
             }
             continue;
         };
-        
+
         // Log phase changes
         if previous_phase != new_phase {
-            info!("Entity {:?} move '{}' phase changed: {:?} -> {:?} (time: {:.3}s)", 
-                  entity, current_move.move_metadata.name, previous_phase, new_phase, current_move.move_time);
+            info!(
+                "Entity {:?} move '{}' phase changed: {:?} -> {:?} (time: {:.3}s)",
+                entity,
+                current_move.move_metadata.name,
+                previous_phase,
+                new_phase,
+                current_move.move_time
+            );
         }
-        
-        current_move.current_phase = new_phase;
 
+        current_move.current_phase = new_phase;
 
         // Update entity position during active phase
         if current_move.current_phase == MovePhase::Active {
             // Calculate normalized time within the active phase (0.0 to 1.0)
             let active_start_time = current_move.move_metadata.startup_time;
             let active_elapsed = current_move.move_time - active_start_time;
-            let active_progress = (active_elapsed / current_move.move_metadata.active_time).clamp(0.0, 1.0);
-            
+            let active_progress =
+                (active_elapsed / current_move.move_metadata.active_time).clamp(0.0, 1.0);
+
             // Get position and rotation from cubic swing calculation
-            let (swing_offset, swing_rotation) = crate::lerp_animation::calculate_vertical_swing_cubic(active_progress, current_move.move_metadata.radius);
-            
+            let (swing_offset, swing_rotation) =
+                crate::lerp_animation::calculate_vertical_swing_cubic(
+                    active_progress,
+                    current_move.move_metadata.radius,
+                );
+
             // Apply the swing offset to the start position
             let new_position = swing_offset;
-            
+
             // Update transform
             transform.translation.x = new_position.x;
             transform.translation.y = new_position.y;

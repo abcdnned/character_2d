@@ -1,11 +1,7 @@
 // ui_material.rs
 
 use bevy::{
-    app::Plugin,
-    color::palettes::css::*,
-    prelude::*, 
-    reflect::TypePath, 
-    render::render_resource::*,
+    app::Plugin, color::palettes::css::*, prelude::*, reflect::TypePath, render::render_resource::*,
 };
 
 // Import your HpChangeEvent from unit.rs
@@ -27,10 +23,7 @@ impl Plugin for HealthBarPlugin {
 #[derive(Component)]
 pub struct HealthBar;
 
-fn setup(
-    mut commands: Commands,
-    mut ui_materials: ResMut<Assets<HealthBarMaterial>>,
-) {
+fn setup(mut commands: Commands, mut ui_materials: ResMut<Assets<HealthBarMaterial>>) {
     // Create the health bar UI at the bottom of the screen
     commands
         .spawn(Node {
@@ -99,7 +92,7 @@ fn update_health_bar(
                         } else {
                             0.0
                         };
-                        
+
                         material.fill_ratio.x = fill_ratio;
                     }
                 }

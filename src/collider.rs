@@ -1,7 +1,7 @@
-use bevy::prelude::*;
-use bevy_rapier2d::prelude::*;
 use crate::Player;
 use crate::constants::*;
+use bevy::prelude::*;
+use bevy_rapier2d::prelude::*;
 
 #[derive(Bundle)]
 pub struct DynamicPhysicsBundle {

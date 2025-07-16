@@ -17,27 +17,27 @@ impl Damage {
             source,
         }
     }
-    
+
     /// Create a physical damage component
     pub fn physical(amount: f32, entity: Entity) -> Self {
         Self::new(amount, DamageType::Physical, entity)
     }
-    
+
     /// Get the damage amount
     pub fn get_amount(&self) -> f32 {
         self.amount
     }
-    
+
     /// Set the damage amount
     pub fn set_amount(&mut self, amount: f32) {
         self.amount = amount;
     }
-    
+
     /// Get the damage type
     pub fn get_type(&self) -> DamageType {
         self.damage_type
     }
-    
+
     /// Multiply damage by a factor (for critical hits, weakness, etc.)
     pub fn multiply(&mut self, factor: f32) {
         self.amount *= factor;

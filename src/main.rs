@@ -9,30 +9,30 @@
 //! | `A`                  | Move left     |
 //! | `D`                  | Move right    |
 
-use bevy::{core_pipeline::bloom::Bloom, prelude::*};
-use crate::constants::*;
-use bevy_rapier2d::prelude::*;
 use crate::collider::*;
+use crate::constants::*;
+use bevy::{core_pipeline::bloom::Bloom, prelude::*};
+use bevy_rapier2d::prelude::*;
 
 #[derive(Component)]
 pub struct Player;
 
 pub mod r#move;
 
+mod collider;
+mod collisions;
+mod constants;
+mod damage;
 mod enemy;
+mod health_bar;
 mod input;
 mod input_move_map;
-mod sword;
-mod lerp_animation;
 mod iterpolation;
+mod lerp_animation;
 mod movement;
-mod constants;
-mod collisions;
-mod collider;
-mod health_bar;
-mod unit;
-mod damage;
 mod physics;
+mod sword;
+mod unit;
 
 fn main() {
     App::new()
@@ -44,7 +44,18 @@ fn main() {
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
         .add_plugins(RapierDebugRenderPlugin::default())
         .add_systems(Startup, (setup_scene, setup_instructions, setup_camera))
-        .add_systems(Update, (crate::input::handle_input, crate::input_move_map::input_map_to_move, crate::movement::move_player, crate::collisions::handle_collisions, crate::physics::update_knockback_timers, update_camera).chain())
+        .add_systems(
+            Update,
+            (
+                crate::input::handle_input,
+                crate::input_move_map::input_map_to_move,
+                crate::movement::move_player,
+                crate::collisions::handle_collisions,
+                crate::physics::update_knockback_timers,
+                update_camera,
+            )
+                .chain(),
+        )
         .run();
 }
 
@@ -60,14 +71,16 @@ fn setup_scene(
     ));
 
     // Player
-    let player = commands.spawn((
-        Player,
-        Mesh2d(meshes.add(Circle::new(MESH_RADIUS))),
-        MeshMaterial2d(materials.add(PLAYER_COLOR)), // RGB values exceed 1 to achieve a bright color for the bloom effect
-        Transform::from_xyz(0., 0., 2.),
-        DynamicPhysicsBundle::new_ball(MESH_RADIUS),
-        crate::unit::Hp::new(50.0, 100.0),
-    )).id();
+    let player = commands
+        .spawn((
+            Player,
+            Mesh2d(meshes.add(Circle::new(MESH_RADIUS))),
+            MeshMaterial2d(materials.add(PLAYER_COLOR)), // RGB values exceed 1 to achieve a bright color for the bloom effect
+            Transform::from_xyz(0., 0., 2.),
+            DynamicPhysicsBundle::new_ball(MESH_RADIUS),
+            crate::unit::Hp::new(50.0, 100.0),
+        ))
+        .id();
 
     // Enemy - spawn a rectangle
     commands.spawn((
@@ -81,7 +94,14 @@ fn setup_scene(
         crate::unit::Name::new("Guard"),
     ));
 
-    crate::sword::equip_sword(&mut commands, &mut meshes, &mut materials, player, Vec3::new(50.0, 40.0, 0.1), 0.5);
+    crate::sword::equip_sword(
+        &mut commands,
+        &mut meshes,
+        &mut materials,
+        player,
+        Vec3::new(50.0, 40.0, 0.1),
+        0.5,
+    );
 }
 
 fn setup_instructions(mut commands: Commands) {
@@ -115,4 +135,3 @@ fn update_camera(
         .translation
         .smooth_nudge(&direction, CAMERA_DECAY_RATE, time.delta_secs());
 }
-

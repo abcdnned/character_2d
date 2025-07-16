@@ -12,8 +12,7 @@ pub struct InputPlugin;
 
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<MoveEvent>()
-            .add_event::<ActionEvent>();
+        app.add_event::<MoveEvent>().add_event::<ActionEvent>();
     }
 }
 

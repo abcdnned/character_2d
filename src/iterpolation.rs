@@ -27,13 +27,13 @@ pub fn cubic_bezier(
     let uu = u * u;
     let uuu = uu * u;
     let ttt = tt * t;
-    
+
     // Convert to vectors for arithmetic, then back to point
     let v0 = p0.coords;
     let v1 = p1.coords;
     let v2 = p2.coords;
     let v3 = p3.coords;
-    
+
     let result = v0 * uuu + v1 * (3.0 * uu * t) + v2 * (3.0 * u * tt) + v3 * ttt;
     Point2::from(result)
 }
