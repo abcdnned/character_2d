@@ -32,6 +32,7 @@ mod lerp_animation;
 mod movement;
 mod physics;
 mod sword;
+mod sword_trail;
 mod unit;
 
 fn main() {
@@ -43,6 +44,7 @@ fn main() {
         .add_plugins(crate::unit::UnitPlugin)
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
         .add_plugins(RapierDebugRenderPlugin::default())
+        .add_plugins(crate::sword_trail::SwordTrailPlugin)
         .add_systems(Startup, (setup_scene, setup_instructions, setup_camera))
         .add_systems(
             Update,
