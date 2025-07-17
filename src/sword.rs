@@ -54,7 +54,6 @@ pub fn equip_sword(
                     Sensor, // Makes it a sensor (no physics forces, just collision detection)
                     crate::damage::Damage::physical(25.0, parent_entity),
                     crate::physics::WeaponKnockback::new(800.0, 2.25),
-                    crate::sword_trail::SwordTrail::fire(),
                 ));
                 // Blade - main sword blade
                 sword_parent.spawn((
@@ -72,6 +71,7 @@ pub fn equip_sword(
                     ))),
                     MeshMaterial2d(blade_material),
                     Transform::from_xyz(0.0, 167.5, 0.0),
+                    crate::sword_trail::SwordTrail::new(),
                 ));
 
                 // Cross guard

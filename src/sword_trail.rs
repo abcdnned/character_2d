@@ -28,23 +28,8 @@ pub struct SwordTrail {
     pub lifetime: f32,
     /// How fast particles are spawned (particles per second)
     pub spawn_rate: f32,
-    /// Scale factor for the trail size
-    pub size_scale: f32,
     /// Offset from the entity's position where the trail starts
     pub offset: Vec3,
-}
-
-impl Default for SwordTrail {
-    fn default() -> Self {
-        Self {
-            color: Color::srgb(2.0, 0.5, 0.0), // Orange-red glow
-            width: 1.0,
-            lifetime: 0.8,
-            spawn_rate: 120.0, // High spawn rate for smooth trails
-            size_scale: 1.0,
-            offset: Vec3::ZERO,
-        }
-    }
 }
 
 const PARTICLE_CAPACITY: u32 = 200;
@@ -77,7 +62,7 @@ fn spawn_sword_trails(
         let init_size_attr = SetAttributeModifier {
             attribute: Attribute::SIZE,
             value: writer
-                .lit(sword_trail.width * sword_trail.size_scale)
+                .lit(sword_trail.width)
                 .expr(),
         };
 
@@ -104,7 +89,7 @@ fn spawn_sword_trails(
             ColorOverLifetimeModifier::new(Gradient::linear(color_vec, transparent_color));
 
         let size_over_lifetime = SizeOverLifetimeModifier {
-            gradient: Gradient::linear(Vec3::ONE, Vec3::ZERO),
+            gradient: Gradient::linear(Vec3::splat(sword_trail.width), Vec3::ZERO),
             ..default()
         };
 
@@ -142,81 +127,14 @@ fn despawn_sword_trails(
 
 // Helper functions for common sword trail configurations
 impl SwordTrail {
-    /// Creates a fire sword trail
-    pub fn fire() -> Self {
-        Self {
-            color: Color::srgb(3.0, 1.0, 0.0),
-            width: 1.2,
-            lifetime: 0.6,
-            spawn_rate: 150.0,
-            size_scale: 1.0,
-            offset: Vec3::ZERO,
-        }
-    }
 
-    /// Creates an ice sword trail
-    pub fn ice() -> Self {
+    pub fn new() -> Self {
         Self {
-            color: Color::srgb(0.0, 1.0, 3.0),
-            width: 0.8,
-            lifetime: 1.0,
-            spawn_rate: 100.0,
-            size_scale: 1.2,
-            offset: Vec3::ZERO,
-        }
-    }
-
-    /// Creates a lightning sword trail
-    pub fn lightning() -> Self {
-        Self {
-            color: Color::srgb(2.0, 2.0, 4.0),
-            width: 0.6,
+            color: Color::srgb(1.0, 0.0, 0.0),
+            width: 10.,
             lifetime: 0.3,
-            spawn_rate: 200.0,
-            size_scale: 0.8,
+            spawn_rate: 300.0,
             offset: Vec3::ZERO,
         }
-    }
-
-    /// Creates a dark/shadow sword trail
-    pub fn shadow() -> Self {
-        Self {
-            color: Color::srgb(0.5, 0.0, 0.5),
-            width: 1.5,
-            lifetime: 1.2,
-            spawn_rate: 80.0,
-            size_scale: 1.3,
-            offset: Vec3::ZERO,
-        }
-    }
-
-    /// Sets the trail color
-    pub fn with_color(mut self, color: Color) -> Self {
-        self.color = color;
-        self
-    }
-
-    /// Sets the trail width
-    pub fn with_width(mut self, width: f32) -> Self {
-        self.width = width;
-        self
-    }
-
-    /// Sets the trail lifetime
-    pub fn with_lifetime(mut self, lifetime: f32) -> Self {
-        self.lifetime = lifetime;
-        self
-    }
-
-    /// Sets the spawn rate
-    pub fn with_spawn_rate(mut self, spawn_rate: f32) -> Self {
-        self.spawn_rate = spawn_rate;
-        self
-    }
-
-    /// Sets the offset from the entity's position
-    pub fn with_offset(mut self, offset: Vec3) -> Self {
-        self.offset = offset;
-        self
     }
 }
