@@ -6,6 +6,7 @@
 
 use bevy::prelude::*;
 use bevy_hanabi::prelude::*;
+use bevy::color::palettes::basic::*;
 
 /// Plugin that handles sword trail effects
 pub struct SwordTrailPlugin;
@@ -130,7 +131,7 @@ impl SwordTrail {
 
     pub fn new() -> Self {
         Self {
-            color: Color::srgb(1.0, 0.0, 0.0),
+            color: Color::from(SILVER).with_alpha(0.5),
             width: 10.,
             lifetime: 0.3,
             spawn_rate: 300.0,
