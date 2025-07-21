@@ -50,7 +50,6 @@ pub fn equip_sword(
                         (40.0 * scale) / 2.0,  // half_width (blade width scaled)
                         (450.0 * scale) / 2.0, // half_height (total sword length scaled)
                     ),
-                    ColliderDisabled,
                     ActiveEvents::COLLISION_EVENTS,
                     Sensor, // Makes it a sensor (no physics forces, just collision detection)
                     crate::damage::Damage::physical(25.0, parent_entity),

@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 use std::collections::HashMap;
-use bevy_rapier2d::prelude::*;
 
 #[derive(Component)]
 pub struct Move {
@@ -57,7 +56,7 @@ impl Plugin for MovePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<MoveDatabase>()
             .add_event::<ExecuteMoveEvent>()
-            .add_systems(Update, (handle_move_execution, update_moves, update_move_collider, remove_move_collider));
+            .add_systems(Update, (handle_move_execution, update_moves));
     }
 }
 
@@ -215,58 +214,6 @@ fn update_moves(
             transform.translation.x = new_position.x;
             transform.translation.y = new_position.y;
             transform.rotation = Quat::from_rotation_z(swing_rotation);
-        }
-    }
-}
-
-fn update_move_collider(
-    mut commands: Commands,
-    parent_query: Query<&Children, With<crate::sword::Sword>>,
-    move_query: Query<(), With<Move>>,
-    collider_query: Query<(), With<ColliderDisabled>>,
-    trail_query: Query<(), With<crate::sword_trail::SwordTrail>>,
-) {
-    for children in parent_query.iter() {
-        if let Some(first_child) = children.first() {
-            // Check if first child has Move component
-            if move_query.get(*first_child).is_ok() {
-                // Check if it has ColliderDisabled
-                if collider_query.get(*first_child).is_ok() {
-                    // Check if it doesn't have SwordTrail
-                    if trail_query.get(*first_child).is_err() {
-                        // Insert SwordTrail and remove ColliderDisabled
-                        commands.entity(*first_child)
-                            .insert(crate::sword_trail::SwordTrail::new())
-                            .remove::<ColliderDisabled>();
-                    }
-                }
-            }
-        }
-    }
-}
-
-fn remove_move_collider(
-    mut commands: Commands,
-    parent_query: Query<&Children, With<crate::sword::Sword>>,
-    move_query: Query<(), With<Move>>,
-    collider_query: Query<(), With<ColliderDisabled>>,
-    trail_query: Query<(), With<crate::sword_trail::SwordTrail>>,
-) {
-    for children in parent_query.iter() {
-        if let Some(first_child) = children.first() {
-            // Check if first child doesn't have Move component
-            if move_query.get(*first_child).is_err() {
-                // Check if it doesn't have ColliderDisabled
-                if collider_query.get(*first_child).is_err() {
-                    // Check if it has SwordTrail
-                    if trail_query.get(*first_child).is_ok() {
-                        // Add ColliderDisabled and remove SwordTrail
-                        commands.entity(*first_child)
-                            .insert(ColliderDisabled)
-                            .remove::<crate::sword_trail::SwordTrail>();
-                    }
-                }
-            }
         }
     }
 }
