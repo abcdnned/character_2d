@@ -56,6 +56,7 @@ pub fn equip_sword(
                         ),
                         ActiveEvents::COLLISION_EVENTS,
                         Sensor, // Makes it a sensor (no physics forces, just collision detection)
+                        ColliderDisabled,
                         crate::damage::Damage::physical(25.0, parent_entity),
                         crate::physics::WeaponKnockback::new(800.0, 2.25),
                     ))
@@ -69,7 +70,7 @@ pub fn equip_sword(
                 ));
 
                 // Blade tip - triangular point
-                sword_parent.spawn((
+                let tip = sword_parent.spawn((
                     Mesh2d(meshes.add(Triangle2d::new(
                         Vec2::new(0.0, 15.0),
                         Vec2::new(-10.0, -7.5),
@@ -77,7 +78,8 @@ pub fn equip_sword(
                     ))),
                     MeshMaterial2d(blade_material),
                     Transform::from_xyz(0.0, 167.5, 0.0),
-                ));
+                )).id();
+                global_entities.sword_trail.insert(player_entity, tip);
 
                 // Cross guard
                 sword_parent.spawn((
