@@ -1,9 +1,8 @@
-use bevy::prelude::*;
 use crate::global_weapon_collider::WeaponColliderMap;
 use crate::r#move::*;
 use crate::sword_trail::SwordTrail;
+use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
-
 
 pub struct MoveComponentsPlugin;
 
@@ -31,7 +30,9 @@ fn handle_start_move(
             commands.entity(collider_entity).insert(SwordTrail::new());
 
             // Remove ColliderDisabled component to enable collision detection
-            commands.entity(collider_entity).remove::<ColliderDisabled>();
+            commands
+                .entity(collider_entity)
+                .remove::<ColliderDisabled>();
         } else {
             warn!(
                 "StartMove: No weapon collider found for actor {:?}",

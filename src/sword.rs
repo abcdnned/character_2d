@@ -1,7 +1,7 @@
+use crate::global_weapon_collider::*;
 use bevy::color::palettes::basic::*;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
-use crate::global_weapon_collider::*;
 
 #[derive(Component, Default)]
 pub struct Sword {
@@ -47,17 +47,19 @@ pub fn equip_sword(
             ))
             .with_children(|sword_parent| {
                 // Add collider as a separate child entity (sensor only, no physics control)
-                let sword_collider = sword_parent.spawn((
-                    Transform::from_xyz(0.0, 70.0, 0.0), // Offset to center the collider on the sword
-                    Collider::cuboid(
-                        (40.0 * scale) / 2.0,  // half_width (blade width scaled)
-                        (450.0 * scale) / 2.0, // half_height (total sword length scaled)
-                    ),
-                    ActiveEvents::COLLISION_EVENTS,
-                    Sensor, // Makes it a sensor (no physics forces, just collision detection)
-                    crate::damage::Damage::physical(25.0, parent_entity),
-                    crate::physics::WeaponKnockback::new(800.0, 2.25),
-                )).id();
+                let sword_collider = sword_parent
+                    .spawn((
+                        Transform::from_xyz(0.0, 70.0, 0.0), // Offset to center the collider on the sword
+                        Collider::cuboid(
+                            (40.0 * scale) / 2.0,  // half_width (blade width scaled)
+                            (450.0 * scale) / 2.0, // half_height (total sword length scaled)
+                        ),
+                        ActiveEvents::COLLISION_EVENTS,
+                        Sensor, // Makes it a sensor (no physics forces, just collision detection)
+                        crate::damage::Damage::physical(25.0, parent_entity),
+                        crate::physics::WeaponKnockback::new(800.0, 2.25),
+                    ))
+                    .id();
                 weapon_map.insert(player_entity, sword_collider);
                 // Blade - main sword blade
                 sword_parent.spawn((

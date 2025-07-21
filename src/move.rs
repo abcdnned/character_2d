@@ -69,8 +69,8 @@ impl Plugin for MovePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<MoveDatabase>()
             .add_event::<ExecuteMoveEvent>()
-            .add_event::<StartMoveEvent>()  // Add this
-            .add_event::<EndMoveEvent>() 
+            .add_event::<StartMoveEvent>() // Add this
+            .add_event::<EndMoveEvent>()
             .add_systems(Update, (handle_move_execution, update_moves));
     }
 }

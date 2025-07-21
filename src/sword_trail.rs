@@ -4,9 +4,9 @@
 //! The trail follows the entity's movement and creates a ribbon-like effect that
 //! resembles a sword slash or magical weapon trail.
 
+use bevy::color::palettes::basic::*;
 use bevy::prelude::*;
 use bevy_hanabi::prelude::*;
-use bevy::color::palettes::basic::*;
 
 /// Plugin that handles sword trail effects
 pub struct SwordTrailPlugin;
@@ -62,9 +62,7 @@ fn spawn_sword_trails(
 
         let init_size_attr = SetAttributeModifier {
             attribute: Attribute::SIZE,
-            value: writer
-                .lit(sword_trail.width)
-                .expr(),
+            value: writer.lit(sword_trail.width).expr(),
         };
 
         let init_ribbon_id = SetAttributeModifier {
@@ -128,7 +126,6 @@ fn despawn_sword_trails(
 
 // Helper functions for common sword trail configurations
 impl SwordTrail {
-
     pub fn new() -> Self {
         Self {
             color: Color::from(SILVER).with_alpha(0.5),

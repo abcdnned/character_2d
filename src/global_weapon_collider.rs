@@ -17,7 +17,8 @@ impl WeaponColliderMap {
 
     /// Insert a mapping from player entity to weapon collider entity
     pub fn insert(&mut self, player_entity: Entity, collider_entity: Entity) {
-        self.player_to_collider.insert(player_entity, collider_entity);
+        self.player_to_collider
+            .insert(player_entity, collider_entity);
     }
 
     /// Get the weapon collider entity for a given player entity

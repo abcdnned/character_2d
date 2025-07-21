@@ -11,10 +11,10 @@
 
 use crate::collider::*;
 use crate::constants::*;
+use crate::global_weapon_collider::*;
 use crate::move_components::MoveComponentsPlugin;
 use bevy::{core_pipeline::bloom::Bloom, prelude::*};
 use bevy_rapier2d::prelude::*;
-use crate::global_weapon_collider::*;
 
 #[derive(Component)]
 pub struct Player;
@@ -26,18 +26,18 @@ mod collisions;
 mod constants;
 mod damage;
 mod enemy;
+mod global_weapon_collider;
 mod health_bar;
 mod input;
 mod input_move_map;
 mod iterpolation;
 mod lerp_animation;
+mod move_components;
 mod movement;
 mod physics;
 mod sword;
 mod sword_trail;
 mod unit;
-mod global_weapon_collider;
-mod move_components;
 
 fn main() {
     App::new()
