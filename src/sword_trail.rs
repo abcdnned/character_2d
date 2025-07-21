@@ -29,8 +29,6 @@ pub struct SwordTrail {
     pub lifetime: f32,
     /// How fast particles are spawned (particles per second)
     pub spawn_rate: f32,
-    /// Offset from the entity's position where the trail starts
-    pub offset: Vec3,
 }
 
 const PARTICLE_CAPACITY: u32 = 200;
@@ -132,7 +130,6 @@ impl SwordTrail {
             width: 10.,
             lifetime: 0.3,
             spawn_rate: 300.0,
-            offset: Vec3::ZERO,
         }
     }
 }

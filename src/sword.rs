@@ -77,7 +77,6 @@ pub fn equip_sword(
                     ))),
                     MeshMaterial2d(blade_material),
                     Transform::from_xyz(0.0, 167.5, 0.0),
-                    crate::sword_trail::SwordTrail::new(),
                 ));
 
                 // Cross guard
