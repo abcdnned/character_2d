@@ -6,6 +6,7 @@ pub struct Move {
     pub move_metadata: MoveMetadata,
     pub move_time: f32,
     current_phase: MovePhase,
+    pub actor: Entity,
 }
 
 #[derive(Component)]
@@ -49,6 +50,18 @@ pub struct MoveMetadata {
     next_move: Option<Box<MoveMetadata>>,
 }
 
+#[derive(Event)]
+pub struct StartMoveEvent {
+    pub actor: Entity,
+    pub move_name: String,
+}
+
+#[derive(Event)]
+pub struct EndMoveEvent {
+    pub actor: Entity,
+    pub move_name: String,
+}
+
 // The main plugin
 pub struct MovePlugin;
 
@@ -56,6 +69,8 @@ impl Plugin for MovePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<MoveDatabase>()
             .add_event::<ExecuteMoveEvent>()
+            .add_event::<StartMoveEvent>()  // Add this
+            .add_event::<EndMoveEvent>() 
             .add_systems(Update, (handle_move_execution, update_moves));
     }
 }
@@ -92,6 +107,7 @@ fn handle_move_execution(
     move_db: Res<MoveDatabase>,
     mut query: Query<(Entity, Option<&mut Move>)>,
     mut player_query: Query<Entity, With<crate::Player>>,
+    mut start_move_events: EventWriter<StartMoveEvent>,
 ) {
     for event in move_events.read() {
         if let Ok((entity, current_move)) = query.get_mut(event.entity) {
@@ -104,27 +120,33 @@ fn handle_move_execution(
             }
 
             if let Some(move_data) = move_db.moves.get(&event.move_name) {
-                // Create or update the current move component
-                let new_current_move = Move {
-                    move_metadata: move_data.clone(),
-                    move_time: 0.0,
-                    current_phase: MovePhase::Startup,
-                };
-
-                commands.entity(entity).insert(new_current_move);
-
                 // Add PlayerMove component to player when move starts (during startup phase)
                 if let Ok(player_entity) = player_query.single() {
+                    // Create or update the current move component
+                    let new_current_move = Move {
+                        move_metadata: move_data.clone(),
+                        move_time: 0.0,
+                        current_phase: MovePhase::Startup,
+                        actor: player_entity,
+                    };
+                    commands.entity(entity).insert(new_current_move);
                     commands.entity(player_entity).insert(PlayerMove {});
+
+                    // Fire StartMoveEvent when move begins
+                    start_move_events.send(StartMoveEvent {
+                        actor: player_entity,
+                        move_name: event.move_name.clone(),
+                    });
+
                     info!(
                         "Added PlayerMove component to player entity {:?}",
                         player_entity
                     );
+                    info!(
+                        "Entity {:?} started executing move: {}",
+                        entity, event.move_name
+                    );
                 }
-                info!(
-                    "Entity {:?} started executing move: {}",
-                    entity, event.move_name
-                );
             } else {
                 warn!("Move '{}' not found in database", event.move_name);
             }
@@ -136,6 +158,7 @@ fn update_moves(
     mut commands: Commands,
     mut query: Query<(Entity, &mut Move, &mut Transform, &crate::sword::Sword)>,
     mut player_query: Query<Entity, With<crate::Player>>,
+    mut end_move_events: EventWriter<EndMoveEvent>,
     time: Res<Time>,
 ) {
     for (entity, mut current_move, mut transform, sword) in query.iter_mut() {
@@ -158,6 +181,11 @@ fn update_moves(
         {
             MovePhase::Recovery
         } else {
+            // Move is complete - fire EndMoveEvent before cleanup
+            end_move_events.send(EndMoveEvent {
+                actor: current_move.actor,
+                move_name: current_move.move_metadata.name.clone(),
+            });
             // Move is complete, reset position to sword offset and remove the component
             transform.translation.x = sword.offset.x;
             transform.translation.y = sword.offset.y;

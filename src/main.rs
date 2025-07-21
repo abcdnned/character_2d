@@ -11,6 +11,7 @@
 
 use crate::collider::*;
 use crate::constants::*;
+use crate::move_components::MoveComponentsPlugin;
 use bevy::{core_pipeline::bloom::Bloom, prelude::*};
 use bevy_rapier2d::prelude::*;
 use crate::global_weapon_collider::*;
@@ -36,6 +37,7 @@ mod sword;
 mod sword_trail;
 mod unit;
 mod global_weapon_collider;
+mod move_components;
 
 fn main() {
     App::new()
@@ -48,6 +50,7 @@ fn main() {
         .add_plugins(RapierDebugRenderPlugin::default())
         .add_plugins(crate::sword_trail::SwordTrailPlugin)
         .add_plugins(WeaponColliderMapPlugin)
+        .add_plugins(MoveComponentsPlugin)
         .add_systems(Startup, (setup_scene, setup_instructions, setup_camera))
         .add_systems(
             Update,
