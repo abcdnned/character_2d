@@ -49,7 +49,7 @@ fn main() {
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
         .add_plugins(RapierDebugRenderPlugin::default())
         .add_plugins(crate::sword_trail::SwordTrailPlugin)
-        .add_plugins(WeaponColliderMapPlugin)
+        .add_plugins(GlobalEntityMapPlugin)
         .add_plugins(MoveComponentsPlugin)
         .add_systems(Startup, (setup_scene, setup_instructions, setup_camera))
         .add_systems(
@@ -71,7 +71,7 @@ fn setup_scene(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
-    mut weapon_map: ResMut<WeaponColliderMap>,
+    mut weapon_map: ResMut<GlobalEntityMap>,
 ) {
     // World where we move the player
     commands.spawn((

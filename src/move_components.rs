@@ -1,4 +1,4 @@
-use crate::global_weapon_collider::WeaponColliderMap;
+use crate::global_weapon_collider::GlobalEntityMap;
 use crate::r#move::*;
 use crate::sword_trail::SwordTrail;
 use bevy::prelude::*;
@@ -17,21 +17,21 @@ impl Plugin for MoveComponentsPlugin {
 fn handle_start_move(
     mut commands: Commands,
     mut start_move_events: EventReader<MoveActiveEvent>,
-    weapon_map: Res<WeaponColliderMap>,
+    global_entity: Res<GlobalEntityMap>,
 ) {
     for event in start_move_events.read() {
-        if let Some(collider_entity) = weapon_map.get(event.actor) {
+        if let Some(collider_entity) = global_entity.player_to_collider.get(&event.actor) {
             info!(
                 "StartMove: Actor {:?} started move '{}', enabling collider {:?}",
                 event.actor, event.move_name, collider_entity
             );
 
             // Add SwordTrail component to the collider
-            commands.entity(collider_entity).insert(SwordTrail::new());
+            commands.entity(*collider_entity).insert(SwordTrail::new());
 
             // Remove ColliderDisabled component to enable collision detection
             commands
-                .entity(collider_entity)
+                .entity(*collider_entity)
                 .remove::<ColliderDisabled>();
         } else {
             warn!(
@@ -45,20 +45,20 @@ fn handle_start_move(
 fn handle_end_move(
     mut commands: Commands,
     mut end_move_events: EventReader<MoveRecoveryEvent>,
-    weapon_map: Res<WeaponColliderMap>,
+    weapon_map: Res<GlobalEntityMap>,
 ) {
     for event in end_move_events.read() {
-        if let Some(collider_entity) = weapon_map.get(event.actor) {
+        if let Some(collider_entity) = weapon_map.player_to_collider.get(&event.actor) {
             info!(
                 "EndMove: Actor {:?} ended move '{}', disabling collider {:?}",
                 event.actor, event.move_name, collider_entity
             );
 
             // Remove SwordTrail component
-            commands.entity(collider_entity).remove::<SwordTrail>();
+            commands.entity(*collider_entity).remove::<SwordTrail>();
 
             // Add ColliderDisabled component to disable collision detection
-            commands.entity(collider_entity).insert(ColliderDisabled);
+            commands.entity(*collider_entity).insert(ColliderDisabled);
         } else {
             warn!(
                 "EndMove: No weapon collider found for actor {:?}",

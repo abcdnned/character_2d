@@ -22,7 +22,7 @@ pub fn equip_sword(
     parent_entity: Entity,
     offset: Vec3,
     scale: f32,
-    weapon_map: &mut ResMut<WeaponColliderMap>,
+    global_entities: &mut ResMut<GlobalEntityMap>,
     player_entity: Entity,
 ) {
     // Create materials
@@ -60,7 +60,7 @@ pub fn equip_sword(
                         crate::physics::WeaponKnockback::new(800.0, 2.25),
                     ))
                     .id();
-                weapon_map.insert(player_entity, sword_collider);
+                global_entities.player_to_collider.insert(player_entity, sword_collider);
                 // Blade - main sword blade
                 sword_parent.spawn((
                     Mesh2d(blade_mesh),
