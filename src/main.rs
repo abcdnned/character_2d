@@ -13,6 +13,7 @@ use crate::collider::*;
 use crate::constants::*;
 use bevy::{core_pipeline::bloom::Bloom, prelude::*};
 use bevy_rapier2d::prelude::*;
+use crate::global_weapon_collider::*;
 
 #[derive(Component)]
 pub struct Player;
@@ -34,6 +35,7 @@ mod physics;
 mod sword;
 mod sword_trail;
 mod unit;
+mod global_weapon_collider;
 
 fn main() {
     App::new()
@@ -45,6 +47,7 @@ fn main() {
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
         .add_plugins(RapierDebugRenderPlugin::default())
         .add_plugins(crate::sword_trail::SwordTrailPlugin)
+        .add_plugins(WeaponColliderMapPlugin)
         .add_systems(Startup, (setup_scene, setup_instructions, setup_camera))
         .add_systems(
             Update,
@@ -65,6 +68,7 @@ fn setup_scene(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    mut weapon_map: ResMut<WeaponColliderMap>,
 ) {
     // World where we move the player
     commands.spawn((
@@ -103,6 +107,8 @@ fn setup_scene(
         player,
         Vec3::new(50.0, 40.0, 0.1),
         0.5,
+        &mut weapon_map,
+        player,
     );
 }
 

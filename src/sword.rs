@@ -1,6 +1,7 @@
 use bevy::color::palettes::basic::*;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
+use crate::global_weapon_collider::*;
 
 #[derive(Component, Default)]
 pub struct Sword {
@@ -21,6 +22,8 @@ pub fn equip_sword(
     parent_entity: Entity,
     offset: Vec3,
     scale: f32,
+    weapon_map: &mut ResMut<WeaponColliderMap>,
+    player_entity: Entity,
 ) {
     // Create materials
     let blade_material = materials.add(Color::from(SILVER));
@@ -44,7 +47,7 @@ pub fn equip_sword(
             ))
             .with_children(|sword_parent| {
                 // Add collider as a separate child entity (sensor only, no physics control)
-                sword_parent.spawn((
+                let sword_collider = sword_parent.spawn((
                     Transform::from_xyz(0.0, 70.0, 0.0), // Offset to center the collider on the sword
                     Collider::cuboid(
                         (40.0 * scale) / 2.0,  // half_width (blade width scaled)
@@ -54,7 +57,8 @@ pub fn equip_sword(
                     Sensor, // Makes it a sensor (no physics forces, just collision detection)
                     crate::damage::Damage::physical(25.0, parent_entity),
                     crate::physics::WeaponKnockback::new(800.0, 2.25),
-                ));
+                )).id();
+                weapon_map.insert(player_entity, sword_collider);
                 // Blade - main sword blade
                 sword_parent.spawn((
                     Mesh2d(blade_mesh),
