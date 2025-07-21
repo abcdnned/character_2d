@@ -8,15 +8,15 @@ pub struct MoveComponentsPlugin;
 
 impl Plugin for MoveComponentsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<StartMoveEvent>()
-            .add_event::<EndMoveEvent>()
+        app.add_event::<MoveActiveEvent>()
+            .add_event::<MoveRecoveryEvent>()
             .add_systems(Update, (handle_start_move, handle_end_move));
     }
 }
 
 fn handle_start_move(
     mut commands: Commands,
-    mut start_move_events: EventReader<StartMoveEvent>,
+    mut start_move_events: EventReader<MoveActiveEvent>,
     weapon_map: Res<WeaponColliderMap>,
 ) {
     for event in start_move_events.read() {
@@ -44,7 +44,7 @@ fn handle_start_move(
 
 fn handle_end_move(
     mut commands: Commands,
-    mut end_move_events: EventReader<EndMoveEvent>,
+    mut end_move_events: EventReader<MoveRecoveryEvent>,
     weapon_map: Res<WeaponColliderMap>,
 ) {
     for event in end_move_events.read() {

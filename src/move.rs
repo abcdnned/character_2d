@@ -51,13 +51,13 @@ pub struct MoveMetadata {
 }
 
 #[derive(Event)]
-pub struct StartMoveEvent {
+pub struct MoveActiveEvent {
     pub actor: Entity,
     pub move_name: String,
 }
 
 #[derive(Event)]
-pub struct EndMoveEvent {
+pub struct MoveRecoveryEvent {
     pub actor: Entity,
     pub move_name: String,
 }
@@ -69,8 +69,8 @@ impl Plugin for MovePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<MoveDatabase>()
             .add_event::<ExecuteMoveEvent>()
-            .add_event::<StartMoveEvent>() // Add this
-            .add_event::<EndMoveEvent>()
+            .add_event::<MoveActiveEvent>() // Add this
+            .add_event::<MoveRecoveryEvent>()
             .add_systems(Update, (handle_move_execution, update_moves));
     }
 }
@@ -107,7 +107,6 @@ fn handle_move_execution(
     move_db: Res<MoveDatabase>,
     mut query: Query<(Entity, Option<&mut Move>)>,
     mut player_query: Query<Entity, With<crate::Player>>,
-    mut start_move_events: EventWriter<StartMoveEvent>,
 ) {
     for event in move_events.read() {
         if let Ok((entity, current_move)) = query.get_mut(event.entity) {
@@ -132,12 +131,6 @@ fn handle_move_execution(
                     commands.entity(entity).insert(new_current_move);
                     commands.entity(player_entity).insert(PlayerMove {});
 
-                    // Fire StartMoveEvent when move begins
-                    start_move_events.send(StartMoveEvent {
-                        actor: player_entity,
-                        move_name: event.move_name.clone(),
-                    });
-
                     info!(
                         "Added PlayerMove component to player entity {:?}",
                         player_entity
@@ -158,7 +151,8 @@ fn update_moves(
     mut commands: Commands,
     mut query: Query<(Entity, &mut Move, &mut Transform, &crate::sword::Sword)>,
     mut player_query: Query<Entity, With<crate::Player>>,
-    mut end_move_events: EventWriter<EndMoveEvent>,
+    mut start_move_events: EventWriter<MoveActiveEvent>,
+    mut end_move_events: EventWriter<MoveRecoveryEvent>,
     time: Res<Time>,
 ) {
     for (entity, mut current_move, mut transform, sword) in query.iter_mut() {
@@ -173,19 +167,24 @@ fn update_moves(
         } else if current_move.move_time
             < current_move.move_metadata.startup_time + current_move.move_metadata.active_time
         {
+            // Fire StartMoveEvent when move begins
+            start_move_events.write(MoveActiveEvent {
+                actor: current_move.actor,
+                move_name: current_move.move_metadata.name.clone(),
+            });
             MovePhase::Active
         } else if current_move.move_time
             < current_move.move_metadata.startup_time
                 + current_move.move_metadata.active_time
                 + current_move.move_metadata.recovery_time
         {
-            MovePhase::Recovery
-        } else {
             // Move is complete - fire EndMoveEvent before cleanup
-            end_move_events.send(EndMoveEvent {
+            end_move_events.write(MoveRecoveryEvent {
                 actor: current_move.actor,
                 move_name: current_move.move_metadata.name.clone(),
             });
+            MovePhase::Recovery
+        } else {
             // Move is complete, reset position to sword offset and remove the component
             transform.translation.x = sword.offset.x;
             transform.translation.y = sword.offset.y;
