@@ -17,3 +17,5 @@ pub const MESH_RADIUS: f32 = 25.0;
 
 pub const LINER_DAMPING: f32 = 2.0;
 pub const ANGULAR_DAMPING: f32 = 5.0;
+
+pub const SWING_LEFT: &str = "SwingLeft";

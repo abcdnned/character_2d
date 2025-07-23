@@ -48,7 +48,7 @@ pub struct MoveMetadata {
     recovery_time: f32,
     pub move_type: MoveType,
     accept_input: MoveInput,
-    next_move: Option<Box<MoveMetadata>>,
+    next_move: Option<String>,
 }
 
 #[derive(Event)]
@@ -93,7 +93,7 @@ impl Default for MoveDatabase {
             recovery_time: 0.35,
             move_type: MoveType::Swing,
             accept_input: MoveInput::Attack,
-            next_move: None,
+            next_move: Some("SwingLeft".to_string()),
         };
 
         moves.insert("SwingLeft".to_string(), swing_left);

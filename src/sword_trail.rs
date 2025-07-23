@@ -129,7 +129,7 @@ fn despawn_sword_trails(
 impl SwordTrail {
     pub fn new() -> Self {
         Self {
-            color: Color::from(SILVER).with_alpha(0.5),
+            color: Color::from(RED).with_alpha(0.5),
             width: 10.,
             lifetime: 0.3,
             spawn_rate: 300.0,
