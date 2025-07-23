@@ -1,12 +1,15 @@
 use bevy::prelude::*;
 use std::collections::HashMap;
 
+use crate::constants::SWING_LEFT;
+
 #[derive(Component)]
 pub struct Move {
     pub move_metadata: MoveMetadata,
     pub move_time: f32,
     current_phase: MovePhase,
     pub actor: Entity,
+    pub next_move: Option<MoveMetadata>, // Add this field to store the next move
 }
 
 #[derive(Component)]
@@ -15,11 +18,11 @@ pub struct PlayerMove {}
 #[derive(PartialEq, Debug, Clone, Copy)]
 pub enum MovePhase {
     Startup,
-    Active, // accept next move during Active and Recorvery phase
+    Active, // accept next move during Active and Recovery phase
     Recovery,
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)] // Add PartialEq for comparison
 pub enum MoveType {
     // MoveType determine how weapon moves
     Swing,
@@ -27,7 +30,7 @@ pub enum MoveType {
     DashStub,
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Debug)] // Add PartialEq for comparison
 pub enum MoveInput {
     Attack,
 }
@@ -86,17 +89,17 @@ impl Default for MoveDatabase {
         let mut moves = HashMap::new();
 
         let swing_left = MoveMetadata {
-            name: "SwingLeft".to_string(),
+            name: SWING_LEFT.to_string(),
             radius: 130.0,
             startup_time: 0.15,
             active_time: 0.15,
             recovery_time: 0.35,
             move_type: MoveType::Swing,
             accept_input: MoveInput::Attack,
-            next_move: Some("SwingLeft".to_string()),
+            next_move: Some(SWING_LEFT.to_string()),
         };
 
-        moves.insert("SwingLeft".to_string(), swing_left);
+        moves.insert(SWING_LEFT.to_string(), swing_left);
 
         Self { moves }
     }
@@ -112,22 +115,38 @@ fn handle_move_execution(
     for event in move_events.read() {
         if let Ok((entity, current_move)) = query.get_mut(event.entity) {
             if let Some(mut current) = current_move {
-                info!(
-                    "Entity {:?} is busy executing move: {}",
-                    entity, current.move_metadata.name
-                );
+                // Check if we can chain moves during Active or Recovery phase
+                if (current.current_phase == MovePhase::Active || current.current_phase == MovePhase::Recovery) 
+                    && current.move_metadata.accept_input == event.move_input {
+                    // Get the move to chain from the database
+                    if let Some(next_move_name) = current.move_metadata.next_move.clone()
+                        && let Some(next_move_data) = move_db.moves.get(&next_move_name) {
+                        current.next_move = Some(next_move_data.clone());
+                        info!(
+                            "Queued next move '{}' for entity {:?} during {:?} phase",
+                            next_move_name, entity, current.current_phase
+                        );
+                    } else if let Some(next_move_name) = &current.move_metadata.next_move {
+                        warn!("Next move '{}' not found in database", next_move_name);
+                    }
+                } else {
+                    info!(
+                        "Entity {:?} is busy executing move: {} (phase: {:?}, cannot accept input: {:?})",
+                        entity, current.move_metadata.name, current.current_phase, event.move_input
+                    );
+                }
                 continue;
             }
 
+            // No current move, start a new one
             if let Some(move_data) = move_db.moves.get(&event.move_name) {
-                // Add PlayerMove component to player when move starts (during startup phase)
                 if let Ok(player_entity) = player_query.single() {
-                    // Create or update the current move component
                     let new_current_move = Move {
                         move_metadata: move_data.clone(),
                         move_time: 0.0,
                         current_phase: MovePhase::Startup,
                         actor: player_entity,
+                        next_move: None, // Initialize with no next move
                     };
                     commands.entity(entity).insert(new_current_move);
                     commands.entity(player_entity).insert(PlayerMove {});
@@ -169,42 +188,83 @@ fn update_moves(
             < current_move.move_metadata.startup_time + current_move.move_metadata.active_time
         {
             // Fire StartMoveEvent when move begins
-            start_move_events.write(MoveActiveEvent {
-                actor: current_move.actor,
-                move_name: current_move.move_metadata.name.clone(),
-            });
+            if previous_phase != MovePhase::Active {
+                start_move_events.write(MoveActiveEvent {
+                    actor: current_move.actor,
+                    move_name: current_move.move_metadata.name.clone(),
+                });
+            }
             MovePhase::Active
         } else if current_move.move_time
             < current_move.move_metadata.startup_time
                 + current_move.move_metadata.active_time
                 + current_move.move_metadata.recovery_time
         {
-            // Move is complete - fire EndMoveEvent before cleanup
-            end_move_events.write(MoveRecoveryEvent {
-                actor: current_move.actor,
-                move_name: current_move.move_metadata.name.clone(),
-            });
+            // Fire EndMoveEvent when entering recovery phase
+            if previous_phase != MovePhase::Recovery {
+                end_move_events.write(MoveRecoveryEvent {
+                    actor: current_move.actor,
+                    move_name: current_move.move_metadata.name.clone(),
+                });
+            }
             MovePhase::Recovery
         } else {
-            // Move is complete, reset position to sword offset and remove the component
-            transform.translation.x = sword.offset.x;
-            transform.translation.y = sword.offset.y;
-            transform.translation.z = sword.offset.z;
-            transform.rotation = Quat::IDENTITY; // Reset rotation to default
+            // Move would normally complete here
+            // But check if we have a next move to chain
+            if let Some(next_move_data) = current_move.next_move.take() {
+                info!(
+                    "Chaining to next move: {} from {}",
+                    next_move_data.name, current_move.move_metadata.name
+                );
+                
+                // Start the next move immediately
+                *current_move = Move {
+                    move_metadata: next_move_data,
+                    move_time: 0.0,
+                    current_phase: MovePhase::Startup,
+                    actor: current_move.actor,
+                    next_move: None,
+                };
+                continue;
+            } else {
+                // No next move, complete the current move
+                transform.translation.x = sword.offset.x;
+                transform.translation.y = sword.offset.y;
+                transform.translation.z = sword.offset.z;
+                transform.rotation = Quat::IDENTITY;
 
-            commands.entity(entity).remove::<Move>();
-            info!(
-                "Entity {:?} completed move: {} - position reset to offset",
-                entity, current_move.move_metadata.name
-            );
-            // Remove PlayerMove component from player if this entity belongs to a player
-            if let Ok(player_entity) = player_query.single() {
-                // Check if this sword entity belongs to the player (you might need to adjust this logic)
-                // This assumes the sword is a child of the player or has some relationship
-                commands.entity(player_entity).remove::<PlayerMove>();
+                commands.entity(entity).remove::<Move>();
+                info!(
+                    "Entity {:?} completed move: {} - position reset to offset",
+                    entity, current_move.move_metadata.name
+                );
+                
+                if let Ok(player_entity) = player_query.single() {
+                    commands.entity(player_entity).remove::<PlayerMove>();
+                }
+                continue;
             }
-            continue;
         };
+
+        // Check for early transition to next move during recovery phase
+        if new_phase == MovePhase::Recovery && current_move.next_move.is_some() {
+            if let Some(next_move_data) = current_move.next_move.take() {
+                info!(
+                    "Early transition to next move: {} from {} (skipping recovery)",
+                    next_move_data.name, current_move.move_metadata.name
+                );
+                
+                // Start the next move immediately, skipping the rest of recovery
+                *current_move = Move {
+                    move_metadata: next_move_data,
+                    move_time: 0.0,
+                    current_phase: MovePhase::Startup,
+                    actor: current_move.actor,
+                    next_move: None,
+                };
+                continue;
+            }
+        }
 
         // Log phase changes
         if previous_phase != new_phase {
