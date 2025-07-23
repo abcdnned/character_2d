@@ -9,6 +9,7 @@ pub fn input_map_to_move(
         move_events.write(crate::r#move::ExecuteMoveEvent {
             entity: sword.0,
             move_name: "SwingLeft".to_string(),
+            move_input: crate::r#move::MoveInput::Attack,
         });
     }
 }

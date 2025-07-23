@@ -28,7 +28,7 @@ pub enum MoveType {
 }
 
 #[derive(Clone)]
-enum MoveInput {
+pub enum MoveInput {
     Attack,
 }
 
@@ -36,6 +36,7 @@ enum MoveInput {
 pub struct ExecuteMoveEvent {
     pub entity: Entity,
     pub move_name: String,
+    pub move_input: MoveInput,
 }
 
 #[derive(Clone)]

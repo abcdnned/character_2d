@@ -14,7 +14,9 @@ use crate::constants::*;
 use crate::global_weapon_collider::*;
 use crate::move_components::MoveComponentsPlugin;
 use bevy::{core_pipeline::bloom::Bloom, prelude::*};
+use bevy_inspector_egui::bevy_egui::EguiPlugin;
 use bevy_rapier2d::prelude::*;
+use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 #[derive(Component)]
 pub struct Player;
@@ -42,6 +44,8 @@ mod unit;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
+        .add_plugins(EguiPlugin::default())
+        .add_plugins(WorldInspectorPlugin::new())
         .add_plugins(crate::input::InputPlugin)
         .add_plugins(crate::r#move::MovePlugin)
         .add_plugins(crate::health_bar::HealthBarPlugin)

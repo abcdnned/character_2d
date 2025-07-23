@@ -115,13 +115,13 @@ fn spawn_sword_trails(
 
 fn despawn_sword_trails(
     mut commands: Commands,
-    query: Query<(Entity, &ParticleEffect), (Without<SwordTrail>)>,
+    query: Query<Entity, (Without<SwordTrail>, With<ParticleEffect>)>,
 ) {
-    for (entity, p) in query.iter() {
+    for entity in query.iter() {
         commands.entity(entity).remove::<ParticleEffect>();
-            info!(
-                "sword trail remvoed"
-            );
+        commands.entity(entity).remove::<EffectSpawner>();
+        commands.entity(entity).remove::<CompiledParticleEffect>();
+        info!("sword trail completely cleaned up");
     }
 }
 
