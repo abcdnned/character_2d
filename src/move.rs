@@ -116,11 +116,14 @@ fn handle_move_execution(
         if let Ok((entity, current_move)) = query.get_mut(event.entity) {
             if let Some(mut current) = current_move {
                 // Check if we can chain moves during Active or Recovery phase
-                if (current.current_phase == MovePhase::Active || current.current_phase == MovePhase::Recovery) 
-                    && current.move_metadata.accept_input == event.move_input {
+                if (current.current_phase == MovePhase::Active
+                    || current.current_phase == MovePhase::Recovery)
+                    && current.move_metadata.accept_input == event.move_input
+                {
                     // Get the move to chain from the database
                     if let Some(next_move_name) = current.move_metadata.next_move.clone()
-                        && let Some(next_move_data) = move_db.moves.get(&next_move_name) {
+                        && let Some(next_move_data) = move_db.moves.get(&next_move_name)
+                    {
                         current.next_move = Some(next_move_data.clone());
                         info!(
                             "Queued next move '{}' for entity {:?} during {:?} phase",
@@ -216,7 +219,7 @@ fn update_moves(
                     "Chaining to next move: {} from {}",
                     next_move_data.name, current_move.move_metadata.name
                 );
-                
+
                 // Start the next move immediately
                 *current_move = Move {
                     move_metadata: next_move_data,
@@ -238,7 +241,7 @@ fn update_moves(
                     "Entity {:?} completed move: {} - position reset to offset",
                     entity, current_move.move_metadata.name
                 );
-                
+
                 if let Ok(player_entity) = player_query.single() {
                     commands.entity(player_entity).remove::<PlayerMove>();
                 }
@@ -253,7 +256,7 @@ fn update_moves(
                     "Early transition to next move: {} from {} (skipping recovery)",
                     next_move_data.name, current_move.move_metadata.name
                 );
-                
+
                 // Start the next move immediately, skipping the rest of recovery
                 *current_move = Move {
                     move_metadata: next_move_data,

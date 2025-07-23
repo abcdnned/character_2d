@@ -61,7 +61,9 @@ pub fn equip_sword(
                         crate::physics::WeaponKnockback::new(800.0, 2.25),
                     ))
                     .id();
-                global_entities.player_to_collider.insert(player_entity, sword_collider);
+                global_entities
+                    .player_to_collider
+                    .insert(player_entity, sword_collider);
                 // Blade - main sword blade
                 sword_parent.spawn((
                     Mesh2d(blade_mesh),
@@ -70,15 +72,17 @@ pub fn equip_sword(
                 ));
 
                 // Blade tip - triangular point
-                let tip = sword_parent.spawn((
-                    Mesh2d(meshes.add(Triangle2d::new(
-                        Vec2::new(0.0, 15.0),
-                        Vec2::new(-10.0, -7.5),
-                        Vec2::new(10.0, -7.5),
-                    ))),
-                    MeshMaterial2d(blade_material),
-                    Transform::from_xyz(0.0, 167.5, 0.0),
-                )).id();
+                let tip = sword_parent
+                    .spawn((
+                        Mesh2d(meshes.add(Triangle2d::new(
+                            Vec2::new(0.0, 15.0),
+                            Vec2::new(-10.0, -7.5),
+                            Vec2::new(10.0, -7.5),
+                        ))),
+                        MeshMaterial2d(blade_material),
+                        Transform::from_xyz(0.0, 167.5, 0.0),
+                    ))
+                    .id();
                 global_entities.sword_trail.insert(player_entity, tip);
 
                 // Cross guard

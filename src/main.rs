@@ -15,8 +15,8 @@ use crate::global_weapon_collider::*;
 use crate::move_components::MoveComponentsPlugin;
 use bevy::{core_pipeline::bloom::Bloom, prelude::*};
 use bevy_inspector_egui::bevy_egui::EguiPlugin;
-use bevy_rapier2d::prelude::*;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
+use bevy_rapier2d::prelude::*;
 
 #[derive(Component)]
 pub struct Player;
