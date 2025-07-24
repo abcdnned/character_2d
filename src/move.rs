@@ -1,7 +1,5 @@
 use bevy::prelude::*;
-use std::collections::HashMap;
-
-use crate::constants::SWING_LEFT;
+use crate::move_database::*;
 
 #[derive(Component)]
 pub struct Move {
@@ -108,14 +106,14 @@ pub struct ExecuteMoveEvent {
 
 #[derive(Clone)]
 pub struct MoveMetadata {
-    name: String,
-    radius: f32,
+    pub name: String,
+    pub radius: f32,
     pub startup_time: f32,
     pub active_time: f32,
-    recovery_time: f32,
+    pub recovery_time: f32,
     pub move_type: MoveType,
-    accept_input: MoveInput,
-    next_move: Option<String>,
+    pub accept_input: MoveInput,
+    pub next_move: Option<String>,
 }
 
 #[derive(Event)]
@@ -139,31 +137,6 @@ impl Plugin for MovePlugin {
             .add_event::<MoveActiveEvent>()
             .add_event::<MoveRecoveryEvent>()
             .add_systems(Update, (handle_move_execution, update_moves));
-    }
-}
-
-#[derive(Resource)]
-pub struct MoveDatabase {
-    pub moves: HashMap<String, MoveMetadata>,
-}
-
-impl Default for MoveDatabase {
-    fn default() -> Self {
-        let mut moves = HashMap::new();
-
-        let swing_left = MoveMetadata {
-            name: SWING_LEFT.to_string(),
-            radius: 130.0,
-            startup_time: 0.15,
-            active_time: 0.15,
-            recovery_time: 0.35,
-            move_type: MoveType::Swing,
-            accept_input: MoveInput::Attack,
-            next_move: Some(SWING_LEFT.to_string()),
-        };
-
-        moves.insert(SWING_LEFT.to_string(), swing_left);
-        Self { moves }
     }
 }
 
