@@ -1,7 +1,7 @@
 use crate::constants::*;
 use bevy::prelude::*;
 use std::collections::HashMap;
-use crate::lerp_animation::calculate_vertical_swing_cubic;
+use crate::lerp_animation::*;
 
 pub type AnimationFunction = fn(f32, f32) -> (Vec2, f32);
 
@@ -13,7 +13,8 @@ pub struct AnimationDatabase {
 impl Default for AnimationDatabase {
     fn default() -> Self {
         let mut animations = HashMap::new();
-        animations.insert(SWING_LEFT.to_string(), calculate_vertical_swing_cubic as AnimationFunction);
+        animations.insert(SWING_LEFT.to_string(), calculate_left_swing_cubic as AnimationFunction);
+        animations.insert(SWING_RIGHT.to_string(), calculate_right_swing_cubic as AnimationFunction);
         Self { animations }
     }
 }

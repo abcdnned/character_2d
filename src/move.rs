@@ -96,6 +96,7 @@ pub enum MoveType {
 #[derive(Clone, PartialEq, Debug)]
 pub enum MoveInput {
     Attack,
+    None,
 }
 
 #[derive(Event)]
