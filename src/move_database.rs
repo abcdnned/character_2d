@@ -1,6 +1,6 @@
+use crate::r#move::*;
 use bevy::prelude::*;
 use std::collections::HashMap;
-use crate::r#move::*;
 
 use crate::constants::*;
 

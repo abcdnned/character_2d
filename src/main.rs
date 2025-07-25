@@ -23,6 +23,7 @@ pub struct Player;
 
 pub mod r#move;
 
+mod animation_base;
 mod collider;
 mod collisions;
 mod constants;
@@ -35,13 +36,12 @@ mod input_move_map;
 mod iterpolation;
 mod lerp_animation;
 mod move_components;
+mod move_database;
 mod movement;
 mod physics;
 mod sword;
 mod sword_trail;
 mod unit;
-mod move_database;
-mod animation_base;
 
 fn main() {
     App::new()

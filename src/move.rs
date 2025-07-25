@@ -1,6 +1,6 @@
-use bevy::prelude::*;
-use crate::move_database::*;
 use crate::animation_base::*;
+use crate::move_database::*;
+use bevy::prelude::*;
 
 #[derive(Component)]
 pub struct Move {
@@ -27,7 +27,7 @@ impl Move {
             "Transitioning to next move: {} from {}",
             next_metadata.name, self.move_metadata.name
         );
-        
+
         *self = Self::new(next_metadata, self.actor);
     }
 
@@ -37,15 +37,18 @@ impl Move {
     }
 
     pub fn total_duration(&self) -> f32 {
-        self.move_metadata.startup_time + self.move_metadata.active_time + self.move_metadata.recovery_time
+        self.move_metadata.startup_time
+            + self.move_metadata.active_time
+            + self.move_metadata.recovery_time
     }
 
     pub fn update_phase(&mut self) -> (MovePhase, bool) {
         let previous_phase = self.current_phase;
-        
+
         let new_phase = if self.move_time < self.move_metadata.startup_time {
             MovePhase::Startup
-        } else if self.move_time < self.move_metadata.startup_time + self.move_metadata.active_time {
+        } else if self.move_time < self.move_metadata.startup_time + self.move_metadata.active_time
+        {
             MovePhase::Active
         } else if self.move_time < self.total_duration() {
             MovePhase::Recovery
@@ -69,7 +72,7 @@ impl Move {
         if self.current_phase != MovePhase::Active {
             return 0.0;
         }
-        
+
         let active_start_time = self.move_metadata.startup_time;
         let active_elapsed = self.move_time - active_start_time;
         (active_elapsed / self.move_metadata.active_time).clamp(0.0, 1.0)
@@ -201,8 +204,14 @@ fn start_new_move(
             commands.entity(entity).insert(new_move);
             commands.entity(player_entity).insert(PlayerMove {});
 
-            info!("Added PlayerMove component to player entity {:?}", player_entity);
-            info!("Entity {:?} started executing move: {}", entity, event.move_name);
+            info!(
+                "Added PlayerMove component to player entity {:?}",
+                player_entity
+            );
+            info!(
+                "Entity {:?} started executing move: {}",
+                entity, event.move_name
+            );
         }
     } else {
         warn!("Move '{}' not found in database", event.move_name);
@@ -220,19 +229,32 @@ fn update_moves(
 ) {
     for (entity, mut current_move, mut transform, sword) in query.iter_mut() {
         current_move.move_time += time.delta_secs();
-        
+
         let previous_phase = current_move.current_phase;
         let (new_phase, move_completed) = current_move.update_phase();
 
         // Handle phase transition events
-        handle_phase_events(&mut start_move_events, &mut end_move_events, &current_move, previous_phase, new_phase);
+        handle_phase_events(
+            &mut start_move_events,
+            &mut end_move_events,
+            &current_move,
+            previous_phase,
+            new_phase,
+        );
 
         // Handle move completion or chaining
         if move_completed {
             if handle_move_completion_or_chaining(&mut current_move) {
                 continue; // Move was chained, continue with new move
             } else {
-                complete_move(&mut commands, entity, &mut transform, sword, &current_move, &mut player_query);
+                complete_move(
+                    &mut commands,
+                    entity,
+                    &mut transform,
+                    sword,
+                    &current_move,
+                    &mut player_query,
+                );
                 continue;
             }
         }
@@ -316,24 +338,28 @@ fn complete_move(
 }
 
 fn update_move_animation(
-    transform: &mut Transform, 
+    transform: &mut Transform,
     current_move: &Move,
     animation_db: &AnimationDatabase,
 ) {
     let active_progress = current_move.get_active_progress();
-    
+
     // Query the animation database for the current move's animation function
-    if let Some(animation_func) = animation_db.animations.get(&current_move.move_metadata.name) {
-        let (swing_offset, swing_rotation) = animation_func(
-            active_progress,
-            current_move.move_metadata.radius,
-        );
+    if let Some(animation_func) = animation_db
+        .animations
+        .get(&current_move.move_metadata.name)
+    {
+        let (swing_offset, swing_rotation) =
+            animation_func(active_progress, current_move.move_metadata.radius);
 
         transform.translation.x = swing_offset.x;
         transform.translation.y = swing_offset.y;
         transform.rotation = Quat::from_rotation_z(swing_rotation);
     } else {
         // Fallback or warning if animation not found
-        warn!("No animation found for move: {}", current_move.move_metadata.name);
+        warn!(
+            "No animation found for move: {}",
+            current_move.move_metadata.name
+        );
     }
 }
