@@ -41,6 +41,7 @@ mod sword;
 mod sword_trail;
 mod unit;
 mod move_database;
+mod animation_base;
 
 fn main() {
     App::new()
@@ -56,6 +57,7 @@ fn main() {
         .add_plugins(crate::sword_trail::SwordTrailPlugin)
         .add_plugins(GlobalEntityMapPlugin)
         .add_plugins(MoveComponentsPlugin)
+        .add_plugins(crate::animation_base::AnimationDatabasePlugin)
         .add_systems(Startup, (setup_scene, setup_instructions, setup_camera))
         .add_systems(
             Update,

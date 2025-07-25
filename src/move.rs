@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use crate::move_database::*;
+use crate::animation_base::*;
 
 #[derive(Component)]
 pub struct Move {
@@ -213,6 +214,7 @@ fn update_moves(
     mut player_query: Query<Entity, With<crate::Player>>,
     mut start_move_events: EventWriter<MoveActiveEvent>,
     mut end_move_events: EventWriter<MoveRecoveryEvent>,
+    animation_db: Res<AnimationDatabase>,
     time: Res<Time>,
 ) {
     for (entity, mut current_move, mut transform, sword) in query.iter_mut() {
@@ -248,7 +250,7 @@ fn update_moves(
 
         // Update position during active phase
         if current_move.current_phase == MovePhase::Active {
-            update_move_animation(&mut transform, &current_move);
+            update_move_animation(&mut transform, &current_move, &animation_db);
         }
     }
 }
@@ -312,15 +314,25 @@ fn complete_move(
     }
 }
 
-fn update_move_animation(transform: &mut Transform, current_move: &Move) {
+fn update_move_animation(
+    transform: &mut Transform, 
+    current_move: &Move,
+    animation_db: &AnimationDatabase,
+) {
     let active_progress = current_move.get_active_progress();
     
-    let (swing_offset, swing_rotation) = crate::lerp_animation::calculate_vertical_swing_cubic(
-        active_progress,
-        current_move.move_metadata.radius,
-    );
+    // Query the animation database for the current move's animation function
+    if let Some(animation_func) = animation_db.animations.get(&current_move.move_metadata.name) {
+        let (swing_offset, swing_rotation) = animation_func(
+            active_progress,
+            current_move.move_metadata.radius,
+        );
 
-    transform.translation.x = swing_offset.x;
-    transform.translation.y = swing_offset.y;
-    transform.rotation = Quat::from_rotation_z(swing_rotation);
+        transform.translation.x = swing_offset.x;
+        transform.translation.y = swing_offset.y;
+        transform.rotation = Quat::from_rotation_z(swing_rotation);
+    } else {
+        // Fallback or warning if animation not found
+        warn!("No animation found for move: {}", current_move.move_metadata.name);
+    }
 }
