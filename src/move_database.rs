@@ -22,6 +22,7 @@ impl Default for MoveDatabase {
             move_type: MoveType::Swing,
             accept_input: MoveInput::Attack,
             next_move: Some(SWING_RIGHT.to_string()),
+            kb_force: 300.0,
         };
 
         let swing_right = MoveMetadata {
@@ -33,6 +34,7 @@ impl Default for MoveDatabase {
             move_type: MoveType::Swing,
             accept_input: MoveInput::None,
             next_move: None,
+            kb_force: 600.0,
         };
 
         moves.insert(SWING_LEFT.to_string(), swing_left);

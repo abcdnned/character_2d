@@ -1,4 +1,4 @@
-use crate::global_weapon_collider::GlobalEntityMap;
+use crate::global_entity_map::GlobalEntityMap;
 use crate::r#move::*;
 use crate::sword_trail::SwordTrail;
 use bevy::prelude::*;
@@ -26,7 +26,7 @@ fn handle_start_move(
                 .entity(*collider_entity)
                 .remove::<ColliderDisabled>();
         }
-        if let Some(tip) = global_entity.sword_trail.get(&event.actor) {
+        if let Some(tip) = global_entity.player_sword_trail.get(&event.actor) {
             // Add SwordTrail component to the collider
             commands.entity(*tip).insert(SwordTrail::new());
         }
@@ -42,7 +42,7 @@ fn handle_end_move(
         if let Some(collider_entity) = global_entities.player_to_collider.get(&event.actor) {
             commands.entity(*collider_entity).insert(ColliderDisabled);
         }
-        if let Some(tip) = global_entities.sword_trail.get(&event.actor) {
+        if let Some(tip) = global_entities.player_sword_trail.get(&event.actor) {
             commands.entity(*tip).remove::<SwordTrail>();
         }
     }

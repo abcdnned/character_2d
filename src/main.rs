@@ -11,7 +11,7 @@
 
 use crate::collider::*;
 use crate::constants::*;
-use crate::global_weapon_collider::*;
+use crate::global_entity_map::*;
 use crate::move_components::MoveComponentsPlugin;
 use bevy::{core_pipeline::bloom::Bloom, prelude::*};
 use bevy_inspector_egui::bevy_egui::EguiPlugin;
@@ -29,7 +29,7 @@ mod collisions;
 mod constants;
 mod damage;
 mod enemy;
-mod global_weapon_collider;
+mod global_entity_map;
 mod health_bar;
 mod input;
 mod input_move_map;

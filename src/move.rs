@@ -1,5 +1,7 @@
 use crate::animation_base::*;
+use crate::global_entity_map::GlobalEntityMap;
 use crate::move_database::*;
+use crate::physics::WeaponKnockback;
 use bevy::prelude::*;
 
 #[derive(Component)]
@@ -119,6 +121,7 @@ pub struct MoveMetadata {
     pub move_type: MoveType,
     pub accept_input: MoveInput,
     pub next_move: Option<String>,
+    pub kb_force: f32
 }
 
 #[derive(Event)]
@@ -150,7 +153,9 @@ fn handle_move_execution(
     mut move_events: EventReader<ExecuteMoveEvent>,
     move_db: Res<MoveDatabase>,
     mut query: Query<(Entity, Option<&mut Move>)>,
-    mut player_query: Query<Entity, With<crate::Player>>,
+    player_query: Query<Entity, With<crate::Player>>,
+    global_entity_map: Res<GlobalEntityMap>,
+    mut weapon_knockback_query: Query<&mut WeaponKnockback>
 ) {
     for event in move_events.read() {
         if let Ok((entity, current_move)) = query.get_mut(event.entity) {
@@ -159,7 +164,7 @@ fn handle_move_execution(
                 continue;
             }
 
-            start_new_move(&mut commands, &event, &move_db, entity, &mut player_query);
+            start_new_move(&mut commands, &event, &move_db, entity, player_query, &global_entity_map, &mut weapon_knockback_query);
         }
     }
 }
@@ -196,13 +201,31 @@ fn start_new_move(
     event: &ExecuteMoveEvent,
     move_db: &MoveDatabase,
     entity: Entity,
-    player_query: &mut Query<Entity, With<crate::Player>>,
+    player_query: Query<Entity, With<crate::Player>>,
+    global_entity_map: &GlobalEntityMap,
+    mut weapon_knockback_query: &mut Query<&mut WeaponKnockback>,
 ) {
     if let Some(move_data) = move_db.moves.get(&event.move_name) {
         if let Ok(player_entity) = player_query.single() {
             let new_move = Move::new(move_data.clone(), player_entity);
             commands.entity(entity).insert(new_move);
             commands.entity(player_entity).insert(PlayerMove {});
+
+            // Get the collider entity using the weapon_collider map
+            if let Some(&collider_entity) = global_entity_map.weapon_collider.get(&entity) {
+                // Update the WeaponKnockback component
+                if let Ok(mut weapon_knockback) = weapon_knockback_query.get_mut(collider_entity) {
+                    weapon_knockback.force = move_data.kb_force;
+                    weapon_knockback.duration = 2.25;
+                    
+                    info!("Updated WeaponKnockback for collider {:?}: force={}, duration=2.25", 
+                          collider_entity, move_data.kb_force);
+                } else {
+                    warn!("WeaponKnockback component not found on collider entity {:?}", collider_entity);
+                }
+            } else {
+                warn!("No collider entity found for weapon entity {:?}", entity);
+            }
 
             info!(
                 "Added PlayerMove component to player entity {:?}",
