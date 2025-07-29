@@ -20,3 +20,6 @@ pub const ANGULAR_DAMPING: f32 = 5.0;
 
 pub const SWING_LEFT: &str = "SwingLeft";
 pub const SWING_RIGHT: &str = "SwingRight";
+
+pub const KNOCK_BACK_LITE: f32 = 300.0;
+pub const DURATION_FACTOR: f32 = 2.25 / 800.0;

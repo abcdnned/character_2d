@@ -1,4 +1,5 @@
 use crate::animation_base::*;
+use crate::constants::DURATION_FACTOR;
 use crate::global_entity_map::GlobalEntityMap;
 use crate::move_database::*;
 use crate::physics::WeaponKnockback;
@@ -216,7 +217,7 @@ fn start_new_move(
                 // Update the WeaponKnockback component
                 if let Ok(mut weapon_knockback) = weapon_knockback_query.get_mut(collider_entity) {
                     weapon_knockback.force = move_data.kb_force;
-                    weapon_knockback.duration = 2.25;
+                    weapon_knockback.duration = move_data.kb_force * DURATION_FACTOR;
                     
                     info!("Updated WeaponKnockback for collider {:?}: force={}, duration=2.25", 
                           collider_entity, move_data.kb_force);
