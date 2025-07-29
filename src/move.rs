@@ -122,7 +122,7 @@ pub struct MoveMetadata {
     pub move_type: MoveType,
     pub accept_input: MoveInput,
     pub next_move: Option<String>,
-    pub kb_force: f32
+    pub kb_force: f32,
 }
 
 #[derive(Event)]
@@ -156,7 +156,7 @@ fn handle_move_execution(
     mut query: Query<(Entity, Option<&mut Move>)>,
     player_query: Query<Entity, With<crate::Player>>,
     global_entity_map: Res<GlobalEntityMap>,
-    mut weapon_knockback_query: Query<&mut WeaponKnockback>
+    mut weapon_knockback_query: Query<&mut WeaponKnockback>,
 ) {
     for event in move_events.read() {
         if let Ok((entity, current_move)) = query.get_mut(event.entity) {
@@ -165,7 +165,15 @@ fn handle_move_execution(
                 continue;
             }
 
-            start_new_move(&mut commands, &event, &move_db, entity, player_query, &global_entity_map, &mut weapon_knockback_query);
+            start_new_move(
+                &mut commands,
+                &event,
+                &move_db,
+                entity,
+                player_query,
+                &global_entity_map,
+                &mut weapon_knockback_query,
+            );
         }
     }
 }
@@ -218,11 +226,16 @@ fn start_new_move(
                 if let Ok(mut weapon_knockback) = weapon_knockback_query.get_mut(collider_entity) {
                     weapon_knockback.force = move_data.kb_force;
                     weapon_knockback.duration = move_data.kb_force * DURATION_FACTOR;
-                    
-                    info!("Updated WeaponKnockback for collider {:?}: force={}, duration=2.25", 
-                          collider_entity, move_data.kb_force);
+
+                    info!(
+                        "Updated WeaponKnockback for collider {:?}: force={}, duration=2.25",
+                        collider_entity, move_data.kb_force
+                    );
                 } else {
-                    warn!("WeaponKnockback component not found on collider entity {:?}", collider_entity);
+                    warn!(
+                        "WeaponKnockback component not found on collider entity {:?}",
+                        collider_entity
+                    );
                 }
             } else {
                 warn!("No collider entity found for weapon entity {:?}", entity);

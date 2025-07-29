@@ -61,7 +61,9 @@ pub fn equip_sword(
                         crate::physics::WeaponKnockback::new(800.0, 2.25),
                     ))
                     .id();
-                global_entities.weapon_collider.insert(sword_parent.target_entity(), sword_collider);
+                global_entities
+                    .weapon_collider
+                    .insert(sword_parent.target_entity(), sword_collider);
                 global_entities
                     .player_to_collider
                     .insert(player_entity, sword_collider);
@@ -84,7 +86,9 @@ pub fn equip_sword(
                         Transform::from_xyz(0.0, 167.5, 0.0),
                     ))
                     .id();
-                global_entities.player_sword_trail.insert(player_entity, tip);
+                global_entities
+                    .player_sword_trail
+                    .insert(player_entity, tip);
 
                 // Cross guard
                 sword_parent.spawn((
