@@ -34,7 +34,7 @@ impl Default for MoveDatabase {
             move_type: MoveType::Swing,
             accept_input: MoveInput::None,
             next_move: None,
-            kb_force: KNOCK_BACK_LITE * 2.0,
+            kb_force: KNOCK_BACK_LITE,
         };
 
         moves.insert(SWING_LEFT.to_string(), swing_left);

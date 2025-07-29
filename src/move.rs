@@ -220,26 +220,8 @@ fn start_new_move(
             commands.entity(entity).insert(new_move);
             commands.entity(player_entity).insert(PlayerMove {});
 
-            // Get the collider entity using the weapon_collider map
-            if let Some(&collider_entity) = global_entity_map.weapon_collider.get(&entity) {
-                // Update the WeaponKnockback component
-                if let Ok(mut weapon_knockback) = weapon_knockback_query.get_mut(collider_entity) {
-                    weapon_knockback.force = move_data.kb_force;
-                    weapon_knockback.duration = move_data.kb_force * DURATION_FACTOR;
-
-                    info!(
-                        "Updated WeaponKnockback for collider {:?}: force={}, duration=2.25",
-                        collider_entity, move_data.kb_force
-                    );
-                } else {
-                    warn!(
-                        "WeaponKnockback component not found on collider entity {:?}",
-                        collider_entity
-                    );
-                }
-            } else {
-                warn!("No collider entity found for weapon entity {:?}", entity);
-            }
+            // Update knockback using the extracted method
+            update_knockback(entity, move_data, global_entity_map, weapon_knockback_query);
 
             info!(
                 "Added PlayerMove component to player entity {:?}",
@@ -255,6 +237,29 @@ fn start_new_move(
     }
 }
 
+fn update_knockback(
+    entity: Entity,
+    move_data: &MoveMetadata,
+    global_entity_map: &GlobalEntityMap,
+    weapon_knockback_query: &mut Query<&mut WeaponKnockback>,
+) {
+    // Get the collider entity using the weapon_collider map
+    if let Some(&collider_entity) = global_entity_map.weapon_collider.get(&entity) {
+        // Update the WeaponKnockback component
+        if let Ok(mut weapon_knockback) = weapon_knockback_query.get_mut(collider_entity) {
+            weapon_knockback.force = move_data.kb_force;
+            weapon_knockback.duration = move_data.kb_force * DURATION_FACTOR;
+            
+            info!("Updated WeaponKnockback for collider {:?}: force={}, duration=2.25", 
+                  collider_entity, move_data.kb_force);
+        } else {
+            warn!("WeaponKnockback component not found on collider entity {:?}", collider_entity);
+        }
+    } else {
+        warn!("No collider entity found for weapon entity {:?}", entity);
+    }
+}
+
 fn update_moves(
     mut commands: Commands,
     mut query: Query<(Entity, &mut Move, &mut Transform, &crate::sword::Sword)>,
@@ -263,6 +268,8 @@ fn update_moves(
     mut end_move_events: EventWriter<MoveRecoveryEvent>,
     animation_db: Res<AnimationDatabase>,
     time: Res<Time>,
+    global_entity_map: Res<GlobalEntityMap>,
+    mut weapon_knockback_query: Query<&mut WeaponKnockback>,
 ) {
     for (entity, mut current_move, mut transform, sword) in query.iter_mut() {
         current_move.move_time += time.delta_secs();
@@ -282,6 +289,13 @@ fn update_moves(
         // Handle move completion or chaining
         if move_completed {
             if handle_move_completion_or_chaining(&mut current_move) {
+                // Update knockback for the chained move
+                update_knockback(
+                    entity,
+                    &current_move.move_metadata,
+                    &global_entity_map,
+                    &mut weapon_knockback_query,
+                );
                 continue; // Move was chained, continue with new move
             } else {
                 complete_move(
@@ -303,7 +317,16 @@ fn update_moves(
                     "Early transition to next move: {} from {} (skipping recovery)",
                     next_move_data.name, current_move.move_metadata.name
                 );
+                // Clone the data before moving it into transition_to
+                let next_move_data_clone = next_move_data.clone();
                 current_move.transition_to(next_move_data);
+                // Update knockback for the early transition move
+                update_knockback(
+                    entity,
+                    &next_move_data_clone,
+                    &global_entity_map,
+                    &mut weapon_knockback_query,
+                );
                 continue;
             }
         }
@@ -325,13 +348,13 @@ fn handle_phase_events(
     if previous_phase != new_phase {
         match new_phase {
             MovePhase::Active => {
-                start_events.send(MoveActiveEvent {
+                start_events.write(MoveActiveEvent {
                     actor: current_move.actor,
                     move_name: current_move.move_metadata.name.clone(),
                 });
             }
             MovePhase::Recovery => {
-                end_events.send(MoveRecoveryEvent {
+                end_events.write(MoveRecoveryEvent {
                     actor: current_move.actor,
                     move_name: current_move.move_metadata.name.clone(),
                 });
