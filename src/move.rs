@@ -288,26 +288,15 @@ fn update_moves(
 
         // Handle move completion or chaining
         if move_completed {
-            if handle_move_completion_or_chaining(&mut current_move) {
-                // Update knockback for the chained move
-                update_knockback(
-                    entity,
-                    &current_move.move_metadata,
-                    &global_entity_map,
-                    &mut weapon_knockback_query,
-                );
-                continue; // Move was chained, continue with new move
-            } else {
-                complete_move(
-                    &mut commands,
-                    entity,
-                    &mut transform,
-                    sword,
-                    &current_move,
-                    &mut player_query,
-                );
-                continue;
-            }
+            complete_move(
+                &mut commands,
+                entity,
+                &mut transform,
+                sword,
+                &current_move,
+                &mut player_query,
+            );
+            continue;
         }
 
         // Handle early transition during recovery
