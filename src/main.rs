@@ -99,7 +99,7 @@ fn setup_scene(
         .id();
 
     // Enemy - spawn a rectangle
-    commands.spawn((
+    let enemy = commands.spawn((
         crate::enemy::Enemy {},
         Mesh2d(meshes.add(Rectangle::new(MESH_RADIUS * 2., MESH_RADIUS * 2.))),
         MeshMaterial2d(materials.add(ENEMY_COLOR)), // Red color for enemy
@@ -108,7 +108,7 @@ fn setup_scene(
         Velocity::zero(),
         crate::unit::Hp::new(30.0, 30.0),
         crate::unit::Name::new("Guard"),
-    ));
+    )).id();
 
     crate::weapon::equip_sword(
         &mut commands,
@@ -119,6 +119,17 @@ fn setup_scene(
         0.5,
         &mut weapon_map,
         player,
+    );
+
+    crate::weapon::equip_axe(
+        &mut commands,
+        &mut meshes,
+        &mut materials,
+        enemy,
+        Vec3::new(50.0, 40.0, 0.1),
+        0.5,
+        &mut weapon_map,
+        enemy,
     );
 }
 
