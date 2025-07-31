@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 pub fn input_map_to_move(
-    sword: Single<(Entity, &mut Transform), With<crate::sword::Sword>>,
+    sword: Single<(Entity, &mut Transform), With<crate::weapon::Weapon>>,
     mut action_events: EventReader<crate::input::ActionEvent>,
     mut move_events: EventWriter<crate::r#move::ExecuteMoveEvent>,
 ) {

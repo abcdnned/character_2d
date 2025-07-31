@@ -39,7 +39,7 @@ mod move_components;
 mod move_database;
 mod movement;
 mod physics;
-mod sword;
+mod weapon;
 mod sword_trail;
 mod unit;
 
@@ -110,7 +110,7 @@ fn setup_scene(
         crate::unit::Name::new("Guard"),
     ));
 
-    crate::sword::equip_sword(
+    crate::weapon::equip_sword(
         &mut commands,
         &mut meshes,
         &mut materials,

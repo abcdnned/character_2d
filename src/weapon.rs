@@ -4,12 +4,12 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
 #[derive(Component, Default)]
-pub struct Sword {
+pub struct Weapon {
     pub offset: Vec3,
     pub scale: f32,
 }
 
-impl Sword {
+impl Weapon {
     pub fn new(offset: Vec3, scale: f32) -> Self {
         Self { offset, scale }
     }
@@ -43,7 +43,7 @@ pub fn equip_sword(
             .spawn((
                 Transform::from_translation(offset).with_scale(Vec3::splat(scale)),
                 Visibility::default(),
-                crate::sword::Sword::new(offset, scale),
+                crate::weapon::Weapon::new(offset, scale),
             ))
             .with_children(|sword_parent| {
                 // Add collider as a separate child entity (sensor only, no physics control)

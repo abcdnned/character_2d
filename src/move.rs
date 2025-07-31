@@ -262,7 +262,7 @@ fn update_knockback(
 
 fn update_moves(
     mut commands: Commands,
-    mut query: Query<(Entity, &mut Move, &mut Transform, &crate::sword::Sword)>,
+    mut query: Query<(Entity, &mut Move, &mut Transform, &crate::weapon::Weapon)>,
     mut player_query: Query<Entity, With<crate::Player>>,
     mut start_move_events: EventWriter<MoveActiveEvent>,
     mut end_move_events: EventWriter<MoveRecoveryEvent>,
@@ -366,7 +366,7 @@ fn complete_move(
     commands: &mut Commands,
     entity: Entity,
     transform: &mut Transform,
-    sword: &crate::sword::Sword,
+    sword: &crate::weapon::Weapon,
     current_move: &Move,
     player_query: &mut Query<Entity, With<crate::Player>>,
 ) {
