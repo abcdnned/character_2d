@@ -220,9 +220,9 @@ pub fn equip_axe(
                 // Add collider for the double-bladed axe head
                 let axe_collider = axe_parent
                     .spawn((
-                        Transform::from_xyz(0.0, 50.0, 0.0),
+                        Transform::from_xyz(0.0, 120.0, 0.0),
                         Collider::cuboid(
-                            (120.0 * scale) / 2.0, // Wider for double blades
+                            (300.0 * scale) / 2.0, // Wider for double blades
                             (200.0 * scale) / 2.0, // Total axe length scaled
                         ),
                         ActiveEvents::COLLISION_EVENTS,
