@@ -1,12 +1,16 @@
 use bevy::prelude::*;
 
+use crate::Player;
+
 #[derive(Event)]
 pub struct MoveEvent {
     pub direction: Vec2,
 }
 
 #[derive(Event)]
-pub struct ActionEvent;
+pub struct ActionEvent {
+    pub entity: Entity,
+}
 
 pub struct InputPlugin;
 
@@ -17,6 +21,7 @@ impl Plugin for InputPlugin {
 }
 
 pub fn handle_input(
+    player: Single<Entity, (With<Player>, With<Transform>)>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
     mut move_events: EventWriter<MoveEvent>,
     mut action_events: EventWriter<ActionEvent>,
@@ -41,6 +46,6 @@ pub fn handle_input(
     }
 
     if keyboard_input.just_pressed(KeyCode::KeyJ) {
-        action_events.write(ActionEvent);
+        action_events.write(ActionEvent { entity: *player});
     }
 }
