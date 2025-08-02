@@ -214,7 +214,7 @@ pub fn equip_axe(
             .spawn((
                 Transform::from_translation(offset).with_scale(Vec3::splat(scale)),
                 Visibility::default(),
-                crate::weapon::Weapon::new(offset, scale),
+                // crate::weapon::Weapon::new(offset, scale),
             ))
             .with_children(|axe_parent| {
                 // Add collider for the double-bladed axe head
