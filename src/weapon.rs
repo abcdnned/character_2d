@@ -42,7 +42,7 @@ pub fn equip_sword(
 
     // Spawn sword as child of parent entity
     commands.entity(parent_entity).with_children(|parent| {
-        parent
+        let sword = parent
             .spawn((
                 Transform::from_translation(offset).with_scale(Vec3::splat(scale)),
                 Visibility::default(),
@@ -122,7 +122,8 @@ pub fn equip_sword(
                         Transform::from_xyz(0.0, -69.0 + (i as f32 * 10.0), 0.1),
                     ));
                 }
-            });
+            }).id();
+            global_entities.player_weapon.insert(player_entity, sword);
     });
 }
 
@@ -214,7 +215,7 @@ pub fn equip_axe(
             .spawn((
                 Transform::from_translation(offset).with_scale(Vec3::splat(scale)),
                 Visibility::default(),
-                // crate::weapon::Weapon::new(offset, scale),
+                crate::weapon::Weapon::new(offset, scale),
             ))
             .with_children(|axe_parent| {
                 // Add collider for the double-bladed axe head
