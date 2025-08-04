@@ -77,7 +77,7 @@ fn update_health_bar(
     mut materials: ResMut<Assets<HealthBarMaterial>>,
     mut hp_events: EventReader<HpChangeEvent>,
     health_bar_query: Query<&MaterialNode<HealthBarMaterial>, With<HealthBar>>,
-    player_query: Query<(Entity, &crate::unit::Hp), With<crate::Player>>,
+    player_query: Query<(Entity, &crate::unit::Unit), With<crate::Player>>,
 ) {
     for event in hp_events.read() {
         // Check if the event is for a player entity

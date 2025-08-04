@@ -9,20 +9,10 @@ impl Plugin for UnitPlugin {
 }
 
 #[derive(Component)]
-pub struct Hp {
+pub struct Unit {
+    pub name: String,
     pub hp: f32,
     pub max_hp: f32,
-}
-
-#[derive(Component)]
-pub struct Name {
-    pub name: String,
-}
-
-impl Name {
-    pub fn new(name: impl Into<String>) -> Self {
-        Self { name: name.into() }
-    }
 }
 
 #[derive(Event)]
@@ -41,9 +31,26 @@ pub enum HpChangeType {
     SetValue,
 }
 
-impl Hp {
-    pub fn new(hp: f32, max_hp: f32) -> Self {
-        Self { hp: max_hp, max_hp }
+impl Unit {
+    pub fn new(name: impl Into<String>, hp: f32, max_hp: f32) -> Self {
+        Self {
+            name: name.into(),
+            hp,
+            max_hp,
+        }
+    }
+
+    // Builder pattern approach with defaults
+    pub fn builder() -> UnitBuilder {
+        UnitBuilder::default()
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn set_name(&mut self, name: impl Into<String>) {
+        self.name = name.into();
     }
 
     pub fn is_dead(&self) -> bool {
@@ -58,8 +65,7 @@ impl Hp {
     ) {
         let old_hp = self.hp;
         self.hp = (self.hp - amount).max(0.0);
-
-        event_writer.write(HpChangeEvent {
+        event_writer.send(HpChangeEvent {
             entity,
             old_hp,
             new_hp: self.hp,
@@ -76,8 +82,7 @@ impl Hp {
     ) {
         let old_hp = self.hp;
         self.hp = (self.hp + amount).min(self.max_hp);
-
-        event_writer.write(HpChangeEvent {
+        event_writer.send(HpChangeEvent {
             entity,
             old_hp,
             new_hp: self.hp,
@@ -94,8 +99,7 @@ impl Hp {
     ) {
         let old_hp = self.hp;
         self.hp = new_hp.clamp(0.0, self.max_hp);
-
-        event_writer.write(HpChangeEvent {
+        event_writer.send(HpChangeEvent {
             entity,
             old_hp,
             new_hp: self.hp,
@@ -109,10 +113,48 @@ impl Hp {
     }
 }
 
-pub struct HpPlugin;
+// Builder pattern for more readable construction with defaults
+pub struct UnitBuilder {
+    name: String,
+    hp: f32,
+    max_hp: f32,
+}
 
-impl Plugin for HpPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_event::<HpChangeEvent>();
+impl Default for UnitBuilder {
+    fn default() -> Self {
+        Self {
+            name: "Unnamed Unit".to_string(),
+            hp: 100.0,
+            max_hp: 100.0,
+        }
+    }
+}
+
+impl UnitBuilder {
+    pub fn name(mut self, name: impl Into<String>) -> Self {
+        self.name = name.into();
+        self
+    }
+
+    pub fn hp(mut self, hp: f32) -> Self {
+        self.hp = hp;
+        self
+    }
+
+    pub fn max_hp(mut self, max_hp: f32) -> Self {
+        self.max_hp = max_hp;
+        // If hp is still the default and we're setting max_hp, update hp to match
+        if self.hp == 100.0 {
+            self.hp = max_hp;
+        }
+        self
+    }
+
+    pub fn build(self) -> Unit {
+        Unit {
+            name: self.name,
+            hp: self.hp,
+            max_hp: self.max_hp,
+        }
     }
 }

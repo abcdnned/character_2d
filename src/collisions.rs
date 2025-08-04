@@ -1,7 +1,6 @@
 use crate::damage::Damage;
 use crate::enemy::Enemy;
 use crate::physics::*;
-use crate::unit::Hp;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
@@ -9,7 +8,7 @@ pub fn handle_collisions(
     mut collision_events: EventReader<CollisionEvent>,
     damage_query: Query<&Damage>,
     transform_query: Query<&Transform>,
-    mut hp_query: Query<&mut Hp>,
+    mut unit_query: Query<&mut crate::unit::Unit>,
     mut enemy_query: Query<(Entity, &mut Velocity, &Transform), With<Enemy>>,
     weapon_knockback_query: Query<&WeaponKnockback>,
     mut commands: Commands,
@@ -22,7 +21,7 @@ pub fn handle_collisions(
                     *entity2,
                     &damage_query,
                     &transform_query,
-                    &mut hp_query,
+                    &mut unit_query,
                     &mut enemy_query,
                     &weapon_knockback_query,
                     &mut commands,
@@ -33,7 +32,7 @@ pub fn handle_collisions(
                     *entity1,
                     &damage_query,
                     &transform_query,
-                    &mut hp_query,
+                    &mut unit_query,
                     &mut enemy_query,
                     &weapon_knockback_query,
                     &mut commands,
@@ -49,12 +48,12 @@ fn process_hit(
     target: Entity,
     damage_query: &Query<&Damage>,
     transform_query: &Query<&Transform>,
-    hp_query: &mut Query<&mut Hp>,
+    unit_query: &mut Query<&mut crate::unit::Unit>,
     enemy_query: &mut Query<(Entity, &mut Velocity, &Transform), With<Enemy>>,
     weapon_knockback_query: &Query<&WeaponKnockback>,
     commands: &mut Commands,
 ) {
-    if let (Ok(damage), Ok(mut hp)) = (damage_query.get(attacker), hp_query.get_mut(target)) {
+    if let (Ok(damage), Ok(mut hp)) = (damage_query.get(attacker), unit_query.get_mut(target)) {
         if let Ok((enemy_entity, mut enemy_velocity, enemy_transform)) = enemy_query.get_mut(target)
         {
             let damage_amount = damage.get_amount();

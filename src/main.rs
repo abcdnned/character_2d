@@ -13,6 +13,7 @@ use crate::collider::*;
 use crate::constants::*;
 use crate::global_entity_map::*;
 use crate::move_components::MoveComponentsPlugin;
+use crate::unit::Unit;
 use bevy::{core_pipeline::bloom::Bloom, prelude::*};
 use bevy_inspector_egui::bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
@@ -96,7 +97,7 @@ fn setup_scene(
             MeshMaterial2d(materials.add(PLAYER_COLOR)), // RGB values exceed 1 to achieve a bright color for the bloom effect
             Transform::from_xyz(0., 0., 2.),
             DynamicPhysicsBundle::new_ball(MESH_RADIUS),
-            crate::unit::Hp::new(50.0, 100.0),
+            Unit::builder().name("Hero").hp(50.0).build(),
         ))
         .id();
 
@@ -108,8 +109,7 @@ fn setup_scene(
         Transform::from_xyz(200., 150., 1.),
         DynamicPhysicsBundle::new_box(MESH_RADIUS, MESH_RADIUS),
         Velocity::zero(),
-        crate::unit::Hp::new(30.0, 30.0),
-        crate::unit::Name::new("Guard"),
+        Unit::builder().name("Guard").max_hp(30.0).build(),
     )).id();
 
     crate::weapon::equip_sword(
