@@ -42,6 +42,8 @@ mod physics;
 mod weapon;
 mod sword_trail;
 mod unit;
+mod ai;
+mod force;
 
 fn main() {
     App::new()

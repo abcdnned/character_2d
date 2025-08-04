@@ -289,3 +289,8 @@ pub fn equip_axe(
             });
     });
 }
+
+pub enum GearSet {
+    LongSword,
+    DoubleEdgeAxe,
+}
