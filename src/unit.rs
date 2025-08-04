@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use crate::constants::*;
+
 pub struct UnitPlugin;
 
 impl Plugin for UnitPlugin {
@@ -13,6 +15,7 @@ pub struct Unit {
     pub name: String,
     pub hp: f32,
     pub max_hp: f32,
+    pub speed: f32,
 }
 
 #[derive(Event)]
@@ -32,25 +35,9 @@ pub enum HpChangeType {
 }
 
 impl Unit {
-    pub fn new(name: impl Into<String>, hp: f32, max_hp: f32) -> Self {
-        Self {
-            name: name.into(),
-            hp,
-            max_hp,
-        }
-    }
-
     // Builder pattern approach with defaults
     pub fn builder() -> UnitBuilder {
         UnitBuilder::default()
-    }
-
-    pub fn name(&self) -> &str {
-        &self.name
-    }
-
-    pub fn set_name(&mut self, name: impl Into<String>) {
-        self.name = name.into();
     }
 
     pub fn is_dead(&self) -> bool {
@@ -82,7 +69,7 @@ impl Unit {
     ) {
         let old_hp = self.hp;
         self.hp = (self.hp + amount).min(self.max_hp);
-        event_writer.send(HpChangeEvent {
+        event_writer.write(HpChangeEvent {
             entity,
             old_hp,
             new_hp: self.hp,
@@ -99,7 +86,7 @@ impl Unit {
     ) {
         let old_hp = self.hp;
         self.hp = new_hp.clamp(0.0, self.max_hp);
-        event_writer.send(HpChangeEvent {
+        event_writer.write(HpChangeEvent {
             entity,
             old_hp,
             new_hp: self.hp,
@@ -118,14 +105,16 @@ pub struct UnitBuilder {
     name: String,
     hp: f32,
     max_hp: f32,
+    speed: f32,
 }
 
 impl Default for UnitBuilder {
     fn default() -> Self {
         Self {
             name: "Unnamed Unit".to_string(),
-            hp: 100.0,
-            max_hp: 100.0,
+            hp: DEFAULT_MAX_HP,
+            max_hp: DEFAULT_MAX_HP,
+            speed: DEFAULT_SPEED,
         }
     }
 }
@@ -144,7 +133,7 @@ impl UnitBuilder {
     pub fn max_hp(mut self, max_hp: f32) -> Self {
         self.max_hp = max_hp;
         // If hp is still the default and we're setting max_hp, update hp to match
-        if self.hp == 100.0 {
+        if self.hp == DEFAULT_MAX_HP {
             self.hp = max_hp;
         }
         self
@@ -155,6 +144,7 @@ impl UnitBuilder {
             name: self.name,
             hp: self.hp,
             max_hp: self.max_hp,
+            speed: self.speed,
         }
     }
 }

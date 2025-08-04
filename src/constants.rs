@@ -23,3 +23,6 @@ pub const SWING_RIGHT: &str = "SwingRight";
 
 pub const KNOCK_BACK_LITE: f32 = 300.0;
 pub const DURATION_FACTOR: f32 = 2.25 / 800.0;
+
+pub const DEFAULT_SPEED: f32 = 300.0;
+pub const DEFAULT_MAX_HP: f32 = 100.0;
