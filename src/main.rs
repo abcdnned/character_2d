@@ -15,6 +15,7 @@ use crate::global_entity_map::*;
 use crate::move_components::MoveComponentsPlugin;
 use crate::unit::Unit;
 use bevy::{core_pipeline::bloom::Bloom, prelude::*};
+use bevy_enoki::EnokiPlugin;
 use bevy_inspector_egui::bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier2d::prelude::*;
@@ -61,6 +62,7 @@ fn main() {
         .add_plugins(GlobalEntityMapPlugin)
         .add_plugins(MoveComponentsPlugin)
         .add_plugins(crate::animation_base::AnimationDatabasePlugin)
+        .add_plugins(EnokiPlugin)
         .add_systems(Startup, (setup_scene, setup_instructions, setup_camera))
         .add_systems(
             Update,

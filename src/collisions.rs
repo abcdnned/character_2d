@@ -3,6 +3,7 @@ use crate::enemy::Enemy;
 use crate::physics::*;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
+use bevy_enoki::prelude::*;
 
 pub fn handle_collisions(
     mut collision_events: EventReader<CollisionEvent>,
@@ -12,6 +13,7 @@ pub fn handle_collisions(
     mut enemy_query: Query<(Entity, &mut Velocity, &Transform), With<Enemy>>,
     weapon_knockback_query: Query<&WeaponKnockback>,
     mut commands: Commands,
+    asset_server: Res<AssetServer>,
 ) {
     for collision_event in collision_events.read() {
         match collision_event {
@@ -25,6 +27,7 @@ pub fn handle_collisions(
                     &mut enemy_query,
                     &weapon_knockback_query,
                     &mut commands,
+                    &asset_server,
                 );
 
                 process_hit(
@@ -36,6 +39,7 @@ pub fn handle_collisions(
                     &mut enemy_query,
                     &weapon_knockback_query,
                     &mut commands,
+                    &asset_server,
                 );
             }
             CollisionEvent::Stopped(_, _, _) => {}
@@ -52,18 +56,28 @@ fn process_hit(
     enemy_query: &mut Query<(Entity, &mut Velocity, &Transform), With<Enemy>>,
     weapon_knockback_query: &Query<&WeaponKnockback>,
     commands: &mut Commands,
+    asset_server: &Res<AssetServer>,
 ) {
-    if let (Ok(damage), Ok(mut hp)) = (damage_query.get(attacker), unit_query.get_mut(target)) {
+    if let (Ok(damage), Ok(mut tu)) = (damage_query.get(attacker), unit_query.get_mut(target)) {
         if let Ok((enemy_entity, mut enemy_velocity, enemy_transform)) = enemy_query.get_mut(target)
         {
             let damage_amount = damage.get_amount();
-            let old_hp = hp.hp;
+            let old_hp = tu.hp;
 
-            hp.hp = (hp.hp - damage_amount).max(0.0);
+            tu.hp = (tu.hp - damage_amount).max(0.0);
+
+
+            // Spawn hit particle effect at enemy position
+            commands.spawn((
+                ParticleSpawnerState::default(),
+                ParticleEffectHandle(asset_server.load("shaders/hitten.ron")),
+                Transform::from_translation(enemy_transform.translation),
+                Name::new("HitEffect"),
+            ));
 
             println!(
                 "Sword hit! Damage: {:.1} | HP: {:.1} -> {:.1}",
-                damage_amount, old_hp, hp.hp
+                damage_amount, old_hp, tu.hp
             );
 
             if let (Ok(weapon_knockback), Ok(source_transform)) = (
