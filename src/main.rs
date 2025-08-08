@@ -9,6 +9,7 @@
 //! | `A`                  | Move left     |
 //! | `D`                  | Move right    |
 
+use crate::ai::AIPlugin;
 use crate::collider::*;
 use crate::constants::*;
 use crate::global_entity_map::*;
@@ -63,6 +64,7 @@ fn main() {
         .add_plugins(MoveComponentsPlugin)
         .add_plugins(crate::animation_base::AnimationDatabasePlugin)
         .add_plugins(EnokiPlugin)
+        .add_plugins(AIPlugin)
         .add_systems(Startup, (setup_scene, setup_instructions, setup_camera))
         .add_systems(
             Update,
@@ -112,6 +114,12 @@ fn setup_scene(
         DynamicPhysicsBundle::new_box(MESH_RADIUS, MESH_RADIUS),
         Velocity::zero(),
         Unit::builder().name("Guard").max_hp(30.0).build(),
+        crate::ai::AIBrain {
+            gear_set: weapon::GearSet::DoubleEdgeAxe, // or whatever default you want
+            target: Entity::PLACEHOLDER,  // No target initially
+            alert_range: 300.0,          // Alert range of 100 units
+            dis_alert_range: 1200.0,      // Disengage range slightly larger
+        },
     )).id();
 
     crate::weapon::equip_sword(
