@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 
 use crate::Player;
+use crate::constants::*;
 
 #[derive(Event)]
 pub struct MoveEvent {
@@ -9,6 +10,7 @@ pub struct MoveEvent {
 
 #[derive(Event)]
 pub struct ActionEvent {
+    pub action_type: u32,
     pub entity: Entity,
 }
 
@@ -46,6 +48,10 @@ pub fn handle_input(
     }
 
     if keyboard_input.just_pressed(KeyCode::KeyJ) {
-        action_events.write(ActionEvent { entity: *player});
+        action_events.write(ActionEvent { entity: *player, action_type: ACTION_HENG});
+    }
+
+    if keyboard_input.just_pressed(KeyCode::KeyK) {
+        action_events.write(ActionEvent { entity: *player, action_type: ACTION_ZHAN});
     }
 }

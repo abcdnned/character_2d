@@ -21,6 +21,10 @@ impl Default for AnimationDatabase {
             SWING_RIGHT.to_string(),
             calculate_right_swing_cubic as AnimationFunction,
         );
+        animations.insert(
+            SWORD_STUB.to_string(),
+            calculate_stub_cubic as AnimationFunction,
+        );
         Self { animations }
     }
 }

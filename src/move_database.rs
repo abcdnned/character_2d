@@ -37,8 +37,21 @@ impl Default for MoveDatabase {
             kb_force: KNOCK_BACK_LITE,
         };
 
+        let sword_stub = MoveMetadata {
+            name: SWORD_STUB.to_string(),
+            radius: 130.0,
+            startup_time: 0.30,
+            active_time: 0.15,
+            recovery_time: 0.35,
+            move_type: MoveType::Stub,
+            accept_input: MoveInput::None,
+            next_move: None,
+            kb_force: KNOCK_BACK_LITE,
+        };
+
         moves.insert(SWING_LEFT.to_string(), swing_left);
         moves.insert(SWING_RIGHT.to_string(), swing_right);
+        moves.insert(SWORD_STUB.to_string(), sword_stub);
         Self { moves }
     }
 }

@@ -20,9 +20,13 @@ pub const ANGULAR_DAMPING: f32 = 5.0;
 
 pub const SWING_LEFT: &str = "SwingLeft";
 pub const SWING_RIGHT: &str = "SwingRight";
+pub const SWORD_STUB: &str = "SwordStub";
 
 pub const KNOCK_BACK_LITE: f32 = 300.0;
 pub const DURATION_FACTOR: f32 = 2.25 / 800.0;
 
 pub const DEFAULT_SPEED: f32 = 180.0;
 pub const DEFAULT_MAX_HP: f32 = 100.0;
+
+pub const ACTION_HENG: u32 = 1;
+pub const ACTION_ZHAN: u32 = 2;
