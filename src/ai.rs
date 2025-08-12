@@ -8,7 +8,6 @@ use crate::global_entity_map::GlobalEntityMap;
 
 #[derive(Component)]
 pub struct AIBrain {
-    pub gear_set: GearSet,
     pub target: Entity,
     pub alert_range: f32,
     pub dis_alert_range: f32,
