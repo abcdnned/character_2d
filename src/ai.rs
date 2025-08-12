@@ -17,17 +17,16 @@ pub struct TargetDetector {
 pub struct AI {
 }
 
-
-// System to detect entities with different force within alert range and set them as targets
 pub fn ai_target_detection_system(
     mut ai_query: Query<(&mut TargetDetector, &Transform, &Force, Entity)>,
-    potential_targets_query: Query<(Entity, &Transform, &Force), Without<TargetDetector>>,
+    potential_targets_query: Query<(Entity, &Transform, &Force)>,
 ) {
     for (mut ai_brain, ai_transform, ai_force, ai_entity) in ai_query.iter_mut() {
         let mut closest_target: Option<(Entity, f32)> = None;
         
         // Check all potential targets with different force
         for (target_entity, target_transform, target_force) in potential_targets_query.iter() {
+            info!("Checking potential target: {:?}", target_entity);
             // Skip if same force (don't target allies)
             if ai_force.force == target_force.force {
                 continue;
@@ -37,6 +36,7 @@ pub fn ai_target_detection_system(
             
             // If we have a current target, check if we should disengage
             if ai_brain.target == target_entity && distance > ai_brain.dis_alert_range {
+                info!("AI entity {:?} disengaging from target {:?} at distance {:.2}", ai_entity, target_entity, distance);
                 ai_brain.target = Entity::PLACEHOLDER;
                 continue;
             }
@@ -55,7 +55,10 @@ pub fn ai_target_detection_system(
         }
         
         // Set the closest enemy target
-        if let Some((target_entity, _)) = closest_target {
+        if let Some((target_entity, distance)) = closest_target {
+            if ai_brain.target != target_entity {
+                info!("AI entity {:?} acquiring new target {:?} at distance {:.2}", ai_entity, target_entity, distance);
+            }
             ai_brain.target = target_entity;
         }
     }
@@ -64,7 +67,7 @@ pub fn ai_target_detection_system(
 // System to move AI entities towards their targets
 pub fn ai_movement_system(
     mut ai_query: Query<(&TargetDetector, &mut Transform, &mut Velocity, &Unit), With<AI>>,
-    target_query: Query<&Transform, (Without<TargetDetector>, Without<Velocity>)>,
+    mut world: &mut World,
     time: Res<Time>,
 ) {
     for (ai_brain, mut ai_transform, mut velocity, unit) in ai_query.iter_mut() {
@@ -75,10 +78,10 @@ pub fn ai_movement_system(
             continue;
         }
         
-        // Get target position
-        if let Ok(target_transform) = target_query.get(ai_brain.target) {
+        if let Ok(target) = target_query.get(ai_brain.target) {
+
             // Calculate direction to target
-            let direction = (target_transform.translation - ai_transform.translation).normalize_or_zero();
+            let direction = (world.get::<Transform>(ai_brain.target).translation - ai_transform.translation).normalize_or_zero();
             
             // Apply movement using the unit's speed and delta time
             let movement_delta = direction * unit.speed * time.delta_secs();

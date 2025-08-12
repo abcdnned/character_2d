@@ -104,6 +104,11 @@ fn setup_scene(
             DynamicPhysicsBundle::new_ball(MESH_RADIUS),
             Unit::builder().name("Hero").hp(50.0).build(),
             Force { force: FORCE_PLAYER },
+            crate::ai::TargetDetector {
+                target: Entity::PLACEHOLDER,  // No target initially
+                alert_range: 500.0,          // Alert range of 100 units
+                dis_alert_range: 1200.0,      // Disengage range slightly larger
+            },
         ))
         .with_children(|parent| {
             // Left eye (larger)
