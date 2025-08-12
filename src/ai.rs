@@ -4,7 +4,7 @@ use crate::constants::SWORD_STUB;
 use crate::weapon::GearSet;
 use crate::{Player, Unit};
 use crate::global_entity_map::GlobalEntityMap;
-
+use crate::force::Force;
 
 #[derive(Component)]
 pub struct TargetDetector {
@@ -13,47 +13,57 @@ pub struct TargetDetector {
     pub dis_alert_range: f32,
 }
 
-// System to detect players within alert range and set them as targets
+#[derive(Component)]
+pub struct AI {
+}
+
+
+// System to detect entities with different force within alert range and set them as targets
 pub fn ai_target_detection_system(
-    mut ai_query: Query<(&mut TargetDetector, &Transform, Entity)>,
-    player_query: Query<(Entity, &Transform), (With<Player>, Without<TargetDetector>)>,
+    mut ai_query: Query<(&mut TargetDetector, &Transform, &Force, Entity)>,
+    potential_targets_query: Query<(Entity, &Transform, &Force), Without<TargetDetector>>,
 ) {
-    for (mut ai_brain, ai_transform, ai_entity) in ai_query.iter_mut() {
-        let mut closest_player: Option<(Entity, f32)> = None;
+    for (mut ai_brain, ai_transform, ai_force, ai_entity) in ai_query.iter_mut() {
+        let mut closest_target: Option<(Entity, f32)> = None;
         
-        // Check all players
-        for (player_entity, player_transform) in player_query.iter() {
-            let distance = ai_transform.translation.distance(player_transform.translation);
+        // Check all potential targets with different force
+        for (target_entity, target_transform, target_force) in potential_targets_query.iter() {
+            // Skip if same force (don't target allies)
+            if ai_force.force == target_force.force {
+                continue;
+            }
+            
+            let distance = ai_transform.translation.distance(target_transform.translation);
             
             // If we have a current target, check if we should disengage
-            if ai_brain.target == player_entity && distance > ai_brain.dis_alert_range {
+            if ai_brain.target == target_entity && distance > ai_brain.dis_alert_range {
                 ai_brain.target = Entity::PLACEHOLDER;
                 continue;
             }
             
-            // Check if player is within alert range
+            // Check if target is within alert range
             if distance <= ai_brain.alert_range {
-                match closest_player {
-                    None => closest_player = Some((player_entity, distance)),
+                match closest_target {
+                    None => closest_target = Some((target_entity, distance)),
                     Some((_, closest_distance)) => {
                         if distance < closest_distance {
-                            closest_player = Some((player_entity, distance));
+                            closest_target = Some((target_entity, distance));
                         }
                     }
                 }
             }
         }
         
-        // Set the closest player as target
-        if let Some((player_entity, _)) = closest_player {
-            ai_brain.target = player_entity;
+        // Set the closest enemy target
+        if let Some((target_entity, _)) = closest_target {
+            ai_brain.target = target_entity;
         }
     }
 }
 
 // System to move AI entities towards their targets
 pub fn ai_movement_system(
-    mut ai_query: Query<(&TargetDetector, &mut Transform, &mut Velocity, &Unit)>,
+    mut ai_query: Query<(&TargetDetector, &mut Transform, &mut Velocity, &Unit), With<AI>>,
     target_query: Query<&Transform, (Without<TargetDetector>, Without<Velocity>)>,
     time: Res<Time>,
 ) {
@@ -79,38 +89,30 @@ pub fn ai_movement_system(
     }
 }
 
-// Optional: System to clear invalid targets
+// System to clear invalid targets
 pub fn ai_cleanup_system(
-    mut ai_query: Query<&mut TargetDetector>,
-    target_query: Query<Entity, With<Player>>,
+    mut ai_query: Query<(&mut TargetDetector, &Force)>,
+    target_query: Query<(Entity, &Force), Without<TargetDetector>>,
 ) {
-    // Create a set of valid player entities
-    let valid_targets: std::collections::HashSet<Entity> = target_query.iter().collect();
-    
-    for mut ai_brain in ai_query.iter_mut() {
-        if ai_brain.target != Entity::PLACEHOLDER && !valid_targets.contains(&ai_brain.target) {
-            ai_brain.target = Entity::PLACEHOLDER;
+    // Create a set of valid target entities (different force)
+    for (mut ai_brain, ai_force) in ai_query.iter_mut() {
+        if ai_brain.target != Entity::PLACEHOLDER {
+            // Check if the target still exists and has a different force
+            let target_valid = target_query.iter()
+                .any(|(entity, target_force)| {
+                    entity == ai_brain.target && ai_force.force != target_force.force
+                });
+            
+            if !target_valid {
+                ai_brain.target = Entity::PLACEHOLDER;
+            }
         }
     }
 }
 
-// Plugin to register the AI systems
-pub struct AIPlugin;
-
-impl Plugin for AIPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_systems(Update, (
-            ai_target_detection_system,
-            ai_movement_system,
-            ai_attack_system,
-            ai_cleanup_system,
-        ).chain()); // Chain ensures they run in order
-    }
-}
-
-// Add this new system after your existing systems
+// Attack system using force-based targeting
 pub fn ai_attack_system(
-    ai_query: Query<(&TargetDetector, &Transform, Entity)>,
+    ai_query: Query<(&TargetDetector, &Transform, Entity), With<AI>>,
     target_query: Query<&Transform, (Without<TargetDetector>, Without<Velocity>)>,
     mut move_events: EventWriter<crate::r#move::ExecuteMoveEvent>,
     global_entities: ResMut<GlobalEntityMap>,
@@ -132,11 +134,25 @@ pub fn ai_attack_system(
                     info!("AI entity {:?} attacking target {:?} at distance {:.2}", ai_entity, ai_brain.target, distance);
                     move_events.write(crate::r#move::ExecuteMoveEvent {
                         entity: *weapon,
-                        move_name: SWORD_STUB.to_string(), // You can customize this based on AI's gear_set
+                        move_name: SWORD_STUB.to_string(),
                         move_input: crate::r#move::MoveInput::Attack,
                     });
                 }
             }
         }
+    }
+}
+
+// Plugin to register the AI systems
+pub struct AIPlugin;
+
+impl Plugin for AIPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(Update, (
+            ai_target_detection_system,
+            ai_movement_system,
+            ai_attack_system,
+            ai_cleanup_system,
+        ).chain()); // Chain ensures they run in order
     }
 }

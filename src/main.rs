@@ -137,6 +137,7 @@ fn setup_scene(
             dis_alert_range: 1200.0,      // Disengage range slightly larger
         },
         Force { force: FORCE_ENEMY },
+        crate::ai::AI {},
     ))
     .with_children(|parent| {
         // Left eye (smaller for enemy)
