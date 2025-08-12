@@ -103,6 +103,21 @@ fn setup_scene(
             DynamicPhysicsBundle::new_ball(MESH_RADIUS),
             Unit::builder().name("Hero").hp(50.0).build(),
         ))
+        .with_children(|parent| {
+            // Left eye (larger)
+            parent.spawn((
+                Mesh2d(meshes.add(Circle::new(MESH_RADIUS * 0.15))),
+                MeshMaterial2d(materials.add(Color::BLACK)),
+                Transform::from_xyz(-MESH_RADIUS * 0.3, MESH_RADIUS * 0.2, 0.1),
+            ));
+            
+            // Right eye (smaller)
+            parent.spawn((
+                Mesh2d(meshes.add(Circle::new(MESH_RADIUS * 0.1))),
+                MeshMaterial2d(materials.add(Color::BLACK)),
+                Transform::from_xyz(MESH_RADIUS * 0.4, MESH_RADIUS * 0.25, 0.1),
+            ));
+        })
         .id();
 
     // Enemy - spawn a rectangle
@@ -119,7 +134,23 @@ fn setup_scene(
             alert_range: 300.0,          // Alert range of 100 units
             dis_alert_range: 1200.0,      // Disengage range slightly larger
         },
-    )).id();
+    ))
+    .with_children(|parent| {
+        // Left eye (smaller for enemy)
+        parent.spawn((
+            Mesh2d(meshes.add(Circle::new(MESH_RADIUS * 0.12))),
+            MeshMaterial2d(materials.add(Color::BLACK)),
+            Transform::from_xyz(-MESH_RADIUS * 0.4, MESH_RADIUS * 0.3, 0.1),
+        ));
+        
+        // Right eye (larger for enemy)  
+        parent.spawn((
+            Mesh2d(meshes.add(Circle::new(MESH_RADIUS * 0.18))),
+            MeshMaterial2d(materials.add(Color::BLACK)),
+            Transform::from_xyz(MESH_RADIUS * 0.35, MESH_RADIUS * 0.4, 0.1),
+        ));
+    })
+    .id();
 
     crate::weapon::equip_sword(
         &mut commands,
