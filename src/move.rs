@@ -154,7 +154,6 @@ fn handle_move_execution(
     mut move_events: EventReader<ExecuteMoveEvent>,
     move_db: Res<MoveDatabase>,
     mut query: Query<(Entity, Option<&mut Move>)>,
-    player_query: Query<Entity, With<crate::Player>>,
     global_entity_map: Res<GlobalEntityMap>,
     mut weapon_knockback_query: Query<&mut WeaponKnockback>,
 ) {
@@ -170,7 +169,6 @@ fn handle_move_execution(
                 &event,
                 &move_db,
                 entity,
-                player_query,
                 &global_entity_map,
                 &mut weapon_knockback_query,
             );
@@ -210,28 +208,25 @@ fn start_new_move(
     event: &ExecuteMoveEvent,
     move_db: &MoveDatabase,
     entity: Entity,
-    player_query: Query<Entity, With<crate::Player>>,
     global_entity_map: &GlobalEntityMap,
     mut weapon_knockback_query: &mut Query<&mut WeaponKnockback>,
 ) {
     if let Some(move_data) = move_db.moves.get(&event.move_name) {
-        if let Ok(player_entity) = player_query.single() {
-            let new_move = Move::new(move_data.clone(), player_entity);
-            commands.entity(entity).insert(new_move);
-            commands.entity(player_entity).insert(PlayerMove {});
+        let new_move = Move::new(move_data.clone(), event.entity);
+        commands.entity(entity).insert(new_move);
+        commands.entity(event.entity).insert(PlayerMove {});
 
-            // Update knockback using the extracted method
-            update_knockback(entity, move_data, global_entity_map, weapon_knockback_query);
+        // Update knockback using the extracted method
+        update_knockback(entity, move_data, global_entity_map, weapon_knockback_query);
 
-            info!(
-                "Added PlayerMove component to player entity {:?}",
-                player_entity
-            );
-            info!(
-                "Entity {:?} started executing move: {}",
-                entity, event.move_name
-            );
-        }
+        info!(
+            "Added PlayerMove component to player entity {:?}",
+            event.entity
+        );
+        info!(
+            "Entity {:?} started executing move: {}",
+            entity, event.move_name
+        );
     } else {
         warn!("Move '{}' not found in database", event.move_name);
     }
