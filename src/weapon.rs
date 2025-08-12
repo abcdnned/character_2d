@@ -210,7 +210,7 @@ pub fn equip_axe(
     let pommel_mesh = meshes.add(Circle::new(8.0));
 
     // Spawn axe as child of parent entity
-    commands.entity(parent_entity).with_children(|parent| {
+    let axe = commands.entity(parent_entity).with_children(|parent| {
         parent
             .spawn((
                 Transform::from_translation(offset).with_scale(Vec3::splat(scale)),
@@ -287,7 +287,8 @@ pub fn equip_axe(
                     Transform::from_xyz(0.0, -60.0, 0.0),
                 ));
             });
-    });
+    }).id();
+    global_entities.player_weapon.insert(player_entity, axe);
 }
 
 pub enum GearSet {

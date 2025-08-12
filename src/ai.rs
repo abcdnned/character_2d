@@ -1,7 +1,10 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::Velocity;
+use crate::constants::SWORD_STUB;
 use crate::weapon::GearSet;
 use crate::{Player, Unit};
+use crate::global_entity_map::GlobalEntityMap;
+
 
 #[derive(Component)]
 pub struct AIBrain {
@@ -100,7 +103,41 @@ impl Plugin for AIPlugin {
         app.add_systems(Update, (
             ai_target_detection_system,
             ai_movement_system,
+            ai_attack_system,
             ai_cleanup_system,
         ).chain()); // Chain ensures they run in order
+    }
+}
+
+// Add this new system after your existing systems
+pub fn ai_attack_system(
+    ai_query: Query<(&AIBrain, &Transform, Entity)>,
+    target_query: Query<&Transform, (Without<AIBrain>, Without<Velocity>)>,
+    mut move_events: EventWriter<crate::r#move::ExecuteMoveEvent>,
+    global_entities: ResMut<GlobalEntityMap>,
+) {
+    for (ai_brain, ai_transform, ai_entity) in ai_query.iter() {
+        // Skip if no valid target
+        if ai_brain.target == Entity::PLACEHOLDER {
+            continue;
+        }
+        
+        // Get target position
+        if let Ok(target_transform) = target_query.get(ai_brain.target) {
+            let distance = ai_transform.translation.distance(target_transform.translation);
+            
+            // Check if within attack range
+            if distance <= 100.0 {
+                // Get the AI's weapon entity from global_entities
+                if let Some(weapon) = global_entities.player_weapon.get(&ai_entity) {
+                    info!("AI entity {:?} attacking target {:?} at distance {:.2}", ai_entity, ai_brain.target, distance);
+                    move_events.write(crate::r#move::ExecuteMoveEvent {
+                        entity: *weapon,
+                        move_name: SWORD_STUB.to_string(), // You can customize this based on AI's gear_set
+                        move_input: crate::r#move::MoveInput::Attack,
+                    });
+                }
+            }
+        }
     }
 }
