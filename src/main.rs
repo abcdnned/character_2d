@@ -133,7 +133,7 @@ fn setup_scene(
         player,
     );
 
-    crate::weapon::equip_axe(
+    crate::weapon::equip_sword(
         &mut commands,
         &mut meshes,
         &mut materials,
