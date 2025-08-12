@@ -15,6 +15,7 @@ use crate::constants::*;
 use crate::global_entity_map::*;
 use crate::move_components::MoveComponentsPlugin;
 use crate::unit::Unit;
+use crate::force::Force;
 use bevy::{core_pipeline::bloom::Bloom, prelude::*};
 use bevy_enoki::EnokiPlugin;
 use bevy_inspector_egui::bevy_egui::EguiPlugin;
@@ -102,6 +103,7 @@ fn setup_scene(
             Transform::from_xyz(0., 0., 2.),
             DynamicPhysicsBundle::new_ball(MESH_RADIUS),
             Unit::builder().name("Hero").hp(50.0).build(),
+            Force { force: FORCE_PLAYER },
         ))
         .with_children(|parent| {
             // Left eye (larger)
@@ -134,6 +136,7 @@ fn setup_scene(
             alert_range: 300.0,          // Alert range of 100 units
             dis_alert_range: 1200.0,      // Disengage range slightly larger
         },
+        Force { force: FORCE_ENEMY },
     ))
     .with_children(|parent| {
         // Left eye (smaller for enemy)

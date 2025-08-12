@@ -30,3 +30,6 @@ pub const DEFAULT_MAX_HP: f32 = 100.0;
 
 pub const ACTION_HENG: u32 = 1;
 pub const ACTION_ZHAN: u32 = 2;
+
+pub const FORCE_PLAYER: u32 = 0;
+pub const FORCE_ENEMY: u32 = 1;
