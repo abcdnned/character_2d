@@ -114,7 +114,7 @@ fn setup_scene(
         DynamicPhysicsBundle::new_box(MESH_RADIUS, MESH_RADIUS),
         Velocity::zero(),
         Unit::builder().name("Guard").max_hp(30.0).build(),
-        crate::ai::AIBrain {
+        crate::ai::TargetDetector {
             target: Entity::PLACEHOLDER,  // No target initially
             alert_range: 300.0,          // Alert range of 100 units
             dis_alert_range: 1200.0,      // Disengage range slightly larger

@@ -7,7 +7,7 @@ use crate::global_entity_map::GlobalEntityMap;
 
 
 #[derive(Component)]
-pub struct AIBrain {
+pub struct TargetDetector {
     pub target: Entity,
     pub alert_range: f32,
     pub dis_alert_range: f32,
@@ -15,8 +15,8 @@ pub struct AIBrain {
 
 // System to detect players within alert range and set them as targets
 pub fn ai_target_detection_system(
-    mut ai_query: Query<(&mut AIBrain, &Transform, Entity)>,
-    player_query: Query<(Entity, &Transform), (With<Player>, Without<AIBrain>)>,
+    mut ai_query: Query<(&mut TargetDetector, &Transform, Entity)>,
+    player_query: Query<(Entity, &Transform), (With<Player>, Without<TargetDetector>)>,
 ) {
     for (mut ai_brain, ai_transform, ai_entity) in ai_query.iter_mut() {
         let mut closest_player: Option<(Entity, f32)> = None;
@@ -53,8 +53,8 @@ pub fn ai_target_detection_system(
 
 // System to move AI entities towards their targets
 pub fn ai_movement_system(
-    mut ai_query: Query<(&AIBrain, &mut Transform, &mut Velocity, &Unit)>,
-    target_query: Query<&Transform, (Without<AIBrain>, Without<Velocity>)>,
+    mut ai_query: Query<(&TargetDetector, &mut Transform, &mut Velocity, &Unit)>,
+    target_query: Query<&Transform, (Without<TargetDetector>, Without<Velocity>)>,
     time: Res<Time>,
 ) {
     for (ai_brain, mut ai_transform, mut velocity, unit) in ai_query.iter_mut() {
@@ -81,7 +81,7 @@ pub fn ai_movement_system(
 
 // Optional: System to clear invalid targets
 pub fn ai_cleanup_system(
-    mut ai_query: Query<&mut AIBrain>,
+    mut ai_query: Query<&mut TargetDetector>,
     target_query: Query<Entity, With<Player>>,
 ) {
     // Create a set of valid player entities
@@ -110,8 +110,8 @@ impl Plugin for AIPlugin {
 
 // Add this new system after your existing systems
 pub fn ai_attack_system(
-    ai_query: Query<(&AIBrain, &Transform, Entity)>,
-    target_query: Query<&Transform, (Without<AIBrain>, Without<Velocity>)>,
+    ai_query: Query<(&TargetDetector, &Transform, Entity)>,
+    target_query: Query<&Transform, (Without<TargetDetector>, Without<Velocity>)>,
     mut move_events: EventWriter<crate::r#move::ExecuteMoveEvent>,
     global_entities: ResMut<GlobalEntityMap>,
 ) {
