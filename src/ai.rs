@@ -67,7 +67,7 @@ pub fn ai_target_detection_system(
 // System to move AI entities towards their targets
 pub fn ai_movement_system(
     mut ai_query: Query<(&TargetDetector, &mut Transform, &mut Velocity, &Unit), With<AI>>,
-    mut world: &mut World,
+    target_query: Query<&Transform, Without<AI>>, // Query for target transforms
     time: Res<Time>,
 ) {
     for (ai_brain, mut ai_transform, mut velocity, unit) in ai_query.iter_mut() {
@@ -78,10 +78,10 @@ pub fn ai_movement_system(
             continue;
         }
         
-        if let Ok(target) = target_query.get(ai_brain.target) {
-
+        if let Ok(target_transform) = target_query.get(ai_brain.target) {
             // Calculate direction to target
-            let direction = (world.get::<Transform>(ai_brain.target).translation - ai_transform.translation).normalize_or_zero();
+            let direction_vector = target_transform.translation - ai_transform.translation;
+            let direction = direction_vector.normalize_or_zero();
             
             // Apply movement using the unit's speed and delta time
             let movement_delta = direction * unit.speed * time.delta_secs();
@@ -116,7 +116,7 @@ pub fn ai_cleanup_system(
 // Attack system using force-based targeting
 pub fn ai_attack_system(
     ai_query: Query<(&TargetDetector, &Transform, Entity), With<AI>>,
-    target_query: Query<&Transform, (Without<TargetDetector>, Without<Velocity>)>,
+    target_query: Query<&Transform, (Without<AI>)>,
     mut move_events: EventWriter<crate::r#move::ExecuteMoveEvent>,
     global_entities: ResMut<GlobalEntityMap>,
 ) {
