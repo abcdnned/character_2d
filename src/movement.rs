@@ -1,8 +1,8 @@
-use crate::constants::*;
+use crate::{ai::TargetDetector, constants::*};
 use bevy::prelude::*;
 
 pub fn move_player(
-    mut player: Single<(Entity, &mut Transform), With<crate::Player>>,
+    mut player: Single<(Entity, &mut Transform, &TargetDetector), With<crate::Player>>,
     time: Res<Time>,
     mut move_events: EventReader<crate::input::MoveEvent>,
     move_query: Query<&crate::r#move::PlayerMove, With<crate::Player>>,
@@ -34,8 +34,10 @@ pub fn move_player(
         let move_delta = normalized_direction * current_speed * time.delta_secs();
         player.1.translation += move_delta.extend(0.);
 
+        let has_target: bool = player.2.target != Entity::PLACEHOLDER;
+
         // Only apply rotation if NOT attacking
-        if !is_attacking {
+        if !is_attacking && !has_target{
             // Calculate rotation to face movement direction
             let player_forward = (player.1.rotation * Vec3::Y).xy();
             let forward_dot_movement = player_forward.dot(normalized_direction);
