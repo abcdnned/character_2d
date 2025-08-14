@@ -14,6 +14,7 @@ use crate::collider::*;
 use crate::constants::*;
 use crate::global_entity_map::*;
 use crate::move_components::MoveComponentsPlugin;
+use crate::rotation::RotationPlugin;
 use crate::unit::Unit;
 use crate::force::Force;
 use bevy::{core_pipeline::bloom::Bloom, prelude::*};
@@ -48,6 +49,7 @@ mod sword_trail;
 mod unit;
 mod ai;
 mod force;
+mod rotation;
 
 fn main() {
     App::new()
@@ -66,6 +68,7 @@ fn main() {
         .add_plugins(crate::animation_base::AnimationDatabasePlugin)
         .add_plugins(EnokiPlugin)
         .add_plugins(AIPlugin)
+        .add_plugins(RotationPlugin)
         .add_systems(Startup, (setup_scene, setup_instructions, setup_camera))
         .add_systems(
             Update,
