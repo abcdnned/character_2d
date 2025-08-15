@@ -79,15 +79,18 @@ pub fn ai_movement_system(
         }
         
         if let Ok(target_transform) = target_query.get(ai_brain.target) {
-            // Calculate direction to target
-            let direction_vector = target_transform.translation - ai_transform.translation;
-            let direction = direction_vector.normalize_or_zero();
-            
-            // Apply movement using the unit's speed and delta time
-            let movement_delta = direction * unit.speed * time.delta_secs();
-            
-            // Add delta to the translation
-            ai_transform.translation += movement_delta;
+            let distance = ai_transform.translation.distance(target_transform.translation);
+            if (distance >= 100.0) {
+                // Calculate direction to target
+                let direction_vector = target_transform.translation - ai_transform.translation;
+                let direction = direction_vector.normalize_or_zero();
+                
+                // Apply movement using the unit's speed and delta time
+                let movement_delta = direction * unit.speed * time.delta_secs();
+                
+                // Add delta to the translation
+                ai_transform.translation += movement_delta;
+            }
         }
     }
 }
