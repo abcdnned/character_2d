@@ -183,10 +183,10 @@ fn handle_move_chaining(
     entity: Entity,
 ) {
     if !current.can_accept_input(&event.move_input) {
-        info!(
-            "Entity {:?} is busy executing move: {} (phase: {:?}, cannot accept input: {:?})",
-            entity, current.move_metadata.name, current.current_phase, event.move_input
-        );
+        // info!(
+        //     "Entity {:?} is busy executing move: {} (phase: {:?}, cannot accept input: {:?})",
+        //     entity, current.move_metadata.name, current.current_phase, event.move_input
+        // );
         return;
     }
 

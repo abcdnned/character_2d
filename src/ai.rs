@@ -26,7 +26,7 @@ pub fn ai_target_detection_system(
         
         // Check all potential targets with different force
         for (target_entity, target_transform, target_force) in potential_targets_query.iter() {
-            info!("Checking potential target: {:?}", target_entity);
+            // info!("Checking potential target: {:?}", target_entity);
             // Skip if same force (don't target allies)
             if ai_force.force == target_force.force {
                 continue;
@@ -57,7 +57,7 @@ pub fn ai_target_detection_system(
         // Set the closest enemy target
         if let Some((target_entity, distance)) = closest_target {
             if ai_brain.target != target_entity {
-                info!("AI entity {:?} acquiring new target {:?} at distance {:.2}", ai_entity, target_entity, distance);
+                // info!("AI entity {:?} acquiring new target {:?} at distance {:.2}", ai_entity, target_entity, distance);
             }
             ai_brain.target = target_entity;
         }
@@ -137,7 +137,7 @@ pub fn ai_attack_system(
             if distance <= 100.0 {
                 // Get the AI's weapon entity from global_entities
                 if let Some(weapon) = global_entities.player_weapon.get(&ai_entity) {
-                    info!("AI entity {:?} attacking target {:?} at distance {:.2}", ai_entity, ai_brain.target, distance);
+                    // info!("AI entity {:?} attacking target {:?} at distance {:.2}", ai_entity, ai_brain.target, distance);
                     move_events.write(crate::r#move::ExecuteMoveEvent {
                         entity: *weapon,
                         move_name: SWORD_STUB.to_string(),
