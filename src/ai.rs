@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::Velocity;
-use crate::constants::SWORD_STUB;
+use crate::constants::{STOP_CHASING_RANGE, SWORD_STUB};
 use crate::weapon::GearSet;
 use crate::{Player, Unit};
 use crate::global_entity_map::GlobalEntityMap;
@@ -80,7 +80,7 @@ pub fn ai_movement_system(
         
         if let Ok(target_transform) = target_query.get(ai_brain.target) {
             let distance = ai_transform.translation.distance(target_transform.translation);
-            if (distance >= 100.0) {
+            if (distance >= STOP_CHASING_RANGE) {
                 // Calculate direction to target
                 let direction_vector = target_transform.translation - ai_transform.translation;
                 let direction = direction_vector.normalize_or_zero();
@@ -134,7 +134,7 @@ pub fn ai_attack_system(
             let distance = ai_transform.translation.distance(target_transform.translation);
             
             // Check if within attack range
-            if distance <= 100.0 {
+            if distance <= STOP_CHASING_RANGE + 20.0 {
                 // Get the AI's weapon entity from global_entities
                 if let Some(weapon) = global_entities.player_weapon.get(&ai_entity) {
                     // info!("AI entity {:?} attacking target {:?} at distance {:.2}", ai_entity, ai_brain.target, distance);

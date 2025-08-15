@@ -109,8 +109,8 @@ fn setup_scene(
             Force { force: FORCE_PLAYER },
             crate::ai::TargetDetector {
                 target: Entity::PLACEHOLDER,  // No target initially
-                alert_range: 500.0,          // Alert range of 100 units
-                dis_alert_range: 1200.0,      // Disengage range slightly larger
+                alert_range: ALERT_RANGE,          // Alert range of 100 units
+                dis_alert_range: DIS_ALERT_RANGE,      // Disengage range slightly larger
             },
         ))
         .with_children(|parent| {
@@ -141,8 +141,8 @@ fn setup_scene(
         Unit::builder().name("Guard").max_hp(30.0).build(),
         crate::ai::TargetDetector {
             target: Entity::PLACEHOLDER,  // No target initially
-            alert_range: 300.0,          // Alert range of 100 units
-            dis_alert_range: 1200.0,      // Disengage range slightly larger
+            alert_range: ALERT_RANGE,          // Alert range of 100 units
+            dis_alert_range: DIS_ALERT_RANGE,      // Disengage range slightly larger
         },
         Force { force: FORCE_ENEMY },
         crate::ai::AI {},
