@@ -9,6 +9,7 @@ pub struct GlobalEntityMap {
     pub weapon_collider: HashMap<Entity, Entity>,
     pub player_weapon: HashMap<Entity, Entity>,
     pub entity_transfrom: HashMap<Entity, Transform>,
+    pub weapon_player: HashMap<Entity, Entity>,
 }
 
 // Plugin to initialize the resource

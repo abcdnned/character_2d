@@ -212,21 +212,23 @@ fn start_new_move(
     mut weapon_knockback_query: &mut Query<&mut WeaponKnockback>,
 ) {
     if let Some(move_data) = move_db.moves.get(&event.move_name) {
-        let new_move = Move::new(move_data.clone(), event.entity);
-        commands.entity(entity).insert(new_move);
-        commands.entity(event.entity).insert(PlayerMove {});
+        if let Some(actor) = global_entity_map.weapon_player.get(&event.entity) {
+            let new_move = Move::new(move_data.clone(), *actor);
+            commands.entity(entity).insert(new_move);
+            commands.entity(*actor).insert(PlayerMove {});
 
-        // Update knockback using the extracted method
-        update_knockback(entity, move_data, global_entity_map, weapon_knockback_query);
+            // Update knockback using the extracted method
+            update_knockback(entity, move_data, global_entity_map, weapon_knockback_query);
 
-        info!(
-            "Added PlayerMove component to player entity {:?}",
-            event.entity
-        );
-        info!(
-            "Entity {:?} started executing move: {}",
-            entity, event.move_name
-        );
+            info!(
+                "Added PlayerMove component to player entity {:?}",
+                event.entity
+            );
+            info!(
+                "Entity {:?} started executing move: {}",
+                entity, event.move_name
+            );
+        }
     } else {
         warn!("Move '{}' not found in database", event.move_name);
     }

@@ -124,6 +124,7 @@ pub fn equip_sword(
                 }
             }).id();
             global_entities.player_weapon.insert(player_entity, sword);
+            global_entities.weapon_player.insert(sword, player_entity);
     });
 }
 
