@@ -1,5 +1,6 @@
 use crate::damage::Damage;
 use crate::enemy::Enemy;
+use crate::particle::ParticleMaterialAsset;
 use crate::physics::*;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
@@ -14,6 +15,7 @@ pub fn handle_collisions(
     weapon_knockback_query: Query<&WeaponKnockback>,
     mut commands: Commands,
     asset_server: Res<AssetServer>,
+    material: Res<ParticleMaterialAsset>,
 ) {
     for collision_event in collision_events.read() {
         match collision_event {
@@ -28,6 +30,7 @@ pub fn handle_collisions(
                     &weapon_knockback_query,
                     &mut commands,
                     &asset_server,
+                    &material,
                 );
 
                 process_hit(
@@ -40,6 +43,7 @@ pub fn handle_collisions(
                     &weapon_knockback_query,
                     &mut commands,
                     &asset_server,
+                    &material,
                 );
             }
             CollisionEvent::Stopped(_, _, _) => {}
@@ -57,6 +61,7 @@ fn process_hit(
     weapon_knockback_query: &Query<&WeaponKnockback>,
     commands: &mut Commands,
     asset_server: &Res<AssetServer>,
+    material: &Res<ParticleMaterialAsset>,
 ) {
     if let (Ok(damage), Ok(mut tu)) = (damage_query.get(attacker), unit_query.get_mut(target)) {
         if let Ok((enemy_entity, mut enemy_velocity, enemy_transform)) = enemy_query.get_mut(target)
@@ -69,10 +74,11 @@ fn process_hit(
 
             // Spawn hit particle effect at enemy position
             commands.spawn((
-                ParticleSpawnerState::default(),
-                ParticleEffectHandle(asset_server.load("shaders/hitten.ron")),
+                ParticleEffectHandle(asset_server.load("hitten.ron")),
                 Transform::from_translation(enemy_transform.translation),
                 Name::new("HitEffect"),
+                ParticleSpawner(material.0.clone()),
+                OneShot::Despawn,
             ));
 
             println!(
