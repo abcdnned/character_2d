@@ -56,10 +56,10 @@ pub fn ai_target_detection_system(
         
         // Set the closest enemy target
         if let Some((target_entity, distance)) = closest_target {
-            if ai_brain.target != target_entity {
-                // info!("AI entity {:?} acquiring new target {:?} at distance {:.2}", ai_entity, target_entity, distance);
+            if ai_brain.target == Entity::PLACEHOLDER {
+                info!("entity {:?} acquiring new target {:?} at distance {:.2}", ai_entity, target_entity, distance);
+                ai_brain.target = target_entity;
             }
-            ai_brain.target = target_entity;
         }
     }
 }
@@ -90,27 +90,6 @@ pub fn ai_movement_system(
                 
                 // Add delta to the translation
                 ai_transform.translation += movement_delta;
-            }
-        }
-    }
-}
-
-// System to clear invalid targets
-pub fn ai_cleanup_system(
-    mut ai_query: Query<(&mut TargetDetector, &Force)>,
-    target_query: Query<(Entity, &Force), Without<TargetDetector>>,
-) {
-    // Create a set of valid target entities (different force)
-    for (mut ai_brain, ai_force) in ai_query.iter_mut() {
-        if ai_brain.target != Entity::PLACEHOLDER {
-            // Check if the target still exists and has a different force
-            let target_valid = target_query.iter()
-                .any(|(entity, target_force)| {
-                    entity == ai_brain.target && ai_force.force != target_force.force
-                });
-            
-            if !target_valid {
-                ai_brain.target = Entity::PLACEHOLDER;
             }
         }
     }
@@ -158,7 +137,6 @@ impl Plugin for AIPlugin {
             ai_target_detection_system,
             ai_movement_system,
             ai_attack_system,
-            ai_cleanup_system,
         ).chain()); // Chain ensures they run in order
     }
 }
