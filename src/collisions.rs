@@ -5,6 +5,7 @@ use crate::physics::*;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use bevy_enoki::prelude::*;
+use std::collections::HashSet;
 
 pub fn handle_collisions(
     mut collision_events: EventReader<CollisionEvent>,
@@ -17,34 +18,54 @@ pub fn handle_collisions(
     asset_server: Res<AssetServer>,
     material: Res<ParticleMaterialAsset>,
 ) {
+    let mut processed_damage_pairs: HashSet<(Entity, Entity)> = HashSet::new();
+
     for collision_event in collision_events.read() {
         match collision_event {
             CollisionEvent::Started(entity1, entity2, _) => {
-                process_hit(
-                    *entity1,
-                    *entity2,
-                    &damage_query,
-                    &transform_query,
-                    &mut unit_query,
-                    &mut enemy_query,
-                    &weapon_knockback_query,
-                    &mut commands,
-                    &asset_server,
-                    &material,
-                );
+                // Check if both entities have Damage components
+                let entity1_has_damage = damage_query.get(*entity1).is_ok();
+                let entity2_has_damage = damage_query.get(*entity2).is_ok();
 
-                process_hit(
-                    *entity2,
-                    *entity1,
-                    &damage_query,
-                    &transform_query,
-                    &mut unit_query,
-                    &mut enemy_query,
-                    &weapon_knockback_query,
-                    &mut commands,
-                    &asset_server,
-                    &material,
-                );
+                if entity1_has_damage && entity2_has_damage {
+                    // Both have damage - ensure we only process once
+                    let pair = if entity1 < entity2 {
+                        (*entity1, *entity2)
+                    } else {
+                        (*entity2, *entity1)
+                    };
+                    
+                    if !processed_damage_pairs.contains(&pair) {
+                        processed_damage_pairs.insert(pair);
+                        println!("Collision between two damage entities: {:?} and {:?}", entity1, entity2);
+                    }
+                } else {
+                    // Normal processing for non-damage-damage collisions
+                    process_hit(
+                        *entity1,
+                        *entity2,
+                        &damage_query,
+                        &transform_query,
+                        &mut unit_query,
+                        &mut enemy_query,
+                        &weapon_knockback_query,
+                        &mut commands,
+                        &asset_server,
+                        &material,
+                    );
+                    process_hit(
+                        *entity2,
+                        *entity1,
+                        &damage_query,
+                        &transform_query,
+                        &mut unit_query,
+                        &mut enemy_query,
+                        &weapon_knockback_query,
+                        &mut commands,
+                        &asset_server,
+                        &material,
+                    );
+                }
             }
             CollisionEvent::Stopped(_, _, _) => {}
         }
@@ -68,10 +89,8 @@ fn process_hit(
         {
             let damage_amount = damage.get_amount();
             let old_hp = tu.hp;
-
             tu.hp = (tu.hp - damage_amount).max(0.0);
-
-
+            
             // Spawn hit particle effect at enemy position
             commands.spawn((
                 ParticleEffectHandle(asset_server.load("hitten.ron")),
@@ -80,12 +99,12 @@ fn process_hit(
                 ParticleSpawner(material.0.clone()),
                 OneShot::Despawn,
             ));
-
+            
             println!(
                 "Sword hit! Damage: {:.1} | HP: {:.1} -> {:.1}",
                 damage_amount, old_hp, tu.hp
             );
-
+            
             if let (Ok(weapon_knockback), Ok(source_transform)) = (
                 weapon_knockback_query.get(attacker),
                 transform_query.get(damage.source),
