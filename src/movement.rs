@@ -37,7 +37,7 @@ pub fn move_player(
         let has_target: bool = player.2.target != Entity::PLACEHOLDER;
 
         // Only apply rotation if NOT attacking
-        if !is_attacking && !has_target{
+        if !is_attacking && !has_target {
             // Calculate rotation to face movement direction
             let player_forward = (player.1.rotation * Vec3::Y).xy();
             let forward_dot_movement = player_forward.dot(normalized_direction);

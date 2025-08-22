@@ -1,5 +1,5 @@
-use bevy::prelude::*;
 use crate::{ai::TargetDetector, global_entity_map::GlobalEntityMap};
+use bevy::prelude::*;
 
 pub struct RotationPlugin;
 
@@ -14,11 +14,8 @@ pub fn facing_target(
     globals: ResMut<GlobalEntityMap>,
 ) {
     for (mut transform, detector) in query.iter_mut() {
-
         if detector.target != Entity::PLACEHOLDER {
-
-            if let Some(target_transform) =  globals.entity_transfrom.get(&detector.target) {
-
+            if let Some(target_transform) = globals.entity_transfrom.get(&detector.target) {
                 let direction = target_transform.translation - transform.translation;
 
                 let angle = direction.y.atan2(direction.x) - std::f32::consts::FRAC_PI_2;
@@ -27,7 +24,6 @@ pub fn facing_target(
 
                 transform.rotation = target_rotation;
             }
-            
         }
     }
 }

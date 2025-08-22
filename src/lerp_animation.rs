@@ -56,7 +56,6 @@ pub fn calculate_right_swing_cubic(t: f32, r: f32) -> (Vec2, f32) {
     (position, rotation)
 }
 
-
 pub fn calculate_stub_cubic(t: f32, r: f32) -> (Vec2, f32) {
     // Vertical swing using cubic bezier curve
     let progress = smooth_step(t);

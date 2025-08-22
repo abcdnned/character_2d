@@ -1,10 +1,8 @@
 use bevy::{
-    core_pipeline::bloom::Bloom, 
-    diagnostic::DiagnosticsStore, 
-    image::ImageSamplerDescriptor,
+    core_pipeline::bloom::Bloom, diagnostic::DiagnosticsStore, image::ImageSamplerDescriptor,
     prelude::*,
 };
-use bevy_enoki::{prelude::*, EnokiPlugin};
+use bevy_enoki::{EnokiPlugin, prelude::*};
 use std::time::Duration;
 
 /// Plugin for handling particle systems
@@ -12,8 +10,7 @@ pub struct ParticlePlugin;
 
 impl Plugin for ParticlePlugin {
     fn build(&self, app: &mut App) {
-        app
-            .add_plugins(EnokiPlugin)
+        app.add_plugins(EnokiPlugin)
             .add_systems(Startup, setup_particle_material);
     }
 }

@@ -12,12 +12,12 @@
 use crate::ai::AIPlugin;
 use crate::collider::*;
 use crate::constants::*;
+use crate::force::Force;
 use crate::global_entity_map::*;
 use crate::move_components::MoveComponentsPlugin;
 use crate::particle::ParticlePlugin;
 use crate::rotation::RotationPlugin;
 use crate::unit::Unit;
-use crate::force::Force;
 use bevy::{core_pipeline::bloom::Bloom, prelude::*};
 use bevy_enoki::EnokiPlugin;
 use bevy_inspector_egui::bevy_egui::EguiPlugin;
@@ -29,12 +29,14 @@ pub struct Player;
 
 pub mod r#move;
 
+mod ai;
 mod animation_base;
 mod collider;
 mod collisions;
 mod constants;
 mod damage;
 mod enemy;
+mod force;
 mod global_entity_map;
 mod health_bar;
 mod input;
@@ -44,14 +46,12 @@ mod lerp_animation;
 mod move_components;
 mod move_database;
 mod movement;
+mod particle;
 mod physics;
-mod weapon;
+mod rotation;
 mod sword_trail;
 mod unit;
-mod ai;
-mod force;
-mod rotation;
-mod particle;
+mod weapon;
 
 fn main() {
     App::new()
@@ -108,11 +108,13 @@ fn setup_scene(
             Transform::from_xyz(0., 0., 2.),
             DynamicPhysicsBundle::new_ball(MESH_RADIUS),
             Unit::builder().name("Hero").hp(50.0).build(),
-            Force { force: FORCE_PLAYER },
+            Force {
+                force: FORCE_PLAYER,
+            },
             crate::ai::TargetDetector {
-                target: Entity::PLACEHOLDER,  // No target initially
-                alert_range: ALERT_RANGE,          // Alert range of 100 units
-                dis_alert_range: DIS_ALERT_RANGE,      // Disengage range slightly larger
+                target: Entity::PLACEHOLDER,      // No target initially
+                alert_range: ALERT_RANGE,         // Alert range of 100 units
+                dis_alert_range: DIS_ALERT_RANGE, // Disengage range slightly larger
             },
         ))
         .with_children(|parent| {
@@ -122,7 +124,7 @@ fn setup_scene(
                 MeshMaterial2d(materials.add(Color::BLACK)),
                 Transform::from_xyz(-MESH_RADIUS * 0.3, MESH_RADIUS * 0.2, 0.1),
             ));
-            
+
             // Right eye (smaller)
             parent.spawn((
                 Mesh2d(meshes.add(Circle::new(MESH_RADIUS * 0.1))),
@@ -133,38 +135,39 @@ fn setup_scene(
         .id();
 
     // Enemy - spawn a rectangle
-    let enemy = commands.spawn((
-        crate::enemy::Enemy {},
-        Mesh2d(meshes.add(Rectangle::new(MESH_RADIUS * 2., MESH_RADIUS * 2.))),
-        MeshMaterial2d(materials.add(ENEMY_COLOR)), // Red color for enemy
-        Transform::from_xyz(200., 150., 1.),
-        DynamicPhysicsBundle::new_box(MESH_RADIUS, MESH_RADIUS),
-        Velocity::zero(),
-        Unit::builder().name("Guard").max_hp(30.0).build(),
-        crate::ai::TargetDetector {
-            target: Entity::PLACEHOLDER,  // No target initially
-            alert_range: ALERT_RANGE,          // Alert range of 100 units
-            dis_alert_range: DIS_ALERT_RANGE,      // Disengage range slightly larger
-        },
-        Force { force: FORCE_ENEMY },
-        crate::ai::AI {},
-    ))
-    .with_children(|parent| {
-        // Left eye (smaller for enemy)
-        parent.spawn((
-            Mesh2d(meshes.add(Circle::new(MESH_RADIUS * 0.12))),
-            MeshMaterial2d(materials.add(Color::BLACK)),
-            Transform::from_xyz(-MESH_RADIUS * 0.4, MESH_RADIUS * 0.3, 0.1),
-        ));
-        
-        // Right eye (larger for enemy)  
-        parent.spawn((
-            Mesh2d(meshes.add(Circle::new(MESH_RADIUS * 0.18))),
-            MeshMaterial2d(materials.add(Color::BLACK)),
-            Transform::from_xyz(MESH_RADIUS * 0.35, MESH_RADIUS * 0.4, 0.1),
-        ));
-    })
-    .id();
+    let enemy = commands
+        .spawn((
+            crate::enemy::Enemy {},
+            Mesh2d(meshes.add(Rectangle::new(MESH_RADIUS * 2., MESH_RADIUS * 2.))),
+            MeshMaterial2d(materials.add(ENEMY_COLOR)), // Red color for enemy
+            Transform::from_xyz(200., 150., 1.),
+            DynamicPhysicsBundle::new_box(MESH_RADIUS, MESH_RADIUS),
+            Velocity::zero(),
+            Unit::builder().name("Guard").max_hp(30.0).build(),
+            crate::ai::TargetDetector {
+                target: Entity::PLACEHOLDER,      // No target initially
+                alert_range: ALERT_RANGE,         // Alert range of 100 units
+                dis_alert_range: DIS_ALERT_RANGE, // Disengage range slightly larger
+            },
+            Force { force: FORCE_ENEMY },
+            crate::ai::AI {},
+        ))
+        .with_children(|parent| {
+            // Left eye (smaller for enemy)
+            parent.spawn((
+                Mesh2d(meshes.add(Circle::new(MESH_RADIUS * 0.12))),
+                MeshMaterial2d(materials.add(Color::BLACK)),
+                Transform::from_xyz(-MESH_RADIUS * 0.4, MESH_RADIUS * 0.3, 0.1),
+            ));
+
+            // Right eye (larger for enemy)
+            parent.spawn((
+                Mesh2d(meshes.add(Circle::new(MESH_RADIUS * 0.18))),
+                MeshMaterial2d(materials.add(Color::BLACK)),
+                Transform::from_xyz(MESH_RADIUS * 0.35, MESH_RADIUS * 0.4, 0.1),
+            ));
+        })
+        .id();
 
     crate::weapon::equip_sword(
         &mut commands,

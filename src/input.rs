@@ -48,10 +48,16 @@ pub fn handle_input(
     }
 
     if keyboard_input.just_pressed(KeyCode::KeyJ) {
-        action_events.write(ActionEvent { entity: *player, action_type: ACTION_HENG});
+        action_events.write(ActionEvent {
+            entity: *player,
+            action_type: ACTION_HENG,
+        });
     }
 
     if keyboard_input.just_pressed(KeyCode::KeyK) {
-        action_events.write(ActionEvent { entity: *player, action_type: ACTION_ZHAN});
+        action_events.write(ActionEvent {
+            entity: *player,
+            action_type: ACTION_ZHAN,
+        });
     }
 }

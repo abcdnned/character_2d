@@ -217,7 +217,9 @@ fn start_new_move(
         if let Some(actor) = global_entity_map.weapon_player.get(&event.entity) {
             let new_move = Move::new(move_data.clone(), *actor);
             commands.entity(entity).insert(new_move);
-            commands.entity(*actor).insert(PlayerMove {move_metadata: move_data.clone()});
+            commands.entity(*actor).insert(PlayerMove {
+                move_metadata: move_data.clone(),
+            });
 
             // Update knockback using the extracted method
             update_knockback(entity, move_data, global_entity_map, weapon_knockback_query);
@@ -248,11 +250,16 @@ fn update_knockback(
         if let Ok(mut weapon_knockback) = weapon_knockback_query.get_mut(collider_entity) {
             weapon_knockback.force = move_data.kb_force;
             weapon_knockback.duration = move_data.kb_force * DURATION_FACTOR;
-            
-            info!("Updated WeaponKnockback for collider {:?}: force={}, duration=2.25", 
-                  collider_entity, move_data.kb_force);
+
+            info!(
+                "Updated WeaponKnockback for collider {:?}: force={}, duration=2.25",
+                collider_entity, move_data.kb_force
+            );
         } else {
-            warn!("WeaponKnockback component not found on collider entity {:?}", collider_entity);
+            warn!(
+                "WeaponKnockback component not found on collider entity {:?}",
+                collider_entity
+            );
         }
     } else {
         warn!("No collider entity found for weapon entity {:?}", entity);
