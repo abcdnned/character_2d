@@ -83,7 +83,9 @@ impl Move {
 }
 
 #[derive(Component)]
-pub struct PlayerMove {}
+pub struct PlayerMove {
+    pub move_metadata: MoveMetadata,
+}
 
 #[derive(PartialEq, Debug, Clone, Copy)]
 pub enum MovePhase {
@@ -92,16 +94,16 @@ pub enum MovePhase {
     Recovery,
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Debug)]
 pub enum MoveType {
     Swing,
     Stub,
-    DashStub,
 }
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum MoveInput {
     Attack,
+    Interrupt,
     None,
 }
 
@@ -215,7 +217,7 @@ fn start_new_move(
         if let Some(actor) = global_entity_map.weapon_player.get(&event.entity) {
             let new_move = Move::new(move_data.clone(), *actor);
             commands.entity(entity).insert(new_move);
-            commands.entity(*actor).insert(PlayerMove {});
+            commands.entity(*actor).insert(PlayerMove {move_metadata: move_data.clone()});
 
             // Update knockback using the extracted method
             update_knockback(entity, move_data, global_entity_map, weapon_knockback_query);
