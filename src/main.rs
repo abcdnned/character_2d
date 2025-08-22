@@ -177,7 +177,6 @@ fn setup_scene(
         Vec3::new(50.0, 40.0, 0.1),
         0.5,
         &mut weapon_map,
-        player,
     );
 
     crate::weapon::equip_sword(
@@ -188,7 +187,6 @@ fn setup_scene(
         Vec3::new(50.0, 40.0, 0.1),
         0.5,
         &mut weapon_map,
-        enemy,
     );
 }
 

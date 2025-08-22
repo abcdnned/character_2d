@@ -26,7 +26,6 @@ pub fn equip_sword(
     offset: Vec3,
     scale: f32,
     global_entities: &mut ResMut<GlobalEntityMap>,
-    player_entity: Entity,
 ) {
     // Create materials
     let blade_material = materials.add(Color::from(SILVER));
@@ -69,7 +68,7 @@ pub fn equip_sword(
                     .insert(sword_parent.target_entity(), sword_collider);
                 global_entities
                     .player_to_collider
-                    .insert(player_entity, sword_collider);
+                    .insert(parent_entity, sword_collider);
                 // Blade - main sword blade
                 sword_parent.spawn((
                     Mesh2d(blade_mesh),
@@ -91,7 +90,7 @@ pub fn equip_sword(
                     .id();
                 global_entities
                     .player_sword_trail
-                    .insert(player_entity, tip);
+                    .insert(parent_entity, tip);
 
                 // Cross guard
                 sword_parent.spawn((
@@ -124,8 +123,8 @@ pub fn equip_sword(
                 }
             })
             .id();
-        global_entities.player_weapon.insert(player_entity, sword);
-        global_entities.weapon_player.insert(sword, player_entity);
+        global_entities.player_weapon.insert(parent_entity, sword);
+        global_entities.weapon_player.insert(sword, parent_entity);
     });
 }
 
