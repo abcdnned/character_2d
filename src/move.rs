@@ -98,6 +98,7 @@ pub enum MovePhase {
 pub enum MoveType {
     Swing,
     Stub,
+    Interrupt,
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -158,14 +159,47 @@ fn handle_move_execution(
     mut query: Query<(Entity, Option<&mut Move>)>,
     global_entity_map: Res<GlobalEntityMap>,
     mut weapon_knockback_query: Query<&mut WeaponKnockback>,
+    mut end_move_events: EventWriter<MoveRecoveryEvent>,
 ) {
     for event in move_events.read() {
         if let Ok((entity, current_move)) = query.get_mut(event.entity) {
+            // Handle interrupt input - immediately start new move regardless of current state
+            if event.move_input == MoveInput::Interrupt {
+                info!(
+                    "Interrupt input received for entity {:?}, force-starting move: {}",
+                    entity, event.move_name
+                );
+                
+                // Send recovery event for interrupted move if one exists
+                if let Some(current) = current_move.as_ref() {
+                    end_move_events.write(MoveRecoveryEvent {
+                        actor: current.actor,
+                        move_name: current.move_metadata.name.clone(),
+                    });
+                    info!(
+                        "Sent MoveRecoveryEvent for interrupted move: {}",
+                        current.move_metadata.name
+                    );
+                }
+                
+                force_start_move(
+                    &mut commands,
+                    &event,
+                    &move_db,
+                    entity,
+                    &global_entity_map,
+                    &mut weapon_knockback_query,
+                );
+                continue;
+            }
+
+            // Handle normal move chaining for non-interrupt inputs
             if let Some(mut current) = current_move {
                 handle_move_chaining(&mut current, &event, &move_db, entity);
                 continue;
             }
 
+            // Start new move if no current move exists
             start_new_move(
                 &mut commands,
                 &event,
@@ -175,6 +209,33 @@ fn handle_move_execution(
                 &mut weapon_knockback_query,
             );
         }
+    }
+}
+
+fn force_start_move(
+    commands: &mut Commands,
+    event: &ExecuteMoveEvent,
+    move_db: &MoveDatabase,
+    entity: Entity,
+    global_entity_map: &GlobalEntityMap,
+    weapon_knockback_query: &mut Query<&mut WeaponKnockback>,
+) {
+    if let Some(move_data) = move_db.moves.get(&event.move_name) {
+        if let Some(actor) = global_entity_map.weapon_player.get(&event.entity) {
+            // Force remove any existing move component and replace with new one
+            let new_move = Move::new(move_data.clone(), *actor);
+            commands.entity(entity).insert(new_move);
+            commands.entity(*actor).insert(PlayerMove {
+                move_metadata: move_data.clone(),
+            });
+
+            info!(
+                "Force-started interrupt move '{}' for entity {:?}, overriding any existing move",
+                event.move_name, entity
+            );
+        }
+    } else {
+        warn!("Interrupt move '{}' not found in database", event.move_name);
     }
 }
 

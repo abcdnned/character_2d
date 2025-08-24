@@ -17,7 +17,7 @@ impl Default for MoveDatabase {
             name: SWING_LEFT.to_string(),
             radius: 130.0,
             startup_time: 0.15,
-            active_time: 0.15,
+            active_time: ATTACK_ANIMATION_SPEED,
             recovery_time: 0.35,
             move_type: MoveType::Swing,
             accept_input: MoveInput::Attack,
@@ -29,7 +29,7 @@ impl Default for MoveDatabase {
             name: SWING_RIGHT.to_string(),
             radius: 130.0,
             startup_time: 0.15,
-            active_time: 0.15,
+            active_time: ATTACK_ANIMATION_SPEED,
             recovery_time: 0.35,
             move_type: MoveType::Swing,
             accept_input: MoveInput::None,
@@ -41,7 +41,7 @@ impl Default for MoveDatabase {
             name: SWORD_STUB.to_string(),
             radius: 130.0,
             startup_time: 0.30,
-            active_time: 0.15,
+            active_time: ATTACK_ANIMATION_SPEED * 1.3,
             recovery_time: 0.35,
             move_type: MoveType::Stub,
             accept_input: MoveInput::None,
@@ -49,9 +49,22 @@ impl Default for MoveDatabase {
             kb_force: KNOCK_BACK_LITE,
         };
 
+        let reflect = MoveMetadata {
+            name: REFLECT.to_string(),
+            radius: 130.0,
+            startup_time: 0.00,
+            active_time: 1.00,
+            recovery_time: 0.00,
+            move_type: MoveType::Interrupt,
+            accept_input: MoveInput::Interrupt,
+            next_move: None,
+            kb_force: KNOCK_BACK_NONE,
+        };
+
         moves.insert(SWING_LEFT.to_string(), swing_left);
         moves.insert(SWING_RIGHT.to_string(), swing_right);
         moves.insert(SWORD_STUB.to_string(), sword_stub);
+        moves.insert(REFLECT.to_string(), reflect);
         Self { moves }
     }
 }

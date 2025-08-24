@@ -24,7 +24,9 @@ pub const SWORD_STUB: &str = "SwordStub";
 pub const REFLECT: &str = "Reflect";
 
 pub const KNOCK_BACK_LITE: f32 = 300.0;
+pub const KNOCK_BACK_NONE: f32 = 0.0;
 pub const DURATION_FACTOR: f32 = 2.25 / 800.0;
+pub const ATTACK_ANIMATION_SPEED: f32 = 0.2;
 
 pub const DEFAULT_SPEED: f32 = 180.0;
 pub const DEFAULT_MAX_HP: f32 = 100.0;

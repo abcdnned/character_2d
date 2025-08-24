@@ -25,6 +25,10 @@ impl Default for AnimationDatabase {
             SWORD_STUB.to_string(),
             calculate_stub_cubic as AnimationFunction,
         );
+        animations.insert(
+            REFLECT.to_string(),
+            calculate_reflect_cubic as AnimationFunction,
+        );
         Self { animations }
     }
 }
