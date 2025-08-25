@@ -107,7 +107,7 @@ fn setup_scene(
             MeshMaterial2d(materials.add(PLAYER_COLOR)), // RGB values exceed 1 to achieve a bright color for the bloom effect
             Transform::from_xyz(0., 0., 2.),
             DynamicPhysicsBundle::new_ball(MESH_RADIUS),
-            Unit::builder().name("Hero").hp(50.0).build(),
+            Unit::builder().name("Hero").hp(50.0).unitType(unit::UnitType::Hero).build(),
             Force {
                 force: FORCE_PLAYER,
             },
@@ -143,7 +143,7 @@ fn setup_scene(
             Transform::from_xyz(200., 150., 1.),
             DynamicPhysicsBundle::new_box(MESH_RADIUS, MESH_RADIUS),
             Velocity::zero(),
-            Unit::builder().name("Guard").max_hp(30.0).build(),
+            Unit::builder().name("Guard").max_hp(30.0).unitType(unit::UnitType::SwordMan).build(),
             crate::ai::TargetDetector {
                 target: Entity::PLACEHOLDER,      // No target initially
                 alert_range: ALERT_RANGE,         // Alert range of 100 units

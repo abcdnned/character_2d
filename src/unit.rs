@@ -10,9 +10,17 @@ impl Plugin for UnitPlugin {
     }
 }
 
+#[derive(Debug, Clone, Copy)]
+pub enum UnitType {
+    Hero,
+    SwordMan,
+    Dummy,
+}
+
 #[derive(Component)]
 pub struct Unit {
     pub name: String,
+    pub unit_type: UnitType,
     pub hp: f32,
     pub max_hp: f32,
     pub speed: f32,
@@ -105,6 +113,7 @@ pub struct UnitBuilder {
     name: String,
     hp: f32,
     max_hp: f32,
+    unit_type: UnitType,
     speed: f32,
 }
 
@@ -115,6 +124,7 @@ impl Default for UnitBuilder {
             hp: DEFAULT_MAX_HP,
             max_hp: DEFAULT_MAX_HP,
             speed: DEFAULT_SPEED,
+            unit_type: UnitType::Dummy,
         }
     }
 }
@@ -127,6 +137,11 @@ impl UnitBuilder {
 
     pub fn hp(mut self, hp: f32) -> Self {
         self.hp = hp;
+        self
+    }
+
+    pub fn unitType(mut self, unit_type: UnitType) -> Self {
+        self.unit_type = unit_type;
         self
     }
 
@@ -145,6 +160,7 @@ impl UnitBuilder {
             hp: self.hp,
             max_hp: self.max_hp,
             speed: self.speed,
+            unit_type: self.unit_type,
         }
     }
 }
