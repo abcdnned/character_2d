@@ -169,7 +169,7 @@ fn handle_move_execution(
                     "Interrupt input received for entity {:?}, force-starting move: {}",
                     entity, event.move_name
                 );
-                
+
                 // Send recovery event for interrupted move if one exists
                 if let Some(current) = current_move.as_ref() {
                     end_move_events.write(MoveRecoveryEvent {
@@ -181,7 +181,7 @@ fn handle_move_execution(
                         current.move_metadata.name
                     );
                 }
-                
+
                 force_start_move(
                     &mut commands,
                     &event,

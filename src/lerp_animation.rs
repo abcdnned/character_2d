@@ -98,6 +98,6 @@ pub fn calculate_reflect_cubic(t: f32, r: f32) -> (Vec2, f32) {
     let position = Vec2::new(pos.x, pos.y);
 
     // Rotation follows the swing direction
-    let rotation = lerp(PI * 0.8,PI * 0.8, progress);
+    let rotation = lerp(PI * 0.8, PI * 0.8, progress);
     (position, rotation)
 }

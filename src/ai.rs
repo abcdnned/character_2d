@@ -40,15 +40,13 @@ impl AI {
         }
     }
 
-
-
     pub fn get_next_move(&mut self, distance: f32) -> Option<&AIOption> {
         if self.option_queue.is_empty() {
             return None;
         }
 
         let current_move = &self.option_queue[self.current_move_index];
-        
+
         // Check if distance matches the current move's active range
         if distance <= current_move.active_range {
             // Update to next move index for next call
@@ -62,7 +60,10 @@ impl AI {
 
 impl Default for AI {
     fn default() -> Self {
-        Self::new(vec![AIOption::new(SWORD_STUB.to_string(), STOP_CHASING_RANGE + 20.0)])
+        Self::new(vec![AIOption::new(
+            SWORD_STUB.to_string(),
+            STOP_CHASING_RANGE + 20.0,
+        )])
     }
 }
 
@@ -177,9 +178,9 @@ pub fn ai_attack_system(
             if let Some(weapon) = global_entities.player_weapon.get(&ai_entity) {
                 // Find the best move for the current distance
                 if let Some(selected_move) = ai.get_next_move(distance) {
-                    // info!("AI entity {:?} attacking target {:?} with move {} (range: {:.1}) at distance {:.2}", 
+                    // info!("AI entity {:?} attacking target {:?} with move {} (range: {:.1}) at distance {:.2}",
                     //       ai_entity, ai_brain.target, selected_move.name, selected_move.active_range, distance);
-                    
+
                     move_events.write(crate::r#move::ExecuteMoveEvent {
                         entity: *weapon,
                         move_name: selected_move.name.clone(),
@@ -199,8 +200,9 @@ pub fn initialize_unit_aioptions(mut global_map: ResMut<GlobalEntityMap>) {
         AIOption::new(SWORD_STUB.to_string(), STOP_CHASING_RANGE + 20.0),
     ];
     // Insert into global map
-    global_map.unittype_aioptions.insert(UnitType::SwordMan, moves);
-        
+    global_map
+        .unittype_aioptions
+        .insert(UnitType::SwordMan, moves);
 }
 
 // Plugin to register the AI systems
@@ -216,6 +218,7 @@ impl Plugin for AIPlugin {
                 ai_attack_system,
             )
                 .chain(),
-        ).add_systems(Startup, initialize_unit_aioptions); // Chain ensures they run in order
+        )
+        .add_systems(Startup, initialize_unit_aioptions); // Chain ensures they run in order
     }
 }
