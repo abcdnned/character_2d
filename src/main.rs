@@ -91,7 +91,7 @@ fn setup_scene(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
-    mut weapon_map: ResMut<GlobalEntityMap>,
+    mut global_map: ResMut<GlobalEntityMap>,
 ) {
     // World where we move the player
     commands.spawn((
@@ -150,7 +150,13 @@ fn setup_scene(
                 dis_alert_range: DIS_ALERT_RANGE, // Disengage range slightly larger
             },
             Force { force: FORCE_ENEMY },
-            crate::ai::AI {},
+        crate::ai::AI::new(
+            global_map
+                .unittype_aioptions
+                .get(&unit::UnitType::SwordMan) // <-- take reference
+                .cloned()                       // <-- clone Vec<AIOption>
+                .unwrap_or_default(),           // <-- fallback empty vec
+        ),
         ))
         .with_children(|parent| {
             // Left eye (smaller for enemy)
@@ -176,7 +182,7 @@ fn setup_scene(
         player,
         Vec3::new(50.0, 40.0, 0.1),
         0.5,
-        &mut weapon_map,
+        &mut global_map,
     );
 
     crate::weapon::equip_sword(
@@ -186,7 +192,7 @@ fn setup_scene(
         enemy,
         Vec3::new(50.0, 40.0, 0.1),
         0.5,
-        &mut weapon_map,
+        &mut global_map,
     );
 }
 

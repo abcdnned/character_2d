@@ -1,6 +1,7 @@
-use crate::constants::{STOP_CHASING_RANGE, SWORD_STUB};
+use crate::constants::{STOP_CHASING_RANGE, SWING_LEFT, SWING_RIGHT, SWORD_STUB};
 use crate::force::Force;
 use crate::global_entity_map::GlobalEntityMap;
+use crate::unit::UnitType;
 use crate::weapon::GearSet;
 use crate::{Player, Unit};
 use bevy::prelude::*;
@@ -13,8 +14,57 @@ pub struct TargetDetector {
     pub dis_alert_range: f32,
 }
 
+#[derive(Clone)]
+pub struct AIOption {
+    pub name: String,
+    pub active_range: f32,
+}
+
+impl AIOption {
+    pub fn new(name: String, active_range: f32) -> Self {
+        Self { name, active_range }
+    }
+}
+
 #[derive(Component)]
-pub struct AI {}
+pub struct AI {
+    pub option_queue: Vec<AIOption>,
+    pub current_move_index: usize,
+}
+
+impl AI {
+    pub fn new(moves: Vec<AIOption>) -> Self {
+        Self {
+            option_queue: moves,
+            current_move_index: 0,
+        }
+    }
+
+
+
+    pub fn get_next_move(&mut self, distance: f32) -> Option<&AIOption> {
+        if self.option_queue.is_empty() {
+            return None;
+        }
+
+        let current_move = &self.option_queue[self.current_move_index];
+        
+        // Check if distance matches the current move's active range
+        if distance <= current_move.active_range {
+            // Update to next move index for next call
+            self.current_move_index = (self.current_move_index + 1) % self.option_queue.len();
+            Some(current_move)
+        } else {
+            None
+        }
+    }
+}
+
+impl Default for AI {
+    fn default() -> Self {
+        Self::new(vec![AIOption::new(SWORD_STUB.to_string(), STOP_CHASING_RANGE + 20.0)])
+    }
+}
 
 pub fn ai_target_detection_system(
     mut ai_query: Query<(&mut TargetDetector, &Transform, &Force, Entity)>,
@@ -106,12 +156,12 @@ pub fn ai_movement_system(
 
 // Attack system using force-based targeting
 pub fn ai_attack_system(
-    ai_query: Query<(&TargetDetector, &Transform, Entity), With<AI>>,
+    mut ai_query: Query<(&TargetDetector, &Transform, &mut AI, Entity)>,
     target_query: Query<&Transform, (Without<AI>)>,
     mut move_events: EventWriter<crate::r#move::ExecuteMoveEvent>,
     global_entities: ResMut<GlobalEntityMap>,
 ) {
-    for (ai_brain, ai_transform, ai_entity) in ai_query.iter() {
+    for (ai_brain, ai_transform, mut ai, ai_entity) in ai_query.iter_mut() {
         // Skip if no valid target
         if ai_brain.target == Entity::PLACEHOLDER {
             continue;
@@ -123,20 +173,34 @@ pub fn ai_attack_system(
                 .translation
                 .distance(target_transform.translation);
 
-            // Check if within attack range
-            if distance <= STOP_CHASING_RANGE + 20.0 {
-                // Get the AI's weapon entity from global_entities
-                if let Some(weapon) = global_entities.player_weapon.get(&ai_entity) {
-                    // info!("AI entity {:?} attacking target {:?} at distance {:.2}", ai_entity, ai_brain.target, distance);
+            // Get the AI's weapon entity from global_entities
+            if let Some(weapon) = global_entities.player_weapon.get(&ai_entity) {
+                // Find the best move for the current distance
+                if let Some(selected_move) = ai.get_next_move(distance) {
+                    // info!("AI entity {:?} attacking target {:?} with move {} (range: {:.1}) at distance {:.2}", 
+                    //       ai_entity, ai_brain.target, selected_move.name, selected_move.active_range, distance);
+                    
                     move_events.write(crate::r#move::ExecuteMoveEvent {
                         entity: *weapon,
-                        move_name: SWORD_STUB.to_string(),
+                        move_name: selected_move.name.clone(),
                         move_input: crate::r#move::MoveInput::Attack,
                     });
                 }
             }
         }
     }
+}
+
+pub fn initialize_unit_aioptions(mut global_map: ResMut<GlobalEntityMap>) {
+    // Define moves for SwordMan
+    let moves = vec![
+        AIOption::new(SWING_LEFT.to_string(), STOP_CHASING_RANGE + 10.0),
+        AIOption::new(SWING_RIGHT.to_string(), STOP_CHASING_RANGE + 10.0),
+        AIOption::new(SWORD_STUB.to_string(), STOP_CHASING_RANGE + 20.0),
+    ];
+    // Insert into global map
+    global_map.unittype_aioptions.insert(UnitType::SwordMan, moves);
+        
 }
 
 // Plugin to register the AI systems
@@ -152,6 +216,6 @@ impl Plugin for AIPlugin {
                 ai_attack_system,
             )
                 .chain(),
-        ); // Chain ensures they run in order
+        ).add_systems(Startup, initialize_unit_aioptions); // Chain ensures they run in order
     }
 }

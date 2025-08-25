@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 use std::collections::HashMap;
 
+use crate::{ai::AIOption, unit::UnitType};
+
 #[derive(Resource, Default)]
 pub struct GlobalEntityMap {
     /// Maps Player entity to their weapon collider entity
@@ -10,6 +12,7 @@ pub struct GlobalEntityMap {
     pub player_weapon: HashMap<Entity, Entity>,
     pub entity_transfrom: HashMap<Entity, Transform>,
     pub weapon_player: HashMap<Entity, Entity>,
+    pub unittype_aioptions: HashMap<UnitType, Vec<AIOption>>,
 }
 
 // Plugin to initialize the resource

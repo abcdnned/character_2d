@@ -10,7 +10,7 @@ impl Plugin for UnitPlugin {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum UnitType {
     Hero,
     SwordMan,
