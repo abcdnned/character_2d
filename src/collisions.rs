@@ -177,8 +177,9 @@ fn process_hit(
     asset_server: &Res<AssetServer>,
     material: &Res<ParticleMaterialAsset>,
 ) {
+        println!("process hit");
     if let (Ok(damage), Ok(mut tu)) = (damage_query.get(attacker), unit_query.get_mut(target)) {
-        println!("damdage components ready");
+        println!("damage components ready");
         if let Ok((enemy_entity, mut enemy_velocity, enemy_transform)) = enemy_query.get_mut(target)
         {
             println!("enemy components ready");
