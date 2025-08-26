@@ -141,7 +141,6 @@ fn setup_scene(
     // Enemy - spawn a rectangle
     let enemy = commands
         .spawn((
-            crate::enemy::Enemy {},
             Mesh2d(meshes.add(Rectangle::new(MESH_RADIUS * 2., MESH_RADIUS * 2.))),
             MeshMaterial2d(materials.add(ENEMY_COLOR)), // Red color for enemy
             Transform::from_xyz(200., 150., 1.),

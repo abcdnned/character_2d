@@ -5,6 +5,7 @@ use crate::global_entity_map::GlobalEntityMap;
 use crate::r#move::{ExecuteMoveEvent, MoveInput, MoveType, PlayerMove};
 use crate::particle::ParticleMaterialAsset;
 use crate::physics::*;
+use crate::unit::Unit;
 use bevy::prelude::*;
 use bevy_enoki::prelude::*;
 use bevy_rapier2d::prelude::*;
@@ -15,7 +16,7 @@ pub fn handle_collisions(
     damage_query: Query<&Damage>,
     transform_query: Query<&Transform>,
     mut unit_query: Query<&mut crate::unit::Unit>,
-    mut enemy_query: Query<(Entity, &mut Velocity, &Transform), With<Enemy>>,
+    mut enemy_query: Query<(Entity, &mut Velocity, &Transform), With<Unit>>,
     weapon_knockback_query: Query<&WeaponKnockback>,
     move_query: Query<&PlayerMove>,
     mut move_events: EventWriter<ExecuteMoveEvent>,
@@ -59,6 +60,10 @@ pub fn handle_collisions(
                         );
                     }
                 } else {
+                    println!(
+                        "Collision between weapon and unit: {:?} and {:?}",
+                        entity1, entity2
+                    );
                     // Normal processing for non-damage-damage collisions
                     process_hit(
                         *entity1,
@@ -166,15 +171,17 @@ fn process_hit(
     damage_query: &Query<&Damage>,
     transform_query: &Query<&Transform>,
     unit_query: &mut Query<&mut crate::unit::Unit>,
-    enemy_query: &mut Query<(Entity, &mut Velocity, &Transform), With<Enemy>>,
+    enemy_query: &mut Query<(Entity, &mut Velocity, &Transform), With<Unit>>,
     weapon_knockback_query: &Query<&WeaponKnockback>,
     commands: &mut Commands,
     asset_server: &Res<AssetServer>,
     material: &Res<ParticleMaterialAsset>,
 ) {
     if let (Ok(damage), Ok(mut tu)) = (damage_query.get(attacker), unit_query.get_mut(target)) {
+        println!("damdage components ready");
         if let Ok((enemy_entity, mut enemy_velocity, enemy_transform)) = enemy_query.get_mut(target)
         {
+            println!("enemy components ready");
             let damage_amount = damage.get_amount();
             let old_hp = tu.hp;
             tu.hp = (tu.hp - damage_amount).max(0.0);

@@ -256,10 +256,10 @@ fn handle_move_chaining(
     if let Some(next_move_name) = current.move_metadata.next_move.clone() {
         if let Some(next_move_data) = move_db.moves.get(&next_move_name) {
             current.next_move = Some(next_move_data.clone());
-            info!(
-                "Queued next move '{}' for entity {:?} during {:?} phase",
-                next_move_name, entity, current.current_phase
-            );
+            // info!(
+            //     "Queued next move '{}' for entity {:?} during {:?} phase",
+            //     next_move_name, entity, current.current_phase
+            // );
         } else {
             warn!("Next move '{}' not found in database", next_move_name);
         }
