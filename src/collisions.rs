@@ -2,7 +2,7 @@ use crate::constants::REFLECT; // Assuming REFLECT is defined in constants
 use crate::damage::Damage;
 use crate::enemy::Enemy;
 use crate::global_entity_map::GlobalEntityMap;
-use crate::r#move::{ExecuteMoveEvent, MoveInput, MoveType, PlayerMove};
+use crate::custom_move::{ExecuteMoveEvent, MoveInput, MoveType, PlayerMove};
 use crate::particle::ParticleMaterialAsset;
 use crate::physics::*;
 use crate::unit::Unit;
@@ -137,7 +137,7 @@ fn handle_move_interaction(
                 (MoveType::Stub, MoveType::Swing) => {
                     // Stub counters Swing - find weapon entity and trigger REFLECT move
                     if let Some(&weapon_entity) = global_entities.player_weapon.get(&dmg1.source) {
-                        println!(
+                        debug!(
                             "Move interaction: Stub vs Swing - Stub performer triggers REFLECT"
                         );
                         move_events.write(ExecuteMoveEvent {
@@ -146,7 +146,7 @@ fn handle_move_interaction(
                             move_input: MoveInput::Interrupt,
                         });
                     } else {
-                        println!("Could not find weapon entity for player: {:?}", dmg1.source);
+                        debug!("Could not find weapon entity for player: {:?}", dmg1.source);
                     }
                 }
                 _ => {

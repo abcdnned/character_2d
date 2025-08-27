@@ -5,7 +5,7 @@ pub fn move_player(
     mut player: Single<(Entity, &mut Transform, &TargetDetector), With<crate::Player>>,
     time: Res<Time>,
     mut move_events: EventReader<crate::input::MoveEvent>,
-    move_query: Query<&crate::r#move::PlayerMove, With<crate::Player>>,
+    move_query: Query<&crate::custom_move::PlayerMove, With<crate::Player>>,
 ) {
     let mut direction = Vec2::ZERO;
 

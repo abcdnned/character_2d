@@ -159,7 +159,7 @@ pub fn ai_movement_system(
 pub fn ai_attack_system(
     mut ai_query: Query<(&TargetDetector, &Transform, &mut AI, Entity)>,
     target_query: Query<&Transform, (Without<AI>)>,
-    mut move_events: EventWriter<crate::r#move::ExecuteMoveEvent>,
+    mut move_events: EventWriter<crate::custom_move::ExecuteMoveEvent>,
     global_entities: ResMut<GlobalEntityMap>,
 ) {
     for (ai_brain, ai_transform, mut ai, ai_entity) in ai_query.iter_mut() {
@@ -181,10 +181,10 @@ pub fn ai_attack_system(
                     // info!("AI entity {:?} attacking target {:?} with move {} (range: {:.1}) at distance {:.2}",
                     //       ai_entity, ai_brain.target, selected_move.name, selected_move.active_range, distance);
 
-                    move_events.write(crate::r#move::ExecuteMoveEvent {
+                    move_events.write(crate::custom_move::ExecuteMoveEvent {
                         entity: *weapon,
                         move_name: selected_move.name.clone(),
-                        move_input: crate::r#move::MoveInput::Attack,
+                        move_input: crate::custom_move::MoveInput::Attack,
                     });
                 }
             }

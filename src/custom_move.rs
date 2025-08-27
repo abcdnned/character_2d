@@ -26,7 +26,7 @@ impl Move {
     }
 
     pub fn transition_to(&mut self, next_metadata: MoveMetadata) {
-        info!(
+        debug!(
             "Transitioning to next move: {} from {}",
             next_metadata.name, self.move_metadata.name
         );
@@ -61,7 +61,7 @@ impl Move {
 
         let phase_changed = previous_phase != new_phase;
         if phase_changed {
-            info!(
+            debug!(
                 "Move '{}' phase changed: {:?} -> {:?} (time: {:.3}s)",
                 self.move_metadata.name, previous_phase, new_phase, self.move_time
             );
@@ -165,7 +165,7 @@ fn handle_move_execution(
         if let Ok((entity, current_move)) = query.get_mut(event.entity) {
             // Handle interrupt input - immediately start new move regardless of current state
             if event.move_input == MoveInput::Interrupt {
-                info!(
+                debug!(
                     "Interrupt input received for entity {:?}, force-starting move: {}",
                     entity, event.move_name
                 );
@@ -176,7 +176,7 @@ fn handle_move_execution(
                         actor: current.actor,
                         move_name: current.move_metadata.name.clone(),
                     });
-                    info!(
+                    debug!(
                         "Sent MoveRecoveryEvent for interrupted move: {}",
                         current.move_metadata.name
                     );
@@ -229,7 +229,7 @@ fn force_start_move(
                 move_metadata: move_data.clone(),
             });
 
-            info!(
+            debug!(
                 "Force-started interrupt move '{}' for entity {:?}, overriding any existing move",
                 event.move_name, entity
             );
@@ -246,7 +246,7 @@ fn handle_move_chaining(
     entity: Entity,
 ) {
     if !current.can_accept_input(&event.move_input) {
-        // info!(
+        // debug!(
         //     "Entity {:?} is busy executing move: {} (phase: {:?}, cannot accept input: {:?})",
         //     entity, current.move_metadata.name, current.current_phase, event.move_input
         // );
@@ -256,7 +256,7 @@ fn handle_move_chaining(
     if let Some(next_move_name) = current.move_metadata.next_move.clone() {
         if let Some(next_move_data) = move_db.moves.get(&next_move_name) {
             current.next_move = Some(next_move_data.clone());
-            // info!(
+            // debug!(
             //     "Queued next move '{}' for entity {:?} during {:?} phase",
             //     next_move_name, entity, current.current_phase
             // );
@@ -285,11 +285,11 @@ fn start_new_move(
             // Update knockback using the extracted method
             update_knockback(entity, move_data, global_entity_map, weapon_knockback_query);
 
-            info!(
+            debug!(
                 "Added PlayerMove component to player entity {:?}",
                 event.entity
             );
-            info!(
+            debug!(
                 "Entity {:?} started executing move: {}",
                 entity, event.move_name
             );
@@ -312,7 +312,7 @@ fn update_knockback(
             weapon_knockback.force = move_data.kb_force;
             weapon_knockback.duration = move_data.kb_force * DURATION_FACTOR;
 
-            info!(
+            debug!(
                 "Updated WeaponKnockback for collider {:?}: force={}, duration=2.25",
                 collider_entity, move_data.kb_force
             );
@@ -369,7 +369,7 @@ fn update_moves(
         // Handle early transition during recovery
         if new_phase == MovePhase::Recovery && current_move.next_move.is_some() {
             if let Some(next_move_data) = current_move.next_move.take() {
-                info!(
+                debug!(
                     "Early transition to next move: {} from {} (skipping recovery)",
                     next_move_data.name, current_move.move_metadata.name
                 );
@@ -442,7 +442,7 @@ fn complete_move(
     transform.rotation = Quat::IDENTITY;
 
     commands.entity(entity).remove::<Move>();
-    info!(
+    debug!(
         "Entity {:?} completed move: {} - position reset to offset",
         entity, current_move.move_metadata.name
     );
