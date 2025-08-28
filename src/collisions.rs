@@ -44,7 +44,7 @@ pub fn handle_collisions(
 
                     if !processed_damage_pairs.contains(&pair) {
                         processed_damage_pairs.insert(pair);
-                        println!(
+                        debug!(
                             "Collision between two damage entities: {:?} and {:?}",
                             entity1, entity2
                         );
@@ -60,7 +60,7 @@ pub fn handle_collisions(
                         );
                     }
                 } else {
-                    println!(
+                    debug!(
                         "Collision between weapon and unit: {:?} and {:?}",
                         entity1, entity2
                     );
@@ -122,7 +122,7 @@ fn handle_move_interaction(
                 (MoveType::Swing, MoveType::Stub) => {
                     // Stub counters Swing - find weapon entity and trigger REFLECT move
                     if let Some(&weapon_entity) = global_entities.player_weapon.get(&dmg2.source) {
-                        println!(
+                        debug!(
                             "Move interaction: Swing vs Stub - Stub performer triggers REFLECT"
                         );
                         move_events.write(ExecuteMoveEvent {
@@ -131,7 +131,7 @@ fn handle_move_interaction(
                             move_input: MoveInput::Interrupt,
                         });
                     } else {
-                        println!("Could not find weapon entity for player: {:?}", dmg2.source);
+                        debug!("Could not find weapon entity for player: {:?}", dmg2.source);
                     }
                 }
                 (MoveType::Stub, MoveType::Swing) => {
@@ -151,17 +151,17 @@ fn handle_move_interaction(
                 }
                 _ => {
                     // Other combinations - just log
-                    println!(
+                    debug!(
                         "Move interaction: {:?} vs {:?} - No special interaction",
                         move_type1, move_type2
                     );
                 }
             }
         } else {
-            println!("Could not retrieve move components from source entities");
+            debug!("Could not retrieve move components from source entities");
         }
     } else {
-        println!("Could not retrieve damage components for move interaction");
+        debug!("Could not retrieve damage components for move interaction");
     }
 }
 
@@ -177,12 +177,12 @@ fn process_hit(
     asset_server: &Res<AssetServer>,
     material: &Res<ParticleMaterialAsset>,
 ) {
-        println!("process hit");
+        debug!("process hit");
     if let (Ok(damage), Ok(mut tu)) = (damage_query.get(attacker), unit_query.get_mut(target)) {
-        println!("damage components ready");
+        debug!("damage components ready");
         if let Ok((enemy_entity, mut enemy_velocity, enemy_transform)) = enemy_query.get_mut(target)
         {
-            println!("enemy components ready");
+            debug!("enemy components ready");
             let damage_amount = damage.get_amount();
             let old_hp = tu.hp;
             tu.hp = (tu.hp - damage_amount).max(0.0);
@@ -196,7 +196,7 @@ fn process_hit(
                 OneShot::Despawn,
             ));
 
-            println!(
+            debug!(
                 "Sword hit! Damage: {:.1} | HP: {:.1} -> {:.1}",
                 damage_amount, old_hp, tu.hp
             );

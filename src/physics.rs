@@ -57,7 +57,7 @@ pub fn apply_knockback_force(
         timer: Timer::from_seconds(duration, TimerMode::Once),
     });
 
-    println!(
+    debug!(
         "Knockback applied! Force: {:.1}, Direction: ({:.2}, {:.2})",
         force, direction.x, direction.y
     );

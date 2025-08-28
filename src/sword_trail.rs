@@ -121,7 +121,7 @@ fn despawn_sword_trails(
         commands.entity(entity).remove::<ParticleEffect>();
         commands.entity(entity).remove::<EffectSpawner>();
         commands.entity(entity).remove::<CompiledParticleEffect>();
-        info!("sword trail completely cleaned up");
+        debug!("sword trail completely cleaned up");
     }
 }
 
