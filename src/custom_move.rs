@@ -26,7 +26,7 @@ impl Move {
     }
 
     pub fn transition_to(&mut self, next_metadata: MoveMetadata) {
-        debug!(
+        trace!(
             "Transitioning to next move: {} from {}",
             next_metadata.name, self.move_metadata.name
         );
@@ -61,7 +61,7 @@ impl Move {
 
         let phase_changed = previous_phase != new_phase;
         if phase_changed {
-            debug!(
+            trace!(
                 "Move '{}' phase changed: {:?} -> {:?} (time: {:.3}s)",
                 self.move_metadata.name, previous_phase, new_phase, self.move_time
             );
@@ -285,11 +285,11 @@ fn start_new_move(
             // Update knockback using the extracted method
             update_knockback(entity, move_data, global_entity_map, weapon_knockback_query);
 
-            debug!(
+            trace!(
                 "Added PlayerMove component to player entity {:?}",
                 event.entity
             );
-            debug!(
+            trace!(
                 "Entity {:?} started executing move: {}",
                 entity, event.move_name
             );
@@ -312,7 +312,7 @@ fn update_knockback(
             weapon_knockback.force = move_data.kb_force;
             weapon_knockback.duration = move_data.kb_force * DURATION_FACTOR;
 
-            debug!(
+            trace!(
                 "Updated WeaponKnockback for collider {:?}: force={}, duration=2.25",
                 collider_entity, move_data.kb_force
             );
@@ -369,7 +369,7 @@ fn update_moves(
         // Handle early transition during recovery
         if new_phase == MovePhase::Recovery && current_move.next_move.is_some() {
             if let Some(next_move_data) = current_move.next_move.take() {
-                debug!(
+                trace!(
                     "Early transition to next move: {} from {} (skipping recovery)",
                     next_move_data.name, current_move.move_metadata.name
                 );
@@ -442,7 +442,7 @@ fn complete_move(
     transform.rotation = Quat::IDENTITY;
 
     commands.entity(entity).remove::<Move>();
-    debug!(
+    trace!(
         "Entity {:?} completed move: {} - position reset to offset",
         entity, current_move.move_metadata.name
     );
