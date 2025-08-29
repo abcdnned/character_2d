@@ -12,6 +12,7 @@ pub fn input_map_to_move(
             let (move_name, move_input) = match action_event.action_type {
                 ACTION_HENG => (SWING_LEFT.to_string(), crate::custom_move::MoveInput::Attack),
                 ACTION_ZHAN => (SWORD_STUB.to_string(), crate::custom_move::MoveInput::Attack),
+                ACTION_SPECiAL => (SPIN_LEFT.to_string(), crate::custom_move::MoveInput::Attack),
                 _ => continue, // Skip unknown action types
             };
 

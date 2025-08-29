@@ -29,6 +29,10 @@ impl Default for AnimationDatabase {
             REFLECT.to_string(),
             calculate_reflect_cubic as AnimationFunction,
         );
+        animations.insert(
+            SPIN_LEFT.to_string(),
+            calculate_left_spin as AnimationFunction,
+        );
         Self { animations }
     }
 }

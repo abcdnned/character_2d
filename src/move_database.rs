@@ -61,10 +61,23 @@ impl Default for MoveDatabase {
             kb_force: KNOCK_BACK_NONE,
         };
 
+        let spin_left = MoveMetadata {
+            name: SWING_RIGHT.to_string(),
+            radius: 130.0,
+            startup_time: 0.5,
+            active_time: ATTACK_ANIMATION_SPEED * 3.0,
+            recovery_time: 1.5,
+            move_type: MoveType::Swing,
+            accept_input: MoveInput::None,
+            next_move: None,
+            kb_force: KNOCK_BACK_NORMAL,
+        };
+
         moves.insert(SWING_LEFT.to_string(), swing_left);
         moves.insert(SWING_RIGHT.to_string(), swing_right);
         moves.insert(SWORD_STUB.to_string(), sword_stub);
         moves.insert(REFLECT.to_string(), reflect);
+        moves.insert(SPIN_LEFT.to_string(), spin_left);
         Self { moves }
     }
 }

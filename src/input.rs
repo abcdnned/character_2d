@@ -60,4 +60,11 @@ pub fn handle_input(
             action_type: ACTION_ZHAN,
         });
     }
+    
+    if keyboard_input.just_pressed(KeyCode::KeyL) {
+        action_events.write(ActionEvent {
+            entity: *player,
+            action_type: ACTION_SPECIAL,
+        });
+    }
 }
