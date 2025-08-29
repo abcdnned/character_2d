@@ -119,7 +119,7 @@ pub fn calculate_left_spin(t: f32, r: f32) -> (Vec2, f32) {
     
     // Sword rotation - rotate the sword itself as it spins around
     // The sword should rotate in the same direction as the spin
-    let sword_rotation = angle;
+    let sword_rotation = angle - (PI * 0.5);
     
     (position, sword_rotation)
 }

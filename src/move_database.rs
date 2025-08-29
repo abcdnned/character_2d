@@ -62,7 +62,7 @@ impl Default for MoveDatabase {
         };
 
         let spin_left = MoveMetadata {
-            name: SWING_RIGHT.to_string(),
+            name: SPIN_LEFT.to_string(),
             radius: 130.0,
             startup_time: 0.5,
             active_time: ATTACK_ANIMATION_SPEED * 3.0,
@@ -70,7 +70,7 @@ impl Default for MoveDatabase {
             move_type: MoveType::Swing,
             accept_input: MoveInput::None,
             next_move: None,
-            kb_force: KNOCK_BACK_NORMAL,
+            kb_force: KNOCK_BACK_LITE,
         };
 
         moves.insert(SWING_LEFT.to_string(), swing_left);
