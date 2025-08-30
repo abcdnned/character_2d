@@ -65,12 +65,12 @@ impl Default for MoveDatabase {
             name: SPIN_LEFT.to_string(),
             radius: 130.0,
             startup_time: 0.5,
-            active_time: ATTACK_ANIMATION_SPEED * 3.0,
-            recovery_time: 1.5,
+            active_time: ATTACK_ANIMATION_SPEED * 2.5,
+            recovery_time: 1.2,
             move_type: MoveType::Swing,
             accept_input: MoveInput::None,
             next_move: None,
-            kb_force: KNOCK_BACK_LITE,
+            kb_force: KNOCK_BACK_HEAVY,
         };
 
         moves.insert(SWING_LEFT.to_string(), swing_left);
