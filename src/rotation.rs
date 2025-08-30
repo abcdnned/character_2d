@@ -14,7 +14,7 @@ pub fn facing_target(
     globals: ResMut<GlobalEntityMap>,
 ) {
     for (mut transform, detector) in query.iter_mut() {
-        if detector.target != Entity::PLACEHOLDER {
+        if detector.target != Entity::PLACEHOLDER && detector.lock_type == crate::ai::LockType::Lock {
             if let Some(target_transform) = globals.entity_transfrom.get(&detector.target) {
                 let direction = target_transform.translation - transform.translation;
 

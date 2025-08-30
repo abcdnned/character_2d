@@ -12,6 +12,13 @@ pub struct TargetDetector {
     pub target: Entity,
     pub alert_range: f32,
     pub dis_alert_range: f32,
+    pub lock_type: LockType,
+}
+
+#[derive(PartialEq, Debug, Clone, Copy)]
+pub enum LockType {
+    Lock,
+    Free,
 }
 
 #[derive(Clone)]

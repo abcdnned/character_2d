@@ -125,6 +125,7 @@ fn setup_scene(
                 target: Entity::PLACEHOLDER,      // No target initially
                 alert_range: ALERT_RANGE,         // Alert range of 100 units
                 dis_alert_range: DIS_ALERT_RANGE, // Disengage range slightly larger
+                lock_type: ai::LockType::Free,
             },
         ))
         .with_children(|parent| {
@@ -161,6 +162,7 @@ fn setup_scene(
                 target: Entity::PLACEHOLDER,      // No target initially
                 alert_range: ALERT_RANGE,         // Alert range of 100 units
                 dis_alert_range: DIS_ALERT_RANGE, // Disengage range slightly larger
+                lock_type: ai::LockType::Lock,
             },
             Force { force: FORCE_ENEMY },
             crate::ai::AI::new(

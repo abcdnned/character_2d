@@ -1,4 +1,4 @@
-use crate::{ai::TargetDetector, constants::*};
+use crate::{ai::{LockType, TargetDetector}, constants::*};
 use bevy::prelude::*;
 
 pub fn move_player(
@@ -37,7 +37,7 @@ pub fn move_player(
         let has_target: bool = player.2.target != Entity::PLACEHOLDER;
 
         // Only apply rotation if NOT attacking
-        if !is_attacking && !has_target {
+        if !is_attacking && (!has_target || player.2.lock_type == LockType::Free) {
             // Calculate rotation to face movement direction
             let player_forward = (player.1.rotation * Vec3::Y).xy();
             let forward_dot_movement = player_forward.dot(normalized_direction);
