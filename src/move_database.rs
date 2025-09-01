@@ -64,7 +64,7 @@ impl Default for MoveDatabase {
         let spin_left = MoveMetadata {
             name: SPIN_LEFT.to_string(),
             radius: 130.0,
-            startup_time: 0.5,
+            startup_time: 0.0,
             active_time: ATTACK_ANIMATION_SPEED * 2.5,
             recovery_time: 1.2,
             move_type: MoveType::Swing,
