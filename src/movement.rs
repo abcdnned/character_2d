@@ -1,24 +1,43 @@
-use crate::{ai::{LockType, TargetDetector}, constants::*};
+use crate::{ai::{LockType, TargetDetector}, constants::*, physics::apply_impulse};
 use bevy::prelude::*;
+use bevy_rapier2d::prelude::Velocity;
 
 pub fn move_player(
-    mut player: Single<(Entity, &mut Transform, &TargetDetector), With<crate::Player>>,
+    mut player: Single<(Entity, &mut Transform, &TargetDetector, &mut Velocity), With<crate::Player>>,
     time: Res<Time>,
     mut move_events: EventReader<crate::input::MoveEvent>,
     move_query: Query<&crate::custom_move::PlayerMove, With<crate::Player>>,
 ) {
-    let mut direction = Vec2::ZERO;
+    let mut walk_direction = Vec2::ZERO;
+    let mut sprint_direction = Vec2::ZERO;
 
-    // Accumulate all movement events this frame
+    // Separate movement events by type
     for event in move_events.read() {
-        direction += event.direction;
+        trace!("Received move event: direction={:?}, type={:?}", event.direction, event.movement_type);
+        match event.movement_type {
+            crate::input::MovementType::Walk => {
+                walk_direction += event.direction;
+            }
+            crate::input::MovementType::Sprint => {
+                sprint_direction += event.direction;
+            }
+        }
     }
 
-    // Only process movement if there's input
-    if direction.length_squared() > 0.0 {
+    // Handle sprint movement (velocity impulse)
+    if sprint_direction.length_squared() > 0.0 {
+        let normalized_sprint_direction = sprint_direction.normalize();
+        
+        // Use the physics module's apply_impulse method
+        apply_impulse(player.0, normalized_sprint_direction, SPRINT_IMPULSE_FORCE, *player.3);
+        debug!("Sprint impulse applied to entity {:?}", player.0);
+    }
+
+    // Handle walk movement (original logic)
+    if walk_direction.length_squared() > 0.0 {
         // Normalize the direction vector to prevent it from exceeding a magnitude of 1 when
         // moving diagonally.
-        let normalized_direction = direction.normalize();
+        let normalized_direction = walk_direction.normalize();
 
         // Check if player is currently performing a move (has Move component)
         let is_attacking = move_query.get(player.0).is_ok();
@@ -29,6 +48,8 @@ pub fn move_player(
         } else {
             PLAYER_SPEED
         };
+
+        trace!("Walking: direction={:?}, is_attacking={}, speed={}", normalized_direction, is_attacking, current_speed);
 
         // Apply movement
         let move_delta = normalized_direction * current_speed * time.delta_secs();
@@ -57,6 +78,8 @@ pub fn move_player(
                 // Calculate actual rotation angle with speed limit
                 let rotation_angle =
                     rotation_sign * (PLAYER_ROTATION_SPEED * time.delta_secs()).min(max_angle);
+
+                trace!("Applying rotation: angle={:.2} rad", rotation_angle);
 
                 // Apply rotation
                 player.1.rotate_z(rotation_angle);

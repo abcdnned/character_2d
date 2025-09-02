@@ -6,6 +6,13 @@ use crate::constants::*;
 #[derive(Event)]
 pub struct MoveEvent {
     pub direction: Vec2,
+    pub movement_type: MovementType,
+}
+
+#[derive(Clone, PartialEq, Debug)]
+pub enum MovementType {
+    Walk,
+    Sprint,
 }
 
 #[derive(Event)]
@@ -43,8 +50,17 @@ pub fn handle_input(
         direction.x += 1.0;
     }
 
+    let movement_type = if keyboard_input.pressed(KeyCode::ShiftLeft) {
+        MovementType::Sprint
+    } else {
+        MovementType::Walk
+    };
+
     if direction != Vec2::ZERO {
-        move_events.write(MoveEvent { direction });
+        move_events.write(MoveEvent { 
+            direction, 
+            movement_type,
+        });
     }
 
     if keyboard_input.just_pressed(KeyCode::KeyJ) {

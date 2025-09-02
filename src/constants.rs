@@ -44,3 +44,5 @@ pub const FORCE_ENEMY: u32 = 1;
 pub const ALERT_RANGE: f32 = 1000.0;
 pub const DIS_ALERT_RANGE: f32 = 2000.0;
 pub const STOP_CHASING_RANGE: f32 = 200.0;
+
+pub const SPRINT_IMPULSE_FORCE: f32 = 800.0;
