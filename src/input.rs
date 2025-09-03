@@ -50,7 +50,7 @@ pub fn handle_input(
         direction.x += 1.0;
     }
 
-    let movement_type = if keyboard_input.pressed(KeyCode::ShiftLeft) {
+    let movement_type = if keyboard_input.just_pressed(KeyCode::ShiftLeft) {
         MovementType::Sprint
     } else {
         MovementType::Walk

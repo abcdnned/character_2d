@@ -74,7 +74,7 @@ pub fn apply_impulse(
     entity: Entity, 
     direction: Vec2, 
     force: f32,
-    mut velocity: Velocity,
+    velocity: &mut Velocity,
 ) {
     let impulse = Vec2::new(
         direction.x * force,

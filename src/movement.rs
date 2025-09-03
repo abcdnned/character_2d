@@ -29,7 +29,7 @@ pub fn move_player(
         let normalized_sprint_direction = sprint_direction.normalize();
         
         // Use the physics module's apply_impulse method
-        apply_impulse(player.0, normalized_sprint_direction, SPRINT_IMPULSE_FORCE, *player.3);
+        apply_impulse(player.0, normalized_sprint_direction, SPRINT_IMPULSE_FORCE, &mut player.3);
         debug!("Sprint impulse applied to entity {:?}", player.0);
     }
 
