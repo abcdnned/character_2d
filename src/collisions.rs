@@ -1,8 +1,8 @@
 use crate::constants::REFLECT; // Assuming REFLECT is defined in constants
+use crate::custom_move::{ExecuteMoveEvent, MoveInput, MoveType, PlayerMove};
 use crate::damage::Damage;
 use crate::enemy::Enemy;
 use crate::global_entity_map::GlobalEntityMap;
-use crate::custom_move::{ExecuteMoveEvent, MoveInput, MoveType, PlayerMove};
 use crate::particle::ParticleMaterialAsset;
 use crate::physics::*;
 use crate::unit::Unit;
@@ -122,9 +122,7 @@ fn handle_move_interaction(
                 (MoveType::Swing, MoveType::Stub) => {
                     // Stub counters Swing - find weapon entity and trigger REFLECT move
                     if let Some(&weapon_entity) = global_entities.player_weapon.get(&dmg2.source) {
-                        debug!(
-                            "Move interaction: Swing vs Stub - Stub performer triggers REFLECT"
-                        );
+                        debug!("Move interaction: Swing vs Stub - Stub performer triggers REFLECT");
                         move_events.write(ExecuteMoveEvent {
                             entity: weapon_entity,
                             move_name: REFLECT.to_string(),
@@ -137,9 +135,7 @@ fn handle_move_interaction(
                 (MoveType::Stub, MoveType::Swing) => {
                     // Stub counters Swing - find weapon entity and trigger REFLECT move
                     if let Some(&weapon_entity) = global_entities.player_weapon.get(&dmg1.source) {
-                        debug!(
-                            "Move interaction: Stub vs Swing - Stub performer triggers REFLECT"
-                        );
+                        debug!("Move interaction: Stub vs Swing - Stub performer triggers REFLECT");
                         move_events.write(ExecuteMoveEvent {
                             entity: weapon_entity,
                             move_name: REFLECT.to_string(),
@@ -177,7 +173,7 @@ fn process_hit(
     asset_server: &Res<AssetServer>,
     material: &Res<ParticleMaterialAsset>,
 ) {
-        debug!("process hit");
+    debug!("process hit");
     if let (Ok(damage), Ok(mut tu)) = (damage_query.get(attacker), unit_query.get_mut(target)) {
         debug!("damage components ready");
         if let Ok((enemy_entity, mut enemy_velocity, enemy_transform)) = enemy_query.get_mut(target)

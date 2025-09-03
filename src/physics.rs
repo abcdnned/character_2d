@@ -64,25 +64,19 @@ pub fn apply_knockback_force(
 }
 
 /// Apply an impulse force to a velocity component in a given direction
-/// 
+///
 /// # Arguments
 /// * `entity` - Entity that has a Velocity component
 /// * `direction` - Normalized direction vector (should be unit length)
 /// * `force` - Magnitude of the impulse force
 /// * `velocity_query` - Query to get the Velocity component
-pub fn apply_impulse(
-    entity: Entity, 
-    direction: Vec2, 
-    force: f32,
-    velocity: &mut Velocity,
-) {
-    let impulse = Vec2::new(
-        direction.x * force,
-        direction.y * force,
-    );
-    
+pub fn apply_impulse(entity: Entity, direction: Vec2, force: f32, velocity: &mut Velocity) {
+    let impulse = Vec2::new(direction.x * force, direction.y * force);
+
     velocity.linvel += impulse;
-    
-    debug!("Impulse applied: impulse_vector={:?}, new_velocity={:?}", 
-            impulse, velocity.linvel);
+
+    debug!(
+        "Impulse applied: impulse_vector={:?}, new_velocity={:?}",
+        impulse, velocity.linvel
+    );
 }

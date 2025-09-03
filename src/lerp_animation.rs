@@ -106,20 +106,20 @@ pub fn calculate_left_spin(t: f32, r: f32) -> (Vec2, f32) {
     // Spin sword like a tornado, rotating around the player
     // 180 * 3 = 540 degrees total rotation (3 * PI radians)
     let progress = smooth_step(t);
-    
+
     // Calculate the angle for circular motion around the player
     // Start from the right side (0 radians) and rotate counter-clockwise (left spin)
     let total_rotation = 3.0 * PI; // 540 degrees
     let angle = total_rotation * progress;
-    
+
     // Calculate circular position around the player
     let x = r * angle.cos();
     let y = r * angle.sin();
     let position = Vec2::new(x, y);
-    
+
     // Sword rotation - rotate the sword itself as it spins around
     // The sword should rotate in the same direction as the spin
     let sword_rotation = angle - (PI * 0.5);
-    
+
     (position, sword_rotation)
 }

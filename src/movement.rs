@@ -1,9 +1,16 @@
-use crate::{ai::{LockType, TargetDetector}, constants::*, physics::apply_impulse};
+use crate::{
+    ai::{LockType, TargetDetector},
+    constants::*,
+    physics::apply_impulse,
+};
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::Velocity;
 
 pub fn move_player(
-    mut player: Single<(Entity, &mut Transform, &TargetDetector, &mut Velocity), With<crate::Player>>,
+    mut player: Single<
+        (Entity, &mut Transform, &TargetDetector, &mut Velocity),
+        With<crate::Player>,
+    >,
     time: Res<Time>,
     mut move_events: EventReader<crate::input::MoveEvent>,
     move_query: Query<&crate::custom_move::PlayerMove, With<crate::Player>>,
@@ -13,7 +20,10 @@ pub fn move_player(
 
     // Separate movement events by type
     for event in move_events.read() {
-        trace!("Received move event: direction={:?}, type={:?}", event.direction, event.movement_type);
+        trace!(
+            "Received move event: direction={:?}, type={:?}",
+            event.direction, event.movement_type
+        );
         match event.movement_type {
             crate::input::MovementType::Walk => {
                 walk_direction += event.direction;
@@ -27,9 +37,14 @@ pub fn move_player(
     // Handle sprint movement (velocity impulse)
     if sprint_direction.length_squared() > 0.0 {
         let normalized_sprint_direction = sprint_direction.normalize();
-        
+
         // Use the physics module's apply_impulse method
-        apply_impulse(player.0, normalized_sprint_direction, SPRINT_IMPULSE_FORCE, &mut player.3);
+        apply_impulse(
+            player.0,
+            normalized_sprint_direction,
+            SPRINT_IMPULSE_FORCE,
+            &mut player.3,
+        );
         debug!("Sprint impulse applied to entity {:?}", player.0);
     }
 
@@ -49,7 +64,10 @@ pub fn move_player(
             PLAYER_SPEED
         };
 
-        trace!("Walking: direction={:?}, is_attacking={}, speed={}", normalized_direction, is_attacking, current_speed);
+        trace!(
+            "Walking: direction={:?}, is_attacking={}, speed={}",
+            normalized_direction, is_attacking, current_speed
+        );
 
         // Apply movement
         let move_delta = normalized_direction * current_speed * time.delta_secs();

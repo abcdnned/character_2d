@@ -57,8 +57,8 @@ pub fn handle_input(
     };
 
     if direction != Vec2::ZERO {
-        move_events.write(MoveEvent { 
-            direction, 
+        move_events.write(MoveEvent {
+            direction,
             movement_type,
         });
     }
@@ -76,7 +76,7 @@ pub fn handle_input(
             action_type: ACTION_ZHAN,
         });
     }
-    
+
     if keyboard_input.just_pressed(KeyCode::KeyL) {
         action_events.write(ActionEvent {
             entity: *player,

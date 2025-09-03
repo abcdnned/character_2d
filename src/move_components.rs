@@ -1,5 +1,5 @@
-use crate::global_entity_map::GlobalEntityMap;
 use crate::custom_move::*;
+use crate::global_entity_map::GlobalEntityMap;
 use crate::sword_trail::SwordTrail;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
