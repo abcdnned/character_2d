@@ -126,6 +126,7 @@ pub struct MoveMetadata {
     pub accept_input: MoveInput,
     pub next_move: Option<String>,
     pub kb_force: f32,
+    pub critical_rate: f32,
 }
 
 #[derive(Event)]

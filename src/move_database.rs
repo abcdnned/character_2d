@@ -23,6 +23,7 @@ impl Default for MoveDatabase {
             accept_input: MoveInput::Attack,
             next_move: Some(SWING_RIGHT.to_string()),
             kb_force: KNOCK_BACK_LITE,
+            critical_rate: BASE_CRITICAL_RATE,
         };
 
         let swing_right = MoveMetadata {
@@ -35,6 +36,7 @@ impl Default for MoveDatabase {
             accept_input: MoveInput::None,
             next_move: None,
             kb_force: KNOCK_BACK_LITE,
+            critical_rate: BASE_CRITICAL_RATE + CRIT_A,
         };
 
         let sword_stub = MoveMetadata {
@@ -47,6 +49,7 @@ impl Default for MoveDatabase {
             accept_input: MoveInput::None,
             next_move: None,
             kb_force: KNOCK_BACK_LITE,
+            critical_rate: BASE_CRITICAL_RATE + CRIT_B,
         };
 
         let reflect = MoveMetadata {
@@ -59,6 +62,7 @@ impl Default for MoveDatabase {
             accept_input: MoveInput::Interrupt,
             next_move: None,
             kb_force: KNOCK_BACK_NONE,
+            critical_rate: 0.0,
         };
 
         let spin_left = MoveMetadata {
@@ -71,6 +75,7 @@ impl Default for MoveDatabase {
             accept_input: MoveInput::None,
             next_move: None,
             kb_force: KNOCK_BACK_HEAVY,
+            critical_rate: BASE_CRITICAL_RATE * 2.0,
         };
 
         moves.insert(SWING_LEFT.to_string(), swing_left);
