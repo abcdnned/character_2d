@@ -1,7 +1,6 @@
 use crate::constants::REFLECT; // Assuming REFLECT is defined in constants
 use crate::custom_move::{ExecuteMoveEvent, Move, MoveInput, MoveType, PlayerMove};
 use crate::damage::Damage;
-use crate::enemy::Enemy;
 use crate::global_entity_map::GlobalEntityMap;
 use crate::particle::ParticleMaterialAsset;
 use crate::physics::*;
@@ -9,7 +8,7 @@ use crate::unit::Unit;
 use bevy::prelude::*;
 use bevy_enoki::prelude::*;
 use bevy_rapier2d::prelude::*;
-use rand::{random, Rng};
+use rand::random;
 use std::collections::HashSet;
 
 pub fn handle_collisions(
