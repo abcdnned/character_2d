@@ -47,7 +47,7 @@ pub fn facing_target(
 
                             // If angle difference is less than threshold, face the target
                             if normalized_angle_diff < angle_threshold {
-                                info!(
+                                trace!(
                                     "Free lock success: Entity {:?} facing target {:?} (angle diff: {:.2}° < {:.2}°)",
                                     entity,
                                     detector.target,
