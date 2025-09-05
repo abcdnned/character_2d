@@ -1,5 +1,5 @@
 use crate::constants::REFLECT; // Assuming REFLECT is defined in constants
-use crate::custom_move::{ExecuteMoveEvent, MoveInput, MoveType, PlayerMove};
+use crate::custom_move::{ExecuteMoveEvent, Move, MoveInput, MoveType, PlayerMove};
 use crate::damage::Damage;
 use crate::enemy::Enemy;
 use crate::global_entity_map::GlobalEntityMap;
@@ -9,6 +9,7 @@ use crate::unit::Unit;
 use bevy::prelude::*;
 use bevy_enoki::prelude::*;
 use bevy_rapier2d::prelude::*;
+use rand::{random, Rng};
 use std::collections::HashSet;
 
 pub fn handle_collisions(
@@ -19,6 +20,7 @@ pub fn handle_collisions(
     mut enemy_query: Query<(Entity, &mut Velocity, &Transform), With<Unit>>,
     weapon_knockback_query: Query<&WeaponKnockback>,
     move_query: Query<&PlayerMove>,
+    weapon_move_query: Query<&Move>, // Query for Move component on weapons
     mut move_events: EventWriter<ExecuteMoveEvent>,
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -73,9 +75,11 @@ pub fn handle_collisions(
                         &mut unit_query,
                         &mut enemy_query,
                         &weapon_knockback_query,
+                        &weapon_move_query,
                         &mut commands,
                         &asset_server,
                         &material,
+                        &global_entities,
                     );
                     process_hit(
                         *entity2,
@@ -85,9 +89,11 @@ pub fn handle_collisions(
                         &mut unit_query,
                         &mut enemy_query,
                         &weapon_knockback_query,
+                        &weapon_move_query,
                         &mut commands,
                         &asset_server,
                         &material,
+                        &global_entities,
                     );
                 }
             }
@@ -169,9 +175,11 @@ fn process_hit(
     unit_query: &mut Query<&mut crate::unit::Unit>,
     enemy_query: &mut Query<(Entity, &mut Velocity, &Transform), With<Unit>>,
     weapon_knockback_query: &Query<&WeaponKnockback>,
+    weapon_move_query: &Query<&Move>,
     commands: &mut Commands,
     asset_server: &Res<AssetServer>,
     material: &Res<ParticleMaterialAsset>,
+    global_entities: &Res<GlobalEntityMap>,
 ) {
     debug!("process hit");
     if let (Ok(damage), Ok(mut tu)) = (damage_query.get(attacker), unit_query.get_mut(target)) {
@@ -179,9 +187,36 @@ fn process_hit(
         if let Ok((enemy_entity, mut enemy_velocity, enemy_transform)) = enemy_query.get_mut(target)
         {
             debug!("enemy components ready");
+            
+            // Query weapon entity using global collider_weapon map
+            let mut critical_rate = 0.0;
+            if let Some(&weapon_entity) = global_entities.collider_weapon.get(&attacker) {
+                // Query Move component by weapon entity to get MoveMetadata
+                if let Ok(weapon_move) = weapon_move_query.get(weapon_entity) {
+                    critical_rate = weapon_move.move_metadata.critical_rate;
+                    debug!("Retrieved critical rate: {:.2} for weapon: {:?}", critical_rate, weapon_entity);
+                } else {
+                    debug!("Could not find Move component for weapon: {:?}", weapon_entity);
+                }
+            } else {
+                debug!("Could not find weapon entity for collider: {:?}", attacker);
+            }
+            
             let damage_amount = damage.get_amount();
             let old_hp = tu.hp;
-            tu.hp = (tu.hp - damage_amount).max(0.0);
+            
+            // Calculate critical hit
+            let random_value: f32 = random();
+            let is_critical = random_value < critical_rate;
+            
+            let final_damage = if is_critical {
+                info!("CRITICAL HIT! Base damage: {:.1}, Critical rate: {:.2}", damage_amount, critical_rate);
+                damage_amount * 2.0 // Double damage for critical hit
+            } else {
+                damage_amount
+            };
+            
+            tu.hp = (tu.hp - final_damage).max(0.0);
 
             // Spawn hit particle effect at enemy position
             commands.spawn((
@@ -193,8 +228,11 @@ fn process_hit(
             ));
 
             debug!(
-                "Sword hit! Damage: {:.1} | HP: {:.1} -> {:.1}",
-                damage_amount, old_hp, tu.hp
+                "Sword hit! Damage: {:.1} {} | HP: {:.1} -> {:.1}",
+                final_damage,
+                if is_critical { "(CRITICAL)" } else { "" },
+                old_hp, 
+                tu.hp
             );
 
             if let (Ok(weapon_knockback), Ok(source_transform)) = (

@@ -67,6 +67,9 @@ pub fn equip_sword(
                     .weapon_collider
                     .insert(sword_parent.target_entity(), sword_collider);
                 global_entities
+                    .collider_weapon
+                    .insert(sword_collider, sword_parent.target_entity());
+                global_entities
                     .player_to_collider
                     .insert(parent_entity, sword_collider);
                 // Blade - main sword blade
@@ -245,6 +248,9 @@ pub fn equip_axe(
                     global_entities
                         .weapon_collider
                         .insert(axe_parent.target_entity(), axe_collider);
+                    global_entities
+                        .collider_weapon
+                        .insert(axe_collider, axe_parent.target_entity());
                     global_entities
                         .player_to_collider
                         .insert(player_entity, axe_collider);
