@@ -9,7 +9,7 @@ use bevy::prelude::*;
 pub struct Move {
     pub move_metadata: MoveMetadata,
     pub move_time: f32,
-    current_phase: MovePhase,
+    pub current_phase: MovePhase,
     pub actor: Entity,
     pub next_move: Option<MoveMetadata>,
 }

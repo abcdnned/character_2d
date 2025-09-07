@@ -1,5 +1,5 @@
-use crate::constants::REFLECT; // Assuming REFLECT is defined in constants
-use crate::custom_move::{ExecuteMoveEvent, Move, MoveInput, MoveType, PlayerMove};
+use crate::constants::{CRITICAL_EXPOSE, REFLECT}; // Assuming REFLECT is defined in constants
+use crate::custom_move::{ExecuteMoveEvent, Move, MoveInput, MovePhase, MoveType, PlayerMove};
 use crate::damage::Damage;
 use crate::global_entity_map::GlobalEntityMap;
 use crate::particle::ParticleMaterialAsset;
@@ -201,15 +201,35 @@ fn process_hit(
                 debug!("Could not find weapon entity for collider: {:?}", attacker);
             }
             
+            // Check if target has a weapon and if it's in Recovery phase for CRITICAL_EXPOSE
+            let mut critical_expose_bonus = 0.0;
+            if let Some(&target_weapon_entity) = global_entities.player_weapon.get(&target) {
+                if let Ok(target_weapon_move) = weapon_move_query.get(target_weapon_entity) {
+                    if target_weapon_move.current_phase == MovePhase::Recovery {
+                        critical_expose_bonus = CRITICAL_EXPOSE;
+                        debug!("Target weapon in Recovery phase - applying CRITICAL_EXPOSE bonus: {:.2}", critical_expose_bonus);
+                    }
+                } else {
+                    debug!("Target has weapon but no Move component found: {:?}", target_weapon_entity);
+                }
+            }
+            // If no weapon found, do nothing (no bonus applied)
+            
             let damage_amount = damage.get_amount();
             let old_hp = tu.hp;
             
-            // Calculate critical hit
+            // Calculate critical hit with potential expose bonus
+            let final_critical_rate = critical_rate + critical_expose_bonus;
             let random_value: f32 = random();
-            let is_critical = random_value < critical_rate;
+            let is_critical = random_value < final_critical_rate;
             
             let final_damage = if is_critical {
-                info!("CRITICAL HIT! Base damage: {:.1}, Critical rate: {:.2}", damage_amount, critical_rate);
+                if critical_expose_bonus > 0.0 {
+                    info!("CRITICAL HIT WITH EXPOSE! Base damage: {:.1}, Base critical rate: {:.2}, Expose bonus: {:.2}, Final rate: {:.2}", 
+                          damage_amount, critical_rate, critical_expose_bonus, final_critical_rate);
+                } else {
+                    info!("CRITICAL HIT! Base damage: {:.1}, Critical rate: {:.2}", damage_amount, critical_rate);
+                }
                 damage_amount * 2.0 // Double damage for critical hit
             } else {
                 damage_amount
