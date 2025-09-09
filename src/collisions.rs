@@ -1,6 +1,7 @@
 use crate::constants::{CRITICAL_EXPOSE, REFLECT}; // Assuming REFLECT is defined in constants
 use crate::custom_move::{ExecuteMoveEvent, Move, MoveInput, MovePhase, MoveType, PlayerMove};
 use crate::damage::Damage;
+use crate::float_text::spawn_critical_hit_text;
 use crate::global_entity_map::GlobalEntityMap;
 use crate::particle::ParticleMaterialAsset;
 use crate::physics::*;
@@ -230,6 +231,8 @@ fn process_hit(
                 } else {
                     info!("CRITICAL HIT! Base damage: {:.1}, Critical rate: {:.2}", damage_amount, critical_rate);
                 }
+                spawn_critical_hit_text(commands, enemy_transform.translation);
+                
                 damage_amount * 2.0 // Double damage for critical hit
             } else {
                 damage_amount

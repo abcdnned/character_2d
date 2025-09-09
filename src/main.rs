@@ -12,6 +12,7 @@
 use crate::ai::AIPlugin;
 use crate::collider::*;
 use crate::constants::*;
+use crate::float_text::FloatingTextPlugin;
 use crate::force::Force;
 use crate::global_entity_map::*;
 use crate::move_components::MoveComponentsPlugin;
@@ -24,6 +25,7 @@ use bevy_enoki::EnokiPlugin;
 use bevy_inspector_egui::bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier2d::prelude::*;
+use bevy_tweening::TweeningPlugin;
 use tracing::Level;
 
 #[derive(Component)]
@@ -54,6 +56,7 @@ mod rotation;
 mod sword_trail;
 mod unit;
 mod weapon;
+mod float_text;
 
 fn main() {
     App::new()
@@ -76,6 +79,8 @@ fn main() {
         .add_plugins(AIPlugin)
         .add_plugins(RotationPlugin)
         .add_plugins(ParticlePlugin)
+        .add_plugins(TweeningPlugin)
+        .add_plugins(FloatingTextPlugin)
         .add_systems(Startup, (setup_scene, setup_instructions, setup_camera))
         .add_systems(
             Update,
