@@ -149,7 +149,8 @@ impl Plugin for MovePlugin {
             .add_event::<ExecuteMoveEvent>()
             .add_event::<MoveActiveEvent>()
             .add_event::<MoveRecoveryEvent>()
-            .add_systems(Update, (handle_move_execution, update_moves));
+            .add_systems(Update, handle_move_execution)
+            .add_systems(FixedUpdate, update_moves);
     }
 }
 
