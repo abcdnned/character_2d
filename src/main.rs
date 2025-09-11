@@ -21,12 +21,10 @@ use crate::rotation::RotationPlugin;
 use crate::unit::Unit;
 use bevy::log::LogPlugin;
 use bevy::{core_pipeline::bloom::Bloom, prelude::*};
-use bevy_enoki::EnokiPlugin;
 use bevy_inspector_egui::bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier2d::prelude::*;
 use bevy_tweening::TweeningPlugin;
-use tracing::Level;
 
 #[derive(Component)]
 pub struct Player;
@@ -61,7 +59,7 @@ mod float_text;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(LogPlugin {
-            filter: "info,character_2d::health_bar=debug,character_2d::movement=warn".to_string(), // Specific filters
+            filter: "info,character_2d::collisions=debug,character_2d::movement=warn".to_string(), // Specific filters
             ..Default::default()
         }))
         .add_plugins(EguiPlugin::default())
@@ -120,7 +118,7 @@ fn setup_scene(
             Velocity::zero(),
             Unit::builder()
                 .name("Hero")
-                .hp(50.0)
+                .hp(100.0)
                 .unitType(unit::UnitType::Hero)
                 .build(),
             Force {

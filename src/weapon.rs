@@ -59,7 +59,7 @@ pub fn equip_sword(
                         ActiveEvents::COLLISION_EVENTS,
                         Sensor, // Makes it a sensor (no physics forces, just collision detection)
                         ColliderDisabled,
-                        crate::damage::Damage::physical(25.0, parent_entity),
+                        crate::damage::Damage::physical(10.0, parent_entity),
                         crate::physics::WeaponKnockback::new(800.0, 2.25),
                     ))
                     .id();
@@ -241,7 +241,7 @@ pub fn equip_axe(
                             ActiveEvents::COLLISION_EVENTS,
                             Sensor,
                             ColliderDisabled,
-                            crate::damage::Damage::physical(40.0, parent_entity), // High axe damage
+                            crate::damage::Damage::physical(15.0, parent_entity), // High axe damage
                             crate::physics::WeaponKnockback::new(1200.0, 3.0), // Strong knockback
                         ))
                         .id();
