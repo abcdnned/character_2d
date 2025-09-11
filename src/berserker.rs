@@ -1,5 +1,5 @@
-use bevy::prelude::*;
 use crate::unit::HpChangeEvent;
+use bevy::prelude::*;
 
 #[derive(Component)]
 pub struct Berserker;
@@ -8,9 +8,8 @@ pub struct BerserkerPlugin;
 
 impl Plugin for BerserkerPlugin {
     fn build(&self, app: &mut App) {
-        app
-        .add_event::<BerserkerHealEvent>()
-        .add_systems(Update, berserker_lifesteal);
+        app.add_event::<BerserkerHealEvent>()
+            .add_systems(Update, berserker_lifesteal);
     }
 }
 
@@ -31,30 +30,43 @@ pub fn berserker_lifesteal(
     mut event_writer: EventWriter<BerserkerHealEvent>,
 ) {
     for event in hp_events.read() {
-        debug!("Checking HpChangeEvent for berserker lifesteal: source={:?}", event.source);
-        
+        debug!(
+            "Checking HpChangeEvent for berserker lifesteal: source={:?}",
+            event.source
+        );
+
         // Check if the damage source is a berserker
         if berserker_check_query.contains(event.source) {
             debug!("Damage source is a berserker, applying lifesteal");
-            
+
             // Calculate the damage dealt (old_hp - new_hp)
             let damage_dealt = event.old_hp - event.new_hp;
-            
+
             if damage_dealt > 0.0 {
-                debug!("Berserker dealt {} damage, healing for the same amount", damage_dealt);
-                
+                debug!(
+                    "Berserker dealt {} damage, healing for the same amount",
+                    damage_dealt
+                );
+
                 // Heal the berserker for the amount of damage dealt
                 if let Ok(mut berserker_unit) = berserker_query.get_mut(event.source) {
                     let old_hp = berserker_unit.hp;
                     let entity = event.source; // The berserker entity being healed
                     let source = event.source; // The berserker is also the source of the healing
-                    
+
                     berserker_unit.berserker_heal(damage_dealt, entity, source, &mut event_writer);
-                    
-                    info!("Berserker healed from {} to {} HP (gained {})", 
-                          old_hp, berserker_unit.hp, berserker_unit.hp - old_hp);
+
+                    info!(
+                        "Berserker healed from {} to {} HP (gained {})",
+                        old_hp,
+                        berserker_unit.hp,
+                        berserker_unit.hp - old_hp
+                    );
                 } else {
-                    warn!("Failed to get Unit component for berserker entity: {:?}", event.source);
+                    warn!(
+                        "Failed to get Unit component for berserker entity: {:?}",
+                        event.source
+                    );
                 }
             } else {
                 debug!("No damage dealt, no healing applied");

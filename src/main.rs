@@ -36,11 +36,13 @@ pub mod custom_move;
 
 mod ai;
 mod animation_base;
+mod berserker;
 mod collider;
 mod collisions;
 mod constants;
 mod damage;
 mod enemy;
+mod float_text;
 mod force;
 mod global_entity_map;
 mod health_bar;
@@ -56,10 +58,8 @@ mod physics;
 mod rotation;
 mod sword_trail;
 mod unit;
-mod weapon;
-mod float_text;
 mod unit_death;
-mod berserker;
+mod weapon;
 
 fn main() {
     App::new()

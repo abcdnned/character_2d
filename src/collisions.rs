@@ -199,11 +199,13 @@ fn process_hit(
 
                     let mut is_best_range: bool = false;
                     // Check distance between source and target
-                    if let (Ok(source_transform), Ok(target_transform)) =
-                        (transform_query.get(damage.source), transform_query.get(target))
-                    {
-                        let distance =
-                            source_transform.translation.distance(target_transform.translation);
+                    if let (Ok(source_transform), Ok(target_transform)) = (
+                        transform_query.get(damage.source),
+                        transform_query.get(target),
+                    ) {
+                        let distance = source_transform
+                            .translation
+                            .distance(target_transform.translation);
 
                         if distance > weapon_move.move_metadata.best_range_min {
                             debug!(
@@ -223,8 +225,12 @@ fn process_hit(
                     // Check if target has a weapon and if it's in Recovery phase for CRITICAL_EXPOSE
                     let mut critical_expose_bonus = 0.0;
                     if (is_best_range) {
-                        if let Some(&target_weapon_entity) = global_entities.player_weapon.get(&target) {
-                            if let Ok(target_weapon_move) = weapon_move_query.get(target_weapon_entity) {
+                        if let Some(&target_weapon_entity) =
+                            global_entities.player_weapon.get(&target)
+                        {
+                            if let Ok(target_weapon_move) =
+                                weapon_move_query.get(target_weapon_entity)
+                            {
                                 if target_weapon_move.current_phase == MovePhase::Recovery {
                                     critical_expose_bonus = CRITICAL_EXPOSE;
                                     debug!(
@@ -252,8 +258,10 @@ fn process_hit(
                         if critical_expose_bonus > 0.0 {
                             info!(
                                 "CRITICAL HIT WITH EXPOSE! Base damage: {:.1}, Base critical rate: {:.2}, Expose bonus: {:.2}, Final rate: {:.2}",
-                                damage_amount, weapon_move.move_metadata.critical_rate,
-                                critical_expose_bonus, final_critical_rate
+                                damage_amount,
+                                weapon_move.move_metadata.critical_rate,
+                                critical_expose_bonus,
+                                final_critical_rate
                             );
                         } else {
                             info!(
@@ -272,7 +280,8 @@ fn process_hit(
                         final_damage = final_damage * 0.6;
                     }
 
-                    if let Some(&attacker_entity) = global_entities.weapon_player.get(&weapon_entity)
+                    if let Some(&attacker_entity) =
+                        global_entities.weapon_player.get(&weapon_entity)
                     {
                         tu.damage(final_damage, enemy_entity, attacker_entity, event_writer);
                     } else {
@@ -310,7 +319,10 @@ fn process_hit(
                         );
                     }
                 } else {
-                    debug!("Could not find Move component for weapon: {:?}", weapon_entity);
+                    debug!(
+                        "Could not find Move component for weapon: {:?}",
+                        weapon_entity
+                    );
                 }
             } else {
                 debug!("Could not find weapon entity for collider: {:?}", attacker);

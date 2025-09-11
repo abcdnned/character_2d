@@ -48,7 +48,7 @@ pub const STOP_CHASING_RANGE: f32 = 200.0;
 pub const SPRINT_IMPULSE_FORCE: f32 = 800.0;
 
 pub const BASE_CRITICAL_RATE: f32 = 0.2;
-pub const CRIT_A:f32 = 0.05;
-pub const CRIT_B:f32 = 0.1;
+pub const CRIT_A: f32 = 0.05;
+pub const CRIT_B: f32 = 0.1;
 
-pub const CRITICAL_EXPOSE:f32 = 0.50;
+pub const CRITICAL_EXPOSE: f32 = 0.50;

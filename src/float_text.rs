@@ -42,10 +42,7 @@ impl Default for FloatingTextConfig {
 }
 
 /// Utility function to spawn floating text
-pub fn spawn_floating_text(
-    commands: &mut Commands,
-    config: FloatingTextConfig,
-) -> Entity {
+pub fn spawn_floating_text(commands: &mut Commands, config: FloatingTextConfig) -> Entity {
     // Create the position tween animation
     let position_tween = Tween::new(
         EaseFunction::QuadraticOut,
@@ -57,34 +54,35 @@ pub fn spawn_floating_text(
     );
 
     // Spawn the floating text entity using the new Bevy text API
-    commands.spawn((
-        Text2d::new(config.text),
-        TextFont {
-            font_size: config.font_size,
-            ..default()
-        },
-        TextColor(config.color),
-        Transform::from_translation(config.position),
-        FloatingText::new(config.lifetime),
-        Animator::new(position_tween),
-    )).id()
+    commands
+        .spawn((
+            Text2d::new(config.text),
+            TextFont {
+                font_size: config.font_size,
+                ..default()
+            },
+            TextColor(config.color),
+            Transform::from_translation(config.position),
+            FloatingText::new(config.lifetime),
+            Animator::new(position_tween),
+        ))
+        .id()
 }
 
 /// Convenience function for critical hit text
-pub fn spawn_critical_hit_text(
-    commands: &mut Commands,
-    position: Vec3,
-) -> Entity {
-    spawn_floating_text(commands, FloatingTextConfig {
-        text: "CRITICAL HIT!!".to_string(),
-        color: Color::srgb(1.0, 0.2, 0.2), // Red color
-        position,
-        lifetime: Duration::from_millis(1500),
-        font_size: 36.0,
-        float_distance: 120.0,
-    })
+pub fn spawn_critical_hit_text(commands: &mut Commands, position: Vec3) -> Entity {
+    spawn_floating_text(
+        commands,
+        FloatingTextConfig {
+            text: "CRITICAL HIT!!".to_string(),
+            color: Color::srgb(1.0, 0.2, 0.2), // Red color
+            position,
+            lifetime: Duration::from_millis(1500),
+            font_size: 36.0,
+            float_distance: 120.0,
+        },
+    )
 }
-
 
 /// System to cleanup floating text after their lifetime expires
 pub fn cleanup_floating_text_system(

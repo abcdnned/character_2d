@@ -2,8 +2,8 @@ use bevy::{
     app::Plugin, color::palettes::css::*, prelude::*, reflect::TypePath, render::render_resource::*,
 };
 // Import your HpChangeEvent from unit.rs and BerserkerHealEvent from berserker.rs
-use crate::unit::HpChangeEvent;
 use crate::berserker::BerserkerHealEvent;
+use crate::unit::HpChangeEvent;
 
 /// This example uses a shader source file from the assets subdirectory
 const SHADER_ASSET_PATH: &str = "shaders/health_bar_material.wgsl";
@@ -112,7 +112,7 @@ fn update_health_bar(
     // Handle HP change events
     for event in hp_events.read() {
         debug!("Received HpChangeEvent for entity: {:?}", event.entity);
-        
+
         // Check if the event is for a player entity
         if let Ok((player_entity, _)) = player_query.single() {
             if event.entity == player_entity {
@@ -127,7 +127,7 @@ fn update_health_bar(
     // Handle berserker heal events
     for event in berserker_heal_events.read() {
         debug!("Received BerserkerHealEvent for entity: {:?}", event.entity);
-        
+
         // Check if the event is for a player entity
         if let Ok((player_entity, _)) = player_query.single() {
             if event.entity == player_entity {
@@ -144,7 +144,7 @@ fn update_health_bar(
         if let Some(entity) = target_entity {
             if let Ok((_, hp)) = player_query.get(entity) {
                 debug!("Player entity: {:?}, HP: {}/{}", entity, hp.hp, hp.max_hp);
-                
+
                 // Update all health bars
                 for material_handle in health_bar_query.iter() {
                     if let Some(material) = materials.get_mut(material_handle) {
@@ -154,7 +154,7 @@ fn update_health_bar(
                         } else {
                             0.0
                         };
-                        
+
                         debug!("Updating health bar: fill_ratio = {:.2}", fill_ratio);
                         material.fill_ratio.x = fill_ratio;
                     }
@@ -171,37 +171,40 @@ fn update_enemy_health_bar(
     mut materials: ResMut<Assets<HealthBarMaterial>>,
     mut hp_events: EventReader<HpChangeEvent>,
     mut last_hit_enemy: ResMut<LastHitEnemy>,
-    mut enemy_health_bar_query: Query<(&MaterialNode<HealthBarMaterial>, &mut Node), With<EnemyHealthBar>>,
+    mut enemy_health_bar_query: Query<
+        (&MaterialNode<HealthBarMaterial>, &mut Node),
+        With<EnemyHealthBar>,
+    >,
     player_query: Query<Entity, With<crate::Player>>,
     unit_query: Query<&crate::unit::Unit>,
 ) {
     for event in hp_events.read() {
         debug!("Checking HpChangeEvent for enemy health bar update");
-        
+
         // Check if the damage source is a player
         if let Ok(player_entity) = player_query.single() {
             if event.source == player_entity {
                 debug!("Player damaged entity: {:?}", event.entity);
-                
+
                 // Update the last hit enemy
                 last_hit_enemy.entity = Some(event.entity);
-                
+
                 // Get the current HP of the damaged entity
                 if let Ok(enemy_unit) = unit_query.get(event.entity) {
                     debug!("Enemy HP: {}/{}", enemy_unit.hp, enemy_unit.max_hp);
-                    
+
                     let fill_ratio = if enemy_unit.max_hp > 0.0 {
                         (enemy_unit.hp / enemy_unit.max_hp).clamp(0.0, 1.0)
                     } else {
                         0.0
                     };
-                    
+
                     // Update the enemy health bar
                     for (material_handle, mut node) in enemy_health_bar_query.iter_mut() {
                         if let Some(material) = materials.get_mut(material_handle) {
                             debug!("Updating enemy health bar: fill_ratio = {:.2}", fill_ratio);
                             material.fill_ratio.x = fill_ratio;
-                            
+
                             // Show or hide the health bar based on conditions
                             if fill_ratio <= 0.0 {
                                 // Enemy is dead, hide the health bar
@@ -217,12 +220,15 @@ fn update_enemy_health_bar(
                         }
                     }
                 } else {
-                    warn!("Failed to get Unit component for damaged entity: {:?}", event.entity);
+                    warn!(
+                        "Failed to get Unit component for damaged entity: {:?}",
+                        event.entity
+                    );
                 }
             }
         }
     }
-    
+
     // Also check if we need to hide the health bar when there's no last hit enemy
     if last_hit_enemy.entity.is_none() {
         for (_, mut node) in enemy_health_bar_query.iter_mut() {
