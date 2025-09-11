@@ -19,6 +19,7 @@ use crate::move_components::MoveComponentsPlugin;
 use crate::particle::ParticlePlugin;
 use crate::rotation::RotationPlugin;
 use crate::unit::Unit;
+use crate::unit_death::UnitDeathPlugin;
 use bevy::log::LogPlugin;
 use bevy::{core_pipeline::bloom::Bloom, prelude::*};
 use bevy_inspector_egui::bevy_egui::EguiPlugin;
@@ -55,6 +56,7 @@ mod sword_trail;
 mod unit;
 mod weapon;
 mod float_text;
+mod unit_death;
 
 fn main() {
     App::new()
@@ -79,6 +81,7 @@ fn main() {
         .add_plugins(ParticlePlugin)
         .add_plugins(TweeningPlugin)
         .add_plugins(FloatingTextPlugin)
+        .add_plugins(UnitDeathPlugin)
         .add_systems(Startup, (setup_scene, setup_instructions, setup_camera))
         .add_systems(
             Update,
