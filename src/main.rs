@@ -64,8 +64,8 @@ fn main() {
             filter: "info,character_2d::collisions=debug,character_2d::movement=warn".to_string(), // Specific filters
             ..Default::default()
         }))
-        .add_plugins(EguiPlugin::default())
-        .add_plugins(WorldInspectorPlugin::new())
+        // .add_plugins(EguiPlugin::default())
+        // .add_plugins(WorldInspectorPlugin::new())
         .add_plugins(crate::input::InputPlugin)
         .add_plugins(crate::custom_move::MovePlugin)
         .add_plugins(crate::health_bar::HealthBarPlugin)
