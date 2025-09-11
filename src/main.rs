@@ -158,7 +158,7 @@ fn setup_scene(
             Velocity::zero(),
             Unit::builder()
                 .name("Guard")
-                .max_hp(30.0)
+                .max_hp(100.0)
                 .unitType(unit::UnitType::SwordMan)
                 .build(),
             crate::ai::TargetDetector {

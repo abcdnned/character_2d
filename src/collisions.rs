@@ -202,9 +202,6 @@ fn process_hit(
                 } else {
                     debug!("Could not find Move component for weapon: {:?}", weapon_entity);
                 }
-            } else {
-                debug!("Could not find weapon entity for collider: {:?}", attacker);
-            }
             
             // Check if target has a weapon and if it's in Recovery phase for CRITICAL_EXPOSE
             let mut critical_expose_bonus = 0.0;
@@ -242,7 +239,11 @@ fn process_hit(
                 damage_amount
             };
             
-            tu.damage(final_damage, enemy_entity, event_writer);
+            if let Some(&attacker_entity) = global_entities.weapon_player.get(&weapon_entity) {
+                tu.damage(final_damage, enemy_entity, attacker_entity,  event_writer);
+            } else {
+                error!("could not find entity of weapon {:}", weapon_entity);
+            }
 
             // Spawn hit particle effect at enemy position
             commands.spawn((
@@ -273,6 +274,9 @@ fn process_hit(
                     weapon_knockback,
                     commands,
                 );
+            }
+            } else {
+                debug!("Could not find weapon entity for collider: {:?}", attacker);
             }
         }
     }

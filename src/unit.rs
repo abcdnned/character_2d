@@ -29,6 +29,7 @@ pub struct Unit {
 #[derive(Event)]
 pub struct HpChangeEvent {
     pub entity: Entity,
+    pub source: Entity,
     pub old_hp: f32,
     pub new_hp: f32,
     pub max_hp: f32,
@@ -56,12 +57,14 @@ impl Unit {
         &mut self,
         amount: f32,
         entity: Entity,
+        source: Entity,
         event_writer: &mut EventWriter<HpChangeEvent>,
     ) {
         let old_hp = self.hp;
         self.hp = (self.hp - amount).max(0.0);
         event_writer.write(HpChangeEvent {
             entity,
+            source,
             old_hp,
             new_hp: self.hp,
             max_hp: self.max_hp,
@@ -73,12 +76,14 @@ impl Unit {
         &mut self,
         amount: f32,
         entity: Entity,
+        source: Entity,
         event_writer: &mut EventWriter<HpChangeEvent>,
     ) {
         let old_hp = self.hp;
         self.hp = (self.hp + amount).min(self.max_hp);
         event_writer.write(HpChangeEvent {
             entity,
+            source,
             old_hp,
             new_hp: self.hp,
             max_hp: self.max_hp,
@@ -96,6 +101,7 @@ impl Unit {
         self.hp = new_hp.clamp(0.0, self.max_hp);
         event_writer.write(HpChangeEvent {
             entity,
+            source: todo!(),
             old_hp,
             new_hp: self.hp,
             max_hp: self.max_hp,
