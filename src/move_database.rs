@@ -24,6 +24,7 @@ impl Default for MoveDatabase {
             next_move: Some(SWING_RIGHT.to_string()),
             kb_force: KNOCK_BACK_LITE,
             critical_rate: BASE_CRITICAL_RATE,
+            best_range_min: 250.0,
         };
 
         let swing_right = MoveMetadata {
@@ -37,6 +38,7 @@ impl Default for MoveDatabase {
             next_move: None,
             kb_force: KNOCK_BACK_LITE,
             critical_rate: BASE_CRITICAL_RATE + CRIT_A,
+            best_range_min: 250.0,
         };
 
         let sword_stub = MoveMetadata {
@@ -50,6 +52,7 @@ impl Default for MoveDatabase {
             next_move: None,
             kb_force: KNOCK_BACK_LITE,
             critical_rate: BASE_CRITICAL_RATE + CRIT_B,
+            best_range_min: 400.0,
         };
 
         let reflect = MoveMetadata {
@@ -63,6 +66,7 @@ impl Default for MoveDatabase {
             next_move: None,
             kb_force: KNOCK_BACK_NONE,
             critical_rate: 0.0,
+            best_range_min: 400.0,
         };
 
         let spin_left = MoveMetadata {
@@ -76,6 +80,7 @@ impl Default for MoveDatabase {
             next_move: None,
             kb_force: KNOCK_BACK_HEAVY,
             critical_rate: BASE_CRITICAL_RATE * 2.0,
+            best_range_min: 250.0,
         };
 
         moves.insert(SWING_LEFT.to_string(), swing_left);
