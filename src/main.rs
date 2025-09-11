@@ -126,7 +126,7 @@ fn setup_scene(
             Velocity::zero(),
             Unit::builder()
                 .name("Hero")
-                .hp(50.0)
+                .hp(100.0)
                 .unitType(unit::UnitType::Hero)
                 .build(),
             Force {

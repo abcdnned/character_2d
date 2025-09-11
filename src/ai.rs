@@ -222,7 +222,7 @@ impl Plugin for AIPlugin {
             (
                 ai_target_detection_system,
                 ai_movement_system,
-                // ai_attack_system,
+                ai_attack_system,
             )
                 .chain(),
         )

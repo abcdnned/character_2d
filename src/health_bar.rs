@@ -1,8 +1,9 @@
 use bevy::{
     app::Plugin, color::palettes::css::*, prelude::*, reflect::TypePath, render::render_resource::*,
 };
-// Import your HpChangeEvent from unit.rs
+// Import your HpChangeEvent from unit.rs and BerserkerHealEvent from berserker.rs
 use crate::unit::HpChangeEvent;
+use crate::berserker::BerserkerHealEvent;
 
 /// This example uses a shader source file from the assets subdirectory
 const SHADER_ASSET_PATH: &str = "shaders/health_bar_material.wgsl";
@@ -97,27 +98,57 @@ impl UiMaterial for HealthBarMaterial {
     }
 }
 
-// Update player health bar when HpChangeEvent is received
+// Update player health bar when HpChangeEvent or BerserkerHealEvent is received
 fn update_health_bar(
     mut materials: ResMut<Assets<HealthBarMaterial>>,
     mut hp_events: EventReader<HpChangeEvent>,
+    mut berserker_heal_events: EventReader<BerserkerHealEvent>,
     health_bar_query: Query<&MaterialNode<HealthBarMaterial>, With<HealthBar>>,
     player_query: Query<(Entity, &crate::unit::Unit), With<crate::Player>>,
 ) {
+    let mut should_update = false;
+    let mut target_entity = None;
+
+    // Handle HP change events
     for event in hp_events.read() {
         debug!("Received HpChangeEvent for entity: {:?}", event.entity);
         
         // Check if the event is for a player entity
-        if let Ok((player_entity, hp)) = player_query.single() {
-            debug!("Player entity: {:?}, HP: {}/{}", player_entity, hp.hp, hp.max_hp);
-            
+        if let Ok((player_entity, _)) = player_query.single() {
             if event.entity == player_entity {
-                debug!("Event is for player entity, updating health bar");
+                debug!("HpChangeEvent is for player entity, marking for health bar update");
+                should_update = true;
+                target_entity = Some(player_entity);
+                break;
+            }
+        }
+    }
+
+    // Handle berserker heal events
+    for event in berserker_heal_events.read() {
+        debug!("Received BerserkerHealEvent for entity: {:?}", event.entity);
+        
+        // Check if the event is for a player entity
+        if let Ok((player_entity, _)) = player_query.single() {
+            if event.entity == player_entity {
+                debug!("BerserkerHealEvent is for player entity, marking for health bar update");
+                should_update = true;
+                target_entity = Some(player_entity);
+                break;
+            }
+        }
+    }
+
+    // Update the health bar if needed
+    if should_update {
+        if let Some(entity) = target_entity {
+            if let Ok((_, hp)) = player_query.get(entity) {
+                debug!("Player entity: {:?}, HP: {}/{}", entity, hp.hp, hp.max_hp);
                 
                 // Update all health bars
                 for material_handle in health_bar_query.iter() {
                     if let Some(material) = materials.get_mut(material_handle) {
-                        // Calculate fill ratio based on current health from the Hp component
+                        // Calculate fill ratio based on current health from the Unit component
                         let fill_ratio = if hp.max_hp > 0.0 {
                             (hp.hp / hp.max_hp).clamp(0.0, 1.0)
                         } else {
@@ -129,10 +160,8 @@ fn update_health_bar(
                     }
                 }
             } else {
-                debug!("Event is not for player entity, ignoring");
+                warn!("Failed to get player entity or Unit component");
             }
-        } else {
-            warn!("Failed to get player entity or HP component");
         }
     }
 }
