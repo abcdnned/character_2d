@@ -78,9 +78,15 @@ fn update_health_bar(
     player_query: Query<(Entity, &crate::unit::Unit), With<crate::Player>>,
 ) {
     for event in hp_events.read() {
+        debug!("Received HpChangeEvent for entity: {:?}", event.entity);
+        
         // Check if the event is for a player entity
         if let Ok((player_entity, hp)) = player_query.single() {
+            debug!("Player entity: {:?}, HP: {}/{}", player_entity, hp.hp, hp.max_hp);
+            
             if event.entity == player_entity {
+                debug!("Event is for player entity, updating health bar");
+                
                 // Update all health bars
                 for material_handle in health_bar_query.iter() {
                     if let Some(material) = materials.get_mut(material_handle) {
@@ -90,10 +96,16 @@ fn update_health_bar(
                         } else {
                             0.0
                         };
+                        
+                        debug!("Updating health bar: fill_ratio = {:.2}", fill_ratio);
                         material.fill_ratio.x = fill_ratio;
                     }
                 }
+            } else {
+                debug!("Event is not for player entity, ignoring");
             }
+        } else {
+            warn!("Failed to get player entity or HP component");
         }
     }
 }
