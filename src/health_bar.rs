@@ -8,7 +8,7 @@ use bevy::{
 use crate::unit::HpChangeEvent;
 
 /// This example uses a shader source file from the assets subdirectory
-const SHADER_ASSET_PATH: &str = "shaders\\health_bar_material.wgsl";
+const SHADER_ASSET_PATH: &str = "shaders/health_bar_material.wgsl";
 
 pub struct HealthBarPlugin;
 
