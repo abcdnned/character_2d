@@ -10,6 +10,8 @@
 //! | `D`                  | Move right    |
 
 use crate::ai::AIPlugin;
+use crate::berserker::Berserker;
+use crate::berserker::BerserkerPlugin;
 use crate::collider::*;
 use crate::constants::*;
 use crate::float_text::FloatingTextPlugin;
@@ -57,11 +59,12 @@ mod unit;
 mod weapon;
 mod float_text;
 mod unit_death;
+mod berserker;
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(LogPlugin {
-            filter: "info,character_2d::collisions=debug,character_2d::movement=warn".to_string(), // Specific filters
+            filter: "info,character_2d::berserker=debug,character_2d::movement=warn".to_string(), // Specific filters
             ..Default::default()
         }))
         // .add_plugins(EguiPlugin::default())
@@ -82,6 +85,7 @@ fn main() {
         .add_plugins(TweeningPlugin)
         .add_plugins(FloatingTextPlugin)
         .add_plugins(UnitDeathPlugin)
+        .add_plugins(BerserkerPlugin)
         .add_systems(Startup, (setup_scene, setup_instructions, setup_camera))
         .add_systems(
             Update,
@@ -114,6 +118,7 @@ fn setup_scene(
     let player = commands
         .spawn((
             Player,
+            Berserker,
             Mesh2d(meshes.add(Circle::new(MESH_RADIUS))),
             MeshMaterial2d(materials.add(PLAYER_COLOR)), // RGB values exceed 1 to achieve a bright color for the bloom effect
             Transform::from_xyz(0., 0., 2.),
