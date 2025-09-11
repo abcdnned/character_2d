@@ -191,90 +191,127 @@ fn process_hit(
         if let Ok((enemy_entity, mut enemy_velocity, enemy_transform)) = enemy_query.get_mut(target)
         {
             debug!("enemy components ready");
-            
+
             // Query weapon entity using global collider_weapon map
-            let mut critical_rate = 0.0;
             if let Some(&weapon_entity) = global_entities.collider_weapon.get(&attacker) {
-                // Query Move component by weapon entity to get MoveMetadata
                 if let Ok(weapon_move) = weapon_move_query.get(weapon_entity) {
-                    critical_rate = weapon_move.move_metadata.critical_rate;
-                    debug!("Retrieved critical rate: {:.2} for weapon: {:?}", critical_rate, weapon_entity);
+                    let mut critical_rate = weapon_move.move_metadata.critical_rate;
+
+                    let mut is_best_range: bool = false;
+                    // Check distance between source and target
+                    if let (Ok(source_transform), Ok(target_transform)) =
+                        (transform_query.get(damage.source), transform_query.get(target))
+                    {
+                        let distance =
+                            source_transform.translation.distance(target_transform.translation);
+
+                        if distance > weapon_move.move_metadata.best_range_min {
+                            debug!(
+                                "Within best range (dist: {:.2}, min: {:.2}) - full damage",
+                                distance, weapon_move.move_metadata.best_range_min
+                            );
+                            is_best_range = true;
+                        } else {
+                            debug!(
+                                "Outside best range (dist: {:.2}, min: {:.2}) - reduced damage, no critical",
+                                distance, weapon_move.move_metadata.best_range_min
+                            );
+                            critical_rate = 0.0; // disable criticals
+                        }
+                    }
+
+                    // Check if target has a weapon and if it's in Recovery phase for CRITICAL_EXPOSE
+                    let mut critical_expose_bonus = 0.0;
+                    if (is_best_range) {
+                        if let Some(&target_weapon_entity) = global_entities.player_weapon.get(&target) {
+                            if let Ok(target_weapon_move) = weapon_move_query.get(target_weapon_entity) {
+                                if target_weapon_move.current_phase == MovePhase::Recovery {
+                                    critical_expose_bonus = CRITICAL_EXPOSE;
+                                    debug!(
+                                        "Target weapon in Recovery phase - applying CRITICAL_EXPOSE bonus: {:.2}",
+                                        critical_expose_bonus
+                                    );
+                                }
+                            }
+                        }
+                    }
+
+                    let damage_amount = damage.get_amount();
+                    let old_hp = tu.hp;
+
+                    let random_value: f32 = random();
+                    let final_critical_rate = critical_rate + critical_expose_bonus;
+                    let mut is_critical = false;
+
+                    // Critical only possible if inside range
+                    if final_critical_rate > 0.0 && random_value < final_critical_rate {
+                        is_critical = true;
+                    }
+
+                    let mut final_damage = if is_critical {
+                        if critical_expose_bonus > 0.0 {
+                            info!(
+                                "CRITICAL HIT WITH EXPOSE! Base damage: {:.1}, Base critical rate: {:.2}, Expose bonus: {:.2}, Final rate: {:.2}",
+                                damage_amount, weapon_move.move_metadata.critical_rate,
+                                critical_expose_bonus, final_critical_rate
+                            );
+                        } else {
+                            info!(
+                                "CRITICAL HIT! Base damage: {:.1}, Critical rate: {:.2}",
+                                damage_amount, weapon_move.move_metadata.critical_rate
+                            );
+                        }
+                        spawn_critical_hit_text(commands, enemy_transform.translation);
+
+                        damage_amount * 2.0
+                    } else {
+                        damage_amount
+                    };
+
+                    if (!is_best_range) {
+                        final_damage = final_damage * 0.6;
+                    }
+
+                    if let Some(&attacker_entity) = global_entities.weapon_player.get(&weapon_entity)
+                    {
+                        tu.damage(final_damage, enemy_entity, attacker_entity, event_writer);
+                    } else {
+                        error!("could not find entity of weapon {:}", weapon_entity);
+                    }
+
+                    // Spawn hit particle effect at enemy position
+                    commands.spawn((
+                        ParticleEffectHandle(asset_server.load("hitten.ron")),
+                        Transform::from_translation(enemy_transform.translation),
+                        Name::new("HitEffect"),
+                        ParticleSpawner(material.0.clone()),
+                        OneShot::Despawn,
+                    ));
+
+                    debug!(
+                        "Sword hit! Damage: {:.1} {} | HP: {:.1} -> {:.1}",
+                        final_damage,
+                        if is_critical { "(CRITICAL)" } else { "" },
+                        old_hp,
+                        tu.hp
+                    );
+
+                    if let (Ok(weapon_knockback), Ok(source_transform)) = (
+                        weapon_knockback_query.get(attacker),
+                        transform_query.get(damage.source),
+                    ) {
+                        apply_knockback_force(
+                            enemy_entity,
+                            &mut enemy_velocity,
+                            enemy_transform,
+                            source_transform,
+                            weapon_knockback,
+                            commands,
+                        );
+                    }
                 } else {
                     debug!("Could not find Move component for weapon: {:?}", weapon_entity);
                 }
-            
-            // Check if target has a weapon and if it's in Recovery phase for CRITICAL_EXPOSE
-            let mut critical_expose_bonus = 0.0;
-            if let Some(&target_weapon_entity) = global_entities.player_weapon.get(&target) {
-                if let Ok(target_weapon_move) = weapon_move_query.get(target_weapon_entity) {
-                    if target_weapon_move.current_phase == MovePhase::Recovery {
-                        critical_expose_bonus = CRITICAL_EXPOSE;
-                        debug!("Target weapon in Recovery phase - applying CRITICAL_EXPOSE bonus: {:.2}", critical_expose_bonus);
-                    }
-                } else {
-                    debug!("Target has weapon but no Move component found: {:?}", target_weapon_entity);
-                }
-            }
-            // If no weapon found, do nothing (no bonus applied)
-            
-            let damage_amount = damage.get_amount();
-            let old_hp = tu.hp;
-            
-            // Calculate critical hit with potential expose bonus
-            let final_critical_rate = critical_rate + critical_expose_bonus;
-            let random_value: f32 = random();
-            let is_critical = random_value < final_critical_rate;
-            
-            let final_damage = if is_critical {
-                if critical_expose_bonus > 0.0 {
-                    info!("CRITICAL HIT WITH EXPOSE! Base damage: {:.1}, Base critical rate: {:.2}, Expose bonus: {:.2}, Final rate: {:.2}", 
-                          damage_amount, critical_rate, critical_expose_bonus, final_critical_rate);
-                } else {
-                    info!("CRITICAL HIT! Base damage: {:.1}, Critical rate: {:.2}", damage_amount, critical_rate);
-                }
-                spawn_critical_hit_text(commands, enemy_transform.translation);
-                
-                damage_amount * 2.0 // Double damage for critical hit
-            } else {
-                damage_amount
-            };
-            
-            if let Some(&attacker_entity) = global_entities.weapon_player.get(&weapon_entity) {
-                tu.damage(final_damage, enemy_entity, attacker_entity,  event_writer);
-            } else {
-                error!("could not find entity of weapon {:}", weapon_entity);
-            }
-
-            // Spawn hit particle effect at enemy position
-            commands.spawn((
-                ParticleEffectHandle(asset_server.load("hitten.ron")),
-                Transform::from_translation(enemy_transform.translation),
-                Name::new("HitEffect"),
-                ParticleSpawner(material.0.clone()),
-                OneShot::Despawn,
-            ));
-
-            debug!(
-                "Sword hit! Damage: {:.1} {} | HP: {:.1} -> {:.1}",
-                final_damage,
-                if is_critical { "(CRITICAL)" } else { "" },
-                old_hp, 
-                tu.hp
-            );
-
-            if let (Ok(weapon_knockback), Ok(source_transform)) = (
-                weapon_knockback_query.get(attacker),
-                transform_query.get(damage.source),
-            ) {
-                apply_knockback_force(
-                    enemy_entity,
-                    &mut enemy_velocity,
-                    enemy_transform,
-                    source_transform,
-                    weapon_knockback,
-                    commands,
-                );
-            }
             } else {
                 debug!("Could not find weapon entity for collider: {:?}", attacker);
             }
