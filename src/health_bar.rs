@@ -59,12 +59,13 @@ fn setup(mut commands: Commands, mut ui_materials: ResMut<Assets<HealthBarMateri
                 HealthBar,
             ));
 
-            // Enemy health bar (top right)
+            // Enemy health bar (top right) - starts hidden
             parent.spawn((
                 Node {
                     width: Val::Px(600.0),
                     height: Val::Px(25.0),
                     border: UiRect::all(Val::Px(1.0)),
+                    display: Display::None, // Start hidden
                     ..default()
                 },
                 MaterialNode(ui_materials.add(HealthBarMaterial {
@@ -141,7 +142,7 @@ fn update_enemy_health_bar(
     mut materials: ResMut<Assets<HealthBarMaterial>>,
     mut hp_events: EventReader<HpChangeEvent>,
     mut last_hit_enemy: ResMut<LastHitEnemy>,
-    enemy_health_bar_query: Query<&MaterialNode<HealthBarMaterial>, With<EnemyHealthBar>>,
+    mut enemy_health_bar_query: Query<(&MaterialNode<HealthBarMaterial>, &mut Node), With<EnemyHealthBar>>,
     player_query: Query<Entity, With<crate::Player>>,
     unit_query: Query<&crate::unit::Unit>,
 ) {
@@ -160,22 +161,45 @@ fn update_enemy_health_bar(
                 if let Ok(enemy_unit) = unit_query.get(event.entity) {
                     debug!("Enemy HP: {}/{}", enemy_unit.hp, enemy_unit.max_hp);
                     
+                    let fill_ratio = if enemy_unit.max_hp > 0.0 {
+                        (enemy_unit.hp / enemy_unit.max_hp).clamp(0.0, 1.0)
+                    } else {
+                        0.0
+                    };
+                    
                     // Update the enemy health bar
-                    for material_handle in enemy_health_bar_query.iter() {
+                    for (material_handle, mut node) in enemy_health_bar_query.iter_mut() {
                         if let Some(material) = materials.get_mut(material_handle) {
-                            let fill_ratio = if enemy_unit.max_hp > 0.0 {
-                                (enemy_unit.hp / enemy_unit.max_hp).clamp(0.0, 1.0)
-                            } else {
-                                0.0
-                            };
-                            
                             debug!("Updating enemy health bar: fill_ratio = {:.2}", fill_ratio);
                             material.fill_ratio.x = fill_ratio;
+                            
+                            // Show or hide the health bar based on conditions
+                            if fill_ratio <= 0.0 {
+                                // Enemy is dead, hide the health bar
+                                debug!("Enemy is dead, hiding health bar");
+                                node.display = Display::None;
+                                // Clear the last hit enemy since it's dead
+                                last_hit_enemy.entity = None;
+                            } else {
+                                // Enemy is alive, show the health bar
+                                debug!("Enemy is alive, showing health bar");
+                                node.display = Display::Flex;
+                            }
                         }
                     }
                 } else {
                     warn!("Failed to get Unit component for damaged entity: {:?}", event.entity);
                 }
+            }
+        }
+    }
+    
+    // Also check if we need to hide the health bar when there's no last hit enemy
+    if last_hit_enemy.entity.is_none() {
+        for (_, mut node) in enemy_health_bar_query.iter_mut() {
+            if node.display != Display::None {
+                debug!("No last hit enemy, hiding health bar");
+                node.display = Display::None;
             }
         }
     }
