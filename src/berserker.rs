@@ -8,8 +8,19 @@ pub struct BerserkerPlugin;
 
 impl Plugin for BerserkerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, berserker_lifesteal);
+        app
+        .add_event::<BerserkerHealEvent>()
+        .add_systems(Update, berserker_lifesteal);
     }
+}
+
+#[derive(Event)]
+pub struct BerserkerHealEvent {
+    pub entity: Entity,
+    pub source: Entity,
+    pub old_hp: f32,
+    pub new_hp: f32,
+    pub max_hp: f32,
 }
 
 /// System that heals berserkers when they deal damage to enemies
@@ -17,6 +28,7 @@ pub fn berserker_lifesteal(
     mut hp_events: EventReader<HpChangeEvent>,
     mut berserker_query: Query<&mut crate::unit::Unit, With<Berserker>>,
     berserker_check_query: Query<Entity, With<Berserker>>,
+    mut event_writer: EventWriter<BerserkerHealEvent>,
 ) {
     for event in hp_events.read() {
         debug!("Checking HpChangeEvent for berserker lifesteal: source={:?}", event.source);
@@ -34,7 +46,10 @@ pub fn berserker_lifesteal(
                 // Heal the berserker for the amount of damage dealt
                 if let Ok(mut berserker_unit) = berserker_query.get_mut(event.source) {
                     let old_hp = berserker_unit.hp;
-                    berserker_unit.hp = (berserker_unit.hp + damage_dealt).min(berserker_unit.max_hp);
+                    let entity = event.source; // The berserker entity being healed
+                    let source = event.source; // The berserker is also the source of the healing
+                    
+                    berserker_unit.berserker_heal(damage_dealt, entity, source, &mut event_writer);
                     
                     info!("Berserker healed from {} to {} HP (gained {})", 
                           old_hp, berserker_unit.hp, berserker_unit.hp - old_hp);

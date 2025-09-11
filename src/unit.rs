@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::constants::*;
+use crate::{berserker::BerserkerHealEvent, constants::*};
 
 pub struct UnitPlugin;
 
@@ -69,6 +69,24 @@ impl Unit {
             new_hp: self.hp,
             max_hp: self.max_hp,
             change_type: HpChangeType::Damage,
+        });
+    }
+
+    pub fn berserker_heal(
+        &mut self,
+        amount: f32,
+        entity: Entity,
+        source: Entity,
+        event_writer: &mut EventWriter<BerserkerHealEvent>,
+    ) {
+        let old_hp = self.hp;
+        self.hp = (self.hp + amount).min(self.max_hp);
+        event_writer.write(BerserkerHealEvent {
+            entity,
+            source,
+            old_hp,
+            new_hp: self.hp,
+            max_hp: self.max_hp,
         });
     }
 
