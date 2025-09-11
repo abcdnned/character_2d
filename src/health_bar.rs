@@ -1,9 +1,7 @@
 // ui_material.rs
-
 use bevy::{
     app::Plugin, color::palettes::css::*, prelude::*, reflect::TypePath, render::render_resource::*,
 };
-
 // Import your HpChangeEvent from unit.rs
 use crate::unit::HpChangeEvent;
 
@@ -24,30 +22,30 @@ impl Plugin for HealthBarPlugin {
 pub struct HealthBar;
 
 fn setup(mut commands: Commands, mut ui_materials: ResMut<Assets<HealthBarMaterial>>) {
-    // Create the health bar UI at the bottom of the screen
+    // Create the health bar UI at the top left of the screen
     commands
         .spawn(Node {
             width: Val::Percent(100.0),
             height: Val::Percent(100.0),
-            align_items: AlignItems::End, // Align to bottom
-            justify_content: JustifyContent::Center,
+            align_items: AlignItems::Start, // Align to top
+            justify_content: JustifyContent::Start, // Align to left
             padding: UiRect::all(Val::Px(20.0)), // Add some padding from screen edge
             ..default()
         })
         .with_children(|parent| {
             parent.spawn((
                 Node {
-                    width: Val::Px(400.0), // Health bar width
-                    height: Val::Px(15.0), // Health bar height
-                    border: UiRect::all(Val::Px(2.0)),
+                    width: Val::Px(600.0), // Bigger health bar width
+                    height: Val::Px(25.0), // Bigger health bar height
+                    border: UiRect::all(Val::Px(1.0)), // Thin border
                     ..default()
                 },
                 MaterialNode(ui_materials.add(HealthBarMaterial {
-                    fill_ratio: Vec4::new(0.5, 0.0, 0.0, 0.0), // Start at full health
-                    health_color: LinearRgba::from(WHITE).to_f32_array().into(),
-                    border_color: LinearRgba::from(WHITE_SMOKE).to_f32_array().into(),
+                    fill_ratio: Vec4::new(1.0, 0.0, 0.0, 0.0), // Start at full health
+                    health_color: LinearRgba::from(RED).to_f32_array().into(), // Red health color
+                    border_color: LinearRgba::from(WHITE).to_f32_array().into(), // White border
                 })),
-                BorderRadius::all(Val::Px(5.0)),
+                // Remove BorderRadius to make it a standard rectangle (no rounded corners)
                 HealthBar,
             ));
         });
@@ -92,7 +90,6 @@ fn update_health_bar(
                         } else {
                             0.0
                         };
-
                         material.fill_ratio.x = fill_ratio;
                     }
                 }
