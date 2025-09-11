@@ -60,13 +60,13 @@ pub fn calculate_stub_cubic(t: f32, r: f32) -> (Vec2, f32) {
     // Vertical swing using cubic bezier curve
     let progress = smooth_step(t);
 
-    let x1 = r;
+    let x1 = 0.2 * r;
     let y1 = -r;
     let x2 = 0.0;
     let y2 = r * 2.0;
     let x3 = 0.0;
     let y3 = r * 2.0;
-    let x4 = r;
+    let x4 = 0.2 * r;
     let y4 = -r;
     let p0 = Point2::new(x1, y1); // Start point
     let p1 = Point2::new(x2, y2); // First control point
