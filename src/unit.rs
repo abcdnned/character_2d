@@ -60,7 +60,7 @@ impl Unit {
     ) {
         let old_hp = self.hp;
         self.hp = (self.hp - amount).max(0.0);
-        event_writer.send(HpChangeEvent {
+        event_writer.write(HpChangeEvent {
             entity,
             old_hp,
             new_hp: self.hp,

@@ -5,7 +5,7 @@ use crate::float_text::spawn_critical_hit_text;
 use crate::global_entity_map::GlobalEntityMap;
 use crate::particle::ParticleMaterialAsset;
 use crate::physics::*;
-use crate::unit::Unit;
+use crate::unit::{HpChangeEvent, Unit};
 use bevy::prelude::*;
 use bevy_enoki::prelude::*;
 use bevy_rapier2d::prelude::*;
@@ -26,6 +26,7 @@ pub fn handle_collisions(
     asset_server: Res<AssetServer>,
     material: Res<ParticleMaterialAsset>,
     global_entities: Res<GlobalEntityMap>,
+    mut event_writer: EventWriter<HpChangeEvent>,
 ) {
     let mut processed_damage_pairs: HashSet<(Entity, Entity)> = HashSet::new();
 
@@ -80,6 +81,7 @@ pub fn handle_collisions(
                         &asset_server,
                         &material,
                         &global_entities,
+                        &mut event_writer,
                     );
                     process_hit(
                         *entity2,
@@ -94,6 +96,7 @@ pub fn handle_collisions(
                         &asset_server,
                         &material,
                         &global_entities,
+                        &mut event_writer,
                     );
                 }
             }
@@ -180,6 +183,7 @@ fn process_hit(
     asset_server: &Res<AssetServer>,
     material: &Res<ParticleMaterialAsset>,
     global_entities: &Res<GlobalEntityMap>,
+    event_writer: &mut EventWriter<HpChangeEvent>,
 ) {
     debug!("process hit");
     if let (Ok(damage), Ok(mut tu)) = (damage_query.get(attacker), unit_query.get_mut(target)) {
@@ -238,7 +242,7 @@ fn process_hit(
                 damage_amount
             };
             
-            tu.hp = (tu.hp - final_damage).max(0.0);
+            tu.damage(final_damage, enemy_entity, event_writer);
 
             // Spawn hit particle effect at enemy position
             commands.spawn((
