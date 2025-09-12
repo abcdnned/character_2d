@@ -1,5 +1,6 @@
-use crate::unit::HpChangeEvent;
+use crate::{particle::ParticleMaterialAsset, unit::HpChangeEvent};
 use bevy::prelude::*;
+use bevy_enoki::{prelude::OneShot, ParticleEffectHandle, ParticleSpawner};
 
 #[derive(Component)]
 pub struct Berserker {
@@ -101,6 +102,10 @@ pub fn berserker_lifesteal(
 pub fn berserker_active_handler(
     mut berserker_active_events: EventReader<BerserkerActiveEvent>,
     mut berserker_query: Query<&mut Berserker>,
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    material: Res<ParticleMaterialAsset>,
+    transform_query: Query<&Transform>,
 ) {
     for event in berserker_active_events.read() {
         if let Ok(mut berserker) = berserker_query.get_mut(event.entity) {
@@ -110,6 +115,24 @@ pub fn berserker_active_handler(
                 "Berserker active state changed for entity {:?}: level {} -> {}",
                 event.entity, old_level, berserker.level
             );
+            if let Ok(transform) = transform_query.get(event.entity) {
+                if berserker.level == 1 {
+                    commands.spawn((
+                        ParticleEffectHandle(asset_server.load("berserker_active.ron")),
+                        Transform::from_translation(transform.translation),
+                        ParticleSpawner(material.0.clone()),
+                        OneShot::Despawn,
+                    ));
+                    info!(
+                        "Create Berserker effect"
+                    );
+                }
+            } else {
+                warn!(
+                    "Transform received failed for entity {:?}",
+                    event.entity
+                );
+            }
         } else {
             warn!(
                 "BerserkerActiveEvent received for entity {:?} without Berserker component",
