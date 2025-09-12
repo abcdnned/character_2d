@@ -115,17 +115,21 @@ pub fn berserker_active_handler(
                 "Berserker active state changed for entity {:?}: level {} -> {}",
                 event.entity, old_level, berserker.level
             );
+            
             if let Ok(transform) = transform_query.get(event.entity) {
                 if berserker.level == 1 {
-                    commands.spawn((
+                    // Spawn the particle effect as a child of the berserker entity
+                    let particle_entity = commands.spawn((
                         ParticleEffectHandle(asset_server.load("berserker_active.ron")),
-                        Transform::from_translation(transform.translation),
+                        Transform::from_translation(Vec3::ZERO), // Use local position relative to parent
                         ParticleSpawner(material.0.clone()),
                         OneShot::Despawn,
-                    ));
-                    info!(
-                        "Create Berserker effect"
-                    );
+                    )).id();
+                    
+                    // Make the particle effect a child of the berserker entity
+                    commands.entity(event.entity).add_child(particle_entity);
+                    
+                    info!("Created Berserker effect as child of entity {:?}", event.entity);
                 }
             } else {
                 warn!(
