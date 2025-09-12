@@ -11,7 +11,8 @@ pub struct BerserkerPlugin;
 impl Plugin for BerserkerPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<BerserkerHealEvent>()
-            .add_systems(Update, berserker_lifesteal);
+            .add_event::<BerserkerActiveEvent>()
+            .add_systems(Update, (berserker_lifesteal, berserker_active_handler));
     }
 }
 
@@ -22,6 +23,11 @@ pub struct BerserkerHealEvent {
     pub old_hp: f32,
     pub new_hp: f32,
     pub max_hp: f32,
+}
+
+#[derive(Event)]
+pub struct BerserkerActiveEvent {
+    pub entity: Entity,
 }
 
 /// System that heals berserkers when they deal damage to enemies
@@ -88,6 +94,27 @@ pub fn berserker_lifesteal(
             } else {
                 debug!("No damage dealt, no healing applied");
             }
+        }
+    }
+}
+
+pub fn berserker_active_handler(
+    mut berserker_active_events: EventReader<BerserkerActiveEvent>,
+    mut berserker_query: Query<&mut Berserker>,
+) {
+    for event in berserker_active_events.read() {
+        if let Ok(mut berserker) = berserker_query.get_mut(event.entity) {
+            let old_level = berserker.level;
+            berserker.level = if berserker.level == 0 { 1 } else { 0 };
+            info!(
+                "Berserker active state changed for entity {:?}: level {} -> {}",
+                event.entity, old_level, berserker.level
+            );
+        } else {
+            warn!(
+                "BerserkerActiveEvent received for entity {:?} without Berserker component",
+                event.entity
+            );
         }
     }
 }

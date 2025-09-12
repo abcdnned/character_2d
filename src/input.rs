@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 
+use crate::berserker::BerserkerActiveEvent;
 use crate::Player;
 use crate::constants::*;
 
@@ -34,6 +35,7 @@ pub fn handle_input(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     mut move_events: EventWriter<MoveEvent>,
     mut action_events: EventWriter<ActionEvent>,
+    mut berserker_events: EventWriter<BerserkerActiveEvent>,
 ) {
     let mut direction = Vec2::ZERO;
 
@@ -81,6 +83,12 @@ pub fn handle_input(
         action_events.write(ActionEvent {
             entity: *player,
             action_type: ACTION_SPECIAL,
+        });
+    }
+
+    if keyboard_input.just_pressed(KeyCode::Space) {
+        berserker_events.write(BerserkerActiveEvent {
+            entity: *player,
         });
     }
 }
