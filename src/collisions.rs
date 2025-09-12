@@ -1,7 +1,7 @@
 use crate::constants::{CRITICAL_EXPOSE, REFLECT}; // Assuming REFLECT is defined in constants
 use crate::custom_move::{ExecuteMoveEvent, Move, MoveInput, MovePhase, MoveType, PlayerMove};
 use crate::damage::Damage;
-use crate::float_text::spawn_critical_hit_text;
+use crate::float_text::{spawn_best_range_text, spawn_critical_hit_text};
 use crate::global_entity_map::GlobalEntityMap;
 use crate::particle::ParticleMaterialAsset;
 use crate::physics::*;
@@ -212,6 +212,7 @@ fn process_hit(
                                 "Within best range (dist: {:.2}, min: {:.2}) - full damage",
                                 distance, weapon_move.move_metadata.best_range_min
                             );
+                            spawn_best_range_text(commands, source_transform.translation);
                             is_best_range = true;
                         } else {
                             debug!(
