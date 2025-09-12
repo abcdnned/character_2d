@@ -78,7 +78,7 @@ pub fn spawn_critical_hit_text(commands: &mut Commands, position: Vec3) -> Entit
             color: Color::srgb(1.0, 0.2, 0.2), // Red color
             position,
             lifetime: Duration::from_millis(1500),
-            font_size: 36.0,
+            font_size: 30.0,
             float_distance: 120.0,
         },
     )
