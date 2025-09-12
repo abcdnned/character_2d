@@ -64,7 +64,7 @@ mod weapon;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(LogPlugin {
-            filter: "info,character_2d::collisions=debug,character_2d::movement=warn".to_string(), // Specific filters
+            filter: "info,character_2d::berserker=debug,character_2d::movement=warn".to_string(), // Specific filters
             ..Default::default()
         }))
         // .add_plugins(EguiPlugin::default())
@@ -118,7 +118,7 @@ fn setup_scene(
     let player = commands
         .spawn((
             Player,
-            Berserker,
+            Berserker{level: 0},
             Mesh2d(meshes.add(Circle::new(MESH_RADIUS))),
             MeshMaterial2d(materials.add(PLAYER_COLOR)), // RGB values exceed 1 to achieve a bright color for the bloom effect
             Transform::from_xyz(0., 0., 2.),
