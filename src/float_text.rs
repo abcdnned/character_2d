@@ -98,6 +98,20 @@ pub fn spawn_best_range_text(commands: &mut Commands, position: Vec3) -> Entity 
     )
 }
 
+pub fn spawn_sprint_ready_text(commands: &mut Commands, position: Vec3) -> Entity {
+    spawn_floating_text(
+        commands,
+        FloatingTextConfig {
+            text: "sprint ready".to_string(),
+            color: Color::srgb(0.7, 0.8, 0.9), // Grey color
+            position,
+            lifetime: Duration::from_millis(1500),
+            font_size: 18.0,
+            float_distance: 120.0,
+        },
+    )
+}
+
 /// System to cleanup floating text after their lifetime expires
 pub fn cleanup_floating_text_system(
     mut commands: Commands,

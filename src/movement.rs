@@ -1,7 +1,5 @@
 use crate::{
-    ai::{LockType, TargetDetector},
-    constants::*,
-    physics::apply_impulse,
+    ai::{LockType, TargetDetector}, constants::*, float_text::spawn_sprint_ready_text, physics::apply_impulse
 };
 use bevy::{ecs::component, prelude::*};
 use bevy_rapier2d::prelude::Velocity;
@@ -159,6 +157,8 @@ pub fn check_sprint_ready(
     mut timer: ResMut<SprintCheckTimer>,
     time: Res<Time>,
     mut players: Query<(Entity, &SprintCD, &mut SprintReadyLogged), With<crate::Player>>,
+    mut commands: Commands,
+    transform_query: Query<&Transform>,
 ) {
     timer.timer.tick(time.delta());
     
@@ -171,10 +171,15 @@ pub fn check_sprint_ready(
             if time_since_last_sprint >= SPRINT_CD {
                 // Only log if we haven't already logged this ready state
                 if !ready_logged.0 {
-                    info!(
+                    debug!(
                         "Sprint ready for player entity {:?} (last sprint: {:.2}s ago)",
                         entity, time_since_last_sprint
                     );
+                    if let Ok(transform) = transform_query.get(entity) {
+                        spawn_sprint_ready_text(&mut commands, transform.translation);
+                    } else {
+                        warn!("no transform found when sprint ready {:?}", entity);
+                    }
                     ready_logged.0 = true;
                 }
             } else {
