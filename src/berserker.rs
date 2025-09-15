@@ -7,13 +7,18 @@ pub struct Berserker {
     pub level: i32,
 }
 
+#[derive(Component)]
+pub struct SacrificeTimer {
+    pub timer: Timer,
+}
+
 pub struct BerserkerPlugin;
 
 impl Plugin for BerserkerPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<BerserkerHealEvent>()
             .add_event::<BerserkerActiveEvent>()
-            .add_systems(Update, (berserker_lifesteal, berserker_active_handler));
+            .add_systems(Update, (berserker_lifesteal, berserker_active_handler, sacrificed_hp));
     }
 }
 
@@ -29,6 +34,74 @@ pub struct BerserkerHealEvent {
 #[derive(Event)]
 pub struct BerserkerActiveEvent {
     pub entity: Entity,
+}
+
+/// System that decreases HP every 0.1 seconds when berserker is at level 1
+pub fn sacrificed_hp(
+    mut commands: Commands,
+    time: Res<Time>,
+    mut berserker_query: Query<(Entity, &Berserker, &mut crate::unit::Unit, Option<&mut SacrificeTimer>)>,
+    mut hp_event_writer: EventWriter<HpChangeEvent>,
+) {
+    for (entity, berserker, mut unit, timer_option) in berserker_query.iter_mut() {
+        if berserker.level == 1 {
+            // Add timer component if it doesn't exist
+            if timer_option.is_none() {
+                commands.entity(entity).insert(SacrificeTimer {
+                    timer: Timer::from_seconds(0.1, TimerMode::Repeating),
+                });
+                continue;
+            }
+            
+            if let Some(mut sacrifice_timer) = timer_option {
+                sacrifice_timer.timer.tick(time.delta());
+                
+                if sacrifice_timer.timer.just_finished() {
+                    let old_hp = unit.hp;
+                    if unit.hp > 0.5 {
+                        unit.hp -= 0.5;
+                        
+                        hp_event_writer.write(HpChangeEvent {
+                            entity,
+                            source: entity, // The berserker is sacrificing its own HP
+                            old_hp,
+                            new_hp: unit.hp,
+                            max_hp: unit.max_hp,
+                            change_type: crate::unit::HpChangeType::Damage,
+                        });
+                        
+                        debug!(
+                            "Berserker {:?} sacrificed HP: {} -> {} (-0.5)",
+                            entity, old_hp, unit.hp
+                        );
+                    } else {
+                        // If HP would go below 0.5, set it to 0.1 to keep the unit barely alive
+                        unit.hp = 0.0;
+                        
+                        hp_event_writer.write(HpChangeEvent {
+                            entity,
+                            source: entity,
+                            old_hp,
+                            new_hp: unit.hp,
+                            max_hp: unit.max_hp,
+                            change_type: crate::unit::HpChangeType::SetValue,
+                        });
+                        
+                        debug!(
+                            "Berserker {:?} sacrificed HP (minimal): {} -> 0.1",
+                            entity, old_hp
+                        );
+                    }
+                }
+            }
+        } else {
+            // Remove timer component if berserker is not at level 1
+            if timer_option.is_some() {
+                commands.entity(entity).remove::<SacrificeTimer>();
+                debug!("Removed SacrificeTimer from berserker {:?} (level {})", entity, berserker.level);
+            }
+        }
+    }
 }
 
 /// System that heals berserkers when they deal damage to enemies
