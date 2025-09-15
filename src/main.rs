@@ -19,6 +19,8 @@ use crate::force::Force;
 use crate::global_entity_map::*;
 use crate::move_components::MoveComponentsPlugin;
 use crate::movement::SprintCD;
+use crate::movement::SprintReadyLogged;
+use crate::movement::SprintReadyPlugin;
 use crate::particle::ParticlePlugin;
 use crate::rotation::RotationPlugin;
 use crate::unit::Unit;
@@ -65,7 +67,7 @@ mod weapon;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(LogPlugin {
-            filter: "info,character_2d::berserker=debug,character_2d::movement=warn".to_string(), // Specific filters
+            filter: "info,character_2d::berserker=debug,character_2d::movement=debug".to_string(), // Specific filters
             ..Default::default()
         }))
         // .add_plugins(EguiPlugin::default())
@@ -87,6 +89,7 @@ fn main() {
         .add_plugins(FloatingTextPlugin)
         .add_plugins(UnitDeathPlugin)
         .add_plugins(BerserkerPlugin)
+        .add_plugins(SprintReadyPlugin)
         .add_systems(Startup, (setup_scene, setup_instructions, setup_camera))
         .add_systems(
             Update,
@@ -126,6 +129,7 @@ fn setup_scene(
             DynamicPhysicsBundle::new_ball(MESH_RADIUS),
             Velocity::zero(),
             SprintCD(0.0),
+            SprintReadyLogged(false),
             Unit::builder()
                 .name("Hero")
                 .hp(100.0)

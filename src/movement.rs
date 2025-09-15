@@ -9,6 +9,10 @@ use bevy_rapier2d::prelude::Velocity;
 #[derive(Component)]
 pub struct SprintCD(pub f64);
 
+#[derive(Component)]
+pub struct SprintReadyLogged(pub bool);
+
+
 pub fn move_player(
     mut player: Single<
         (Entity, &mut Transform, &TargetDetector, &mut Velocity, &mut SprintCD),
@@ -39,23 +43,36 @@ pub fn move_player(
     
     // Handle sprint movement (velocity impulse)
     if sprint_direction.length_squared() > 0.0 {
-        let normalized_sprint_direction = sprint_direction.normalize();
+        let current_time = time.elapsed_secs_f64();
+        let time_since_last_sprint = current_time - player.4.0;
         
-        // Use the physics module's apply_impulse method
-        apply_impulse(
-            player.0,
-            normalized_sprint_direction,
-            SPRINT_IMPULSE_FORCE,
-            &mut player.3,
-        );
-        
-        // Record the current time as the last sprint time
-        player.4.0 = time.elapsed_secs_f64();
-        
-        debug!(
-            "Sprint impulse applied to entity {:?} at time {:.3}",
-            player.0, player.4.0
-        );
+        // Check if sprint is on cooldown
+        if time_since_last_sprint < SPRINT_CD {
+            debug!(
+                "Sprint on cooldown for entity {:?}. Time remaining: {:.2}s",
+                player.0,
+                SPRINT_CD - time_since_last_sprint
+            );
+            // Do nothing if still on cooldown
+        } else {
+            let normalized_sprint_direction = sprint_direction.normalize();
+            
+            // Use the physics module's apply_impulse method
+            apply_impulse(
+                player.0,
+                normalized_sprint_direction,
+                SPRINT_IMPULSE_FORCE,
+                &mut player.3,
+            );
+            
+            // Record the current time as the last sprint time
+            player.4.0 = current_time;
+            
+            debug!(
+                "Sprint impulse applied to entity {:?} at time {:.3}",
+                player.0, player.4.0
+            );
+        }
     }
     
     // Handle walk movement (original logic)
@@ -111,6 +128,58 @@ pub fn move_player(
                 
                 // Apply rotation
                 player.1.rotate_z(rotation_angle);
+            }
+        }
+    }
+}
+
+#[derive(Resource)]
+pub struct SprintCheckTimer {
+    timer: Timer,
+}
+
+impl Default for SprintCheckTimer {
+    fn default() -> Self {
+        Self {
+            timer: Timer::from_seconds(0.1, TimerMode::Repeating),
+        }
+    }
+}
+
+pub struct SprintReadyPlugin;
+
+impl Plugin for SprintReadyPlugin {
+    fn build(&self, app: &mut App) {
+        app.insert_resource(SprintCheckTimer::default())
+            .add_systems(Update, check_sprint_ready);
+    }
+}
+
+pub fn check_sprint_ready(
+    mut timer: ResMut<SprintCheckTimer>,
+    time: Res<Time>,
+    mut players: Query<(Entity, &SprintCD, &mut SprintReadyLogged), With<crate::Player>>,
+) {
+    timer.timer.tick(time.delta());
+    
+    if timer.timer.just_finished() {
+        let current_time = time.elapsed_secs_f64();
+        
+        for (entity, sprint_cd, mut ready_logged) in players.iter_mut() {
+            let time_since_last_sprint = current_time - sprint_cd.0;
+            
+            if time_since_last_sprint >= SPRINT_CD {
+                // Only log if we haven't already logged this ready state
+                if !ready_logged.0 {
+                    info!(
+                        "Sprint ready for player entity {:?} (last sprint: {:.2}s ago)",
+                        entity, time_since_last_sprint
+                    );
+                    ready_logged.0 = true;
+                }
+            } else {
+                // Reset the logged flag when sprint goes on cooldown
+                ready_logged.0 = false;
             }
         }
     }
