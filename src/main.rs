@@ -18,6 +18,7 @@ use crate::float_text::FloatingTextPlugin;
 use crate::force::Force;
 use crate::global_entity_map::*;
 use crate::move_components::MoveComponentsPlugin;
+use crate::movement::SprintCD;
 use crate::particle::ParticlePlugin;
 use crate::rotation::RotationPlugin;
 use crate::unit::Unit;
@@ -124,6 +125,7 @@ fn setup_scene(
             Transform::from_xyz(0., 0., 2.),
             DynamicPhysicsBundle::new_ball(MESH_RADIUS),
             Velocity::zero(),
+            SprintCD(0.0),
             Unit::builder()
                 .name("Hero")
                 .hp(100.0)
