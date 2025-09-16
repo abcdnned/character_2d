@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 /// Player movement speed factor.
 pub const PLAYER_SPEED: f32 = 450.;
-pub const BERSERKER_MOVE_SPEED: f32 = 600.0;
+pub const BERSERKER_MOVE_SPEED: f32 = 150.0;
 
 /// How quickly should the camera snap to the desired location.
 pub const CAMERA_DECAY_RATE: f32 = 5.;

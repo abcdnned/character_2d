@@ -3,6 +3,7 @@ use crate::{
 };
 use bevy::{ecs::component, prelude::*};
 use bevy_rapier2d::prelude::Velocity;
+use crate::custom_move::Move;
 
 #[derive(Component)]
 pub struct SprintCD(pub f64);
@@ -20,6 +21,8 @@ pub fn move_player(
     mut move_events: EventReader<crate::input::MoveEvent>,
     move_query: Query<&crate::custom_move::PlayerMove, With<crate::Player>>,
     berserker_query: Query<&Berserker, With<crate::Player>>,
+    global_entity_map: Res<crate::global_entity_map::GlobalEntityMap>,
+    weapon_move_query: Query<&Move>,
 ) {
     let mut walk_direction = Vec2::ZERO;
     let mut sprint_direction = Vec2::ZERO;
@@ -83,13 +86,37 @@ pub fn move_player(
         // Check if player is currently performing a move (has Move component)
         let is_attacking = move_query.get(player.0).is_ok();
         
-        // Determine base speed
-        let base_speed = PLAYER_SPEED;
+        // Query weapon entity from player entity using global entity map
+        let base_speed = if let Some(weapon_entity) = global_entity_map.player_weapon.get(&player.0) {
+            debug!("Found weapon entity {:?} for player {:?}", weapon_entity, player.0);
+            
+            // Query Move component from weapon entity
+            if let Ok(weapon_move) = weapon_move_query.get(*weapon_entity) {
+                let move_speed = weapon_move.move_metadata.move_speed;
+                debug!(
+                    "Using weapon move speed {} for player {:?} (weapon: {:?})",
+                    move_speed, player.0, weapon_entity
+                );
+                move_speed
+            } else {
+                warn!(
+                    "No Move component found on weapon entity {:?} for player {:?}, using default PLAYER_SPEED",
+                    weapon_entity, player.0
+                );
+                PLAYER_SPEED
+            }
+        } else {
+            warn!(
+                "No weapon entity found for player {:?} in global entity map, using default PLAYER_SPEED",
+                player.0
+            );
+            PLAYER_SPEED
+        };
         
         // Check for Berserker component and modify speed if level 1
         let mut current_speed = if let Ok(berserker) = berserker_query.get(player.0) {
             if berserker.level == 1 {
-                BERSERKER_MOVE_SPEED
+                base_speed + BERSERKER_MOVE_SPEED
             } else {
                 base_speed
             }
@@ -102,8 +129,8 @@ pub fn move_player(
         }
         
         trace!(
-            "Walking: direction={:?}, is_attacking={}, speed={}",
-            normalized_direction, is_attacking, current_speed
+            "Walking: direction={:?}, is_attacking={}, base_speed={}, current_speed={}",
+            normalized_direction, is_attacking, base_speed, current_speed
         );
         
         // Apply movement

@@ -128,6 +128,7 @@ pub struct MoveMetadata {
     pub kb_force: f32,
     pub critical_rate: f32,
     pub best_range_min: f32,
+    pub move_speed: f32,
 }
 
 #[derive(Event)]

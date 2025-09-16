@@ -25,6 +25,7 @@ impl Default for MoveDatabase {
             kb_force: KNOCK_BACK_LITE,
             critical_rate: BASE_CRITICAL_RATE,
             best_range_min: 150.0,
+            move_speed: PLAYER_SPEED,
         };
 
         let swing_right = MoveMetadata {
@@ -39,6 +40,7 @@ impl Default for MoveDatabase {
             kb_force: KNOCK_BACK_LITE,
             critical_rate: BASE_CRITICAL_RATE + CRIT_A,
             best_range_min: 150.0,
+            move_speed: PLAYER_SPEED,
         };
 
         let sword_stub = MoveMetadata {
@@ -53,6 +55,7 @@ impl Default for MoveDatabase {
             kb_force: KNOCK_BACK_LITE,
             critical_rate: BASE_CRITICAL_RATE + CRIT_B,
             best_range_min: 170.0,
+            move_speed: PLAYER_SPEED,
         };
 
         let reflect = MoveMetadata {
@@ -67,6 +70,7 @@ impl Default for MoveDatabase {
             kb_force: KNOCK_BACK_NONE,
             critical_rate: 0.0,
             best_range_min: 150.0,
+            move_speed: PLAYER_SPEED,
         };
 
         let spin_left = MoveMetadata {
@@ -81,6 +85,7 @@ impl Default for MoveDatabase {
             kb_force: KNOCK_BACK_HEAVY,
             critical_rate: BASE_CRITICAL_RATE * 2.0,
             best_range_min: 150.0,
+            move_speed: PLAYER_SPEED,
         };
 
         let tunado = MoveMetadata {
@@ -95,6 +100,7 @@ impl Default for MoveDatabase {
             kb_force: KNOCK_BACK_LITE,
             critical_rate: BASE_CRITICAL_RATE * 2.0,
             best_range_min: 150.0,
+            move_speed: PLAYER_SPEED + (BERSERKER_MOVE_SPEED * 1.5),
         };
 
         moves.insert(SWING_LEFT.to_string(), swing_left);
