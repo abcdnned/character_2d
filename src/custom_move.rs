@@ -25,13 +25,14 @@ impl Move {
         }
     }
 
-    pub fn transition_to(&mut self, next_metadata: MoveMetadata) {
+    pub fn transition_to(&mut self, next_metadata: MoveMetadata, weapon: Entity, command: &mut Commands) {
         trace!(
             "Transitioning to next move: {} from {}",
             next_metadata.name, self.move_metadata.name
         );
 
-        *self = Self::new(next_metadata, self.actor);
+        let m = Self::new(next_metadata, self.actor);
+        command.entity(weapon).insert(m);
     }
 
     pub fn can_accept_input(&self, input: &MoveInput) -> bool {
@@ -370,26 +371,38 @@ fn update_moves(
             continue;
         }
 
-        // Handle early transition during recovery
-        if new_phase == MovePhase::Recovery && current_move.next_move.is_some() {
-            if let Some(next_move_data) = current_move.next_move.take() {
-                trace!(
-                    "Early transition to next move: {} from {} (skipping recovery)",
-                    next_move_data.name, current_move.move_metadata.name
-                );
-                // Clone the data before moving it into transition_to
-                let next_move_data_clone = next_move_data.clone();
-                current_move.transition_to(next_move_data);
-                // Update knockback for the early transition move
-                update_knockback(
-                    entity,
-                    &next_move_data_clone,
-                    &global_entity_map,
-                    &mut weapon_knockback_query,
-                );
-                continue;
+    // In the update_moves function, replace the early transition section with this:
+
+    // Handle early transition during recovery
+    if new_phase == MovePhase::Recovery && current_move.next_move.is_some() {
+        if let Some(next_move_data) = current_move.next_move.take() {
+            trace!(
+                "Early transition to next move: {} from {} (skipping recovery)",
+                next_move_data.name, current_move.move_metadata.name
+            );
+            
+            // Clone the data before moving it into transition_to
+            let next_move_data_clone = next_move_data.clone();
+            current_move.transition_to(next_move_data, entity, &mut commands);
+            
+            // Update knockback for the early transition move
+            update_knockback(
+                entity,
+                &next_move_data_clone,
+                &global_entity_map,
+                &mut weapon_knockback_query,
+            );
+            
+            // FIX: Update PlayerMove component on the player entity
+            if let Some(&player_entity) = global_entity_map.weapon_player.get(&entity) {
+                commands.entity(player_entity).insert(PlayerMove {
+                    move_metadata: next_move_data_clone,
+                });
             }
+            
+            continue;
         }
+    }
 
         // Update position during active phase
         if current_move.current_phase == MovePhase::Active {
@@ -421,15 +434,6 @@ fn handle_phase_events(
             }
             _ => {}
         }
-    }
-}
-
-fn handle_move_completion_or_chaining(current_move: &mut Move) -> bool {
-    if let Some(next_move_data) = current_move.next_move.take() {
-        current_move.transition_to(next_move_data);
-        true // Move was chained
-    } else {
-        false // No chaining, move should complete
     }
 }
 
