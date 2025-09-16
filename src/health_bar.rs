@@ -99,12 +99,14 @@ impl UiMaterial for HealthBarMaterial {
 }
 
 // Update player health bar when HpChangeEvent or BerserkerHealEvent is received
+// Update player health bar when HpChangeEvent or BerserkerHealEvent is received
 fn update_health_bar(
     mut materials: ResMut<Assets<HealthBarMaterial>>,
     mut hp_events: EventReader<HpChangeEvent>,
     mut berserker_heal_events: EventReader<BerserkerHealEvent>,
     health_bar_query: Query<&MaterialNode<HealthBarMaterial>, With<HealthBar>>,
-    player_query: Query<(Entity, &crate::unit::Unit), With<crate::Player>>,
+    player_query: Query<(Entity, &crate::unit::Unit, Option<&crate::berserker::Berserker>), With<crate::Player>>,
+    time: Res<Time>,
 ) {
     let mut should_update = false;
     let mut target_entity = None;
@@ -114,7 +116,7 @@ fn update_health_bar(
         debug!("Received HpChangeEvent for entity: {:?}", event.entity);
 
         // Check if the event is for a player entity
-        if let Ok((player_entity, _)) = player_query.single() {
+        if let Ok((player_entity, _, _)) = player_query.single() {
             if event.entity == player_entity {
                 debug!("HpChangeEvent is for player entity, marking for health bar update");
                 should_update = true;
@@ -129,7 +131,7 @@ fn update_health_bar(
         debug!("Received BerserkerHealEvent for entity: {:?}", event.entity);
 
         // Check if the event is for a player entity
-        if let Ok((player_entity, _)) = player_query.single() {
+        if let Ok((player_entity, _, _)) = player_query.single() {
             if event.entity == player_entity {
                 debug!("BerserkerHealEvent is for player entity, marking for health bar update");
                 should_update = true;
@@ -139,11 +141,44 @@ fn update_health_bar(
         }
     }
 
+    // Always update for berserker blinking effect if player has berserker level 1
+    if let Ok((player_entity, _, berserker_opt)) = player_query.single() {
+        if let Some(berserker) = berserker_opt {
+            if berserker.level == 1 {
+                should_update = true;
+                target_entity = Some(player_entity);
+            }
+        }
+    }
+
     // Update the health bar if needed
     if should_update {
         if let Some(entity) = target_entity {
-            if let Ok((_, hp)) = player_query.get(entity) {
+            if let Ok((_, hp, berserker_opt)) = player_query.get(entity) {
                 debug!("Player entity: {:?}, HP: {}/{}", entity, hp.hp, hp.max_hp);
+
+                // Determine health bar color based on berserker level
+                let health_color = if let Some(berserker) = berserker_opt {
+                    if berserker.level == 1 {
+                        // Blink between red and light red using sine wave
+                        let blink_speed = 30.0; // Adjust this to change blink speed
+                        let blink_factor = (time.elapsed_secs() * blink_speed).sin();
+                        
+                        if blink_factor > 0.0 {
+                            // Light red color
+                            LinearRgba::from(LIGHT_CORAL).to_f32_array().into()
+                        } else {
+                            // Regular red color
+                            LinearRgba::from(RED).to_f32_array().into()
+                        }
+                    } else {
+                        // Default red color for other berserker levels
+                        LinearRgba::from(RED).to_f32_array().into()
+                    }
+                } else {
+                    // Default red color for non-berserker players
+                    LinearRgba::from(RED).to_f32_array().into()
+                };
 
                 // Update all health bars
                 for material_handle in health_bar_query.iter() {
@@ -157,6 +192,7 @@ fn update_health_bar(
 
                         debug!("Updating health bar: fill_ratio = {:.2}", fill_ratio);
                         material.fill_ratio.x = fill_ratio;
+                        material.health_color = health_color;
                     }
                 }
             } else {
@@ -183,7 +219,7 @@ fn update_enemy_health_bar(
 
         // Check if the damage source is a player
         if let Ok(player_entity) = player_query.single() {
-            if event.source == player_entity {
+            if event.source == player_entity && event.entity != player_entity {
                 debug!("Player damaged entity: {:?}", event.entity);
 
                 // Update the last hit enemy
