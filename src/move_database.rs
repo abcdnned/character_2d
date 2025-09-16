@@ -92,7 +92,7 @@ impl Default for MoveDatabase {
             name: TUNADO.to_string(),
             radius: 130.0,
             startup_time: 0.0,
-            active_time: ATTACK_ANIMATION_SPEED * 1.2,
+            active_time: ATTACK_ANIMATION_SPEED * 1.0,
             recovery_time: 2.0,
             move_type: MoveType::Swing,
             accept_input: MoveInput::Attack,
@@ -100,7 +100,7 @@ impl Default for MoveDatabase {
             kb_force: KNOCK_BACK_LITE,
             critical_rate: BASE_CRITICAL_RATE * 2.0,
             best_range_min: 150.0,
-            move_speed: (PLAYER_SPEED + BERSERKER_MOVE_SPEED) * 1.5,
+            move_speed: (PLAYER_SPEED + BERSERKER_MOVE_SPEED) * 1.1,
         };
 
         moves.insert(SWING_LEFT.to_string(), swing_left);

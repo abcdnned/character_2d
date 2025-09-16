@@ -88,25 +88,25 @@ pub fn move_player(
         
         // Query weapon entity from player entity using global entity map
         let base_speed = if let Some(weapon_entity) = global_entity_map.player_weapon.get(&player.0) {
-            debug!("Found weapon entity {:?} for player {:?}", weapon_entity, player.0);
+            trace!("Found weapon entity {:?} for player {:?}", weapon_entity, player.0);
             
             // Query Move component from weapon entity
             if let Ok(weapon_move) = weapon_move_query.get(*weapon_entity) {
                 let move_speed = weapon_move.move_metadata.move_speed;
-                debug!(
+                trace!(
                     "Using weapon move speed {} for player {:?} (weapon: {:?})",
                     move_speed, player.0, weapon_entity
                 );
                 move_speed
             } else {
-                warn!(
+                trace!(
                     "No Move component found on weapon entity {:?} for player {:?}, using default PLAYER_SPEED",
                     weapon_entity, player.0
                 );
                 PLAYER_SPEED
             }
         } else {
-            warn!(
+            trace!(
                 "No weapon entity found for player {:?} in global entity map, using default PLAYER_SPEED",
                 player.0
             );

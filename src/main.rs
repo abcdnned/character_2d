@@ -67,7 +67,7 @@ mod weapon;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(LogPlugin {
-            filter: "info,character_2d::movement=debug,character_2d::custom_move=info".to_string(), // Specific filters
+            filter: "info,character_2d::movement=trace,character_2d::custom_move=info".to_string(), // Specific filters
             ..Default::default()
         }))
         // .add_plugins(EguiPlugin::default())
