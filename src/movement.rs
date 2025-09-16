@@ -84,14 +84,10 @@ pub fn move_player(
         let is_attacking = move_query.get(player.0).is_ok();
         
         // Determine base speed
-        let base_speed = if is_attacking {
-            PLAYER_SPEED
-        } else {
-            PLAYER_SPEED
-        };
+        let base_speed = PLAYER_SPEED;
         
         // Check for Berserker component and modify speed if level 1
-        let current_speed = if let Ok(berserker) = berserker_query.get(player.0) {
+        let mut current_speed = if let Ok(berserker) = berserker_query.get(player.0) {
             if berserker.level == 1 {
                 BERSERKER_MOVE_SPEED
             } else {
@@ -100,6 +96,10 @@ pub fn move_player(
         } else {
             base_speed
         };
+
+        if is_attacking {
+            current_speed = current_speed * ATTACK_SPEED_FACTOR;
+        }
         
         trace!(
             "Walking: direction={:?}, is_attacking={}, speed={}",

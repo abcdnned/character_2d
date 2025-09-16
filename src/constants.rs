@@ -7,7 +7,7 @@ pub const BERSERKER_MOVE_SPEED: f32 = 600.0;
 /// How quickly should the camera snap to the desired location.
 pub const CAMERA_DECAY_RATE: f32 = 5.;
 pub const PLAYER_ROTATION_SPEED: f32 = 10.0; // Rotation speed in radians per second
-pub const ATTACK_SPEED: f32 = 150.;
+pub const ATTACK_SPEED_FACTOR: f32 = 0.8;
 
 // Color
 pub const WORLD_COLOR: Color = Color::srgb(0.2, 0.2, 0.3);
@@ -56,3 +56,5 @@ pub const CRIT_B: f32 = 0.1;
 pub const CRITICAL_EXPOSE: f32 = 0.50;
 
 pub const SPRINT_CD: f64 = 2.0;
+
+pub const BERSERKER_FACTOR: f32 = 1.2;

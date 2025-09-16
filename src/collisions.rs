@@ -1,4 +1,5 @@
-use crate::constants::{CRITICAL_EXPOSE, REFLECT}; // Assuming REFLECT is defined in constants
+use crate::berserker::Berserker;
+use crate::constants::{BERSERKER_FACTOR, CRITICAL_EXPOSE, REFLECT}; // Assuming REFLECT is defined in constants
 use crate::custom_move::{ExecuteMoveEvent, Move, MoveInput, MovePhase, MoveType, PlayerMove};
 use crate::damage::Damage;
 use crate::float_text::{spawn_best_range_text, spawn_critical_hit_text};
@@ -27,6 +28,7 @@ pub fn handle_collisions(
     material: Res<ParticleMaterialAsset>,
     global_entities: Res<GlobalEntityMap>,
     mut event_writer: EventWriter<HpChangeEvent>,
+    berserker_query: Query<&Berserker>,
 ) {
     let mut processed_damage_pairs: HashSet<(Entity, Entity)> = HashSet::new();
 
@@ -82,6 +84,7 @@ pub fn handle_collisions(
                         &material,
                         &global_entities,
                         &mut event_writer,
+                        & berserker_query,
                     );
                     process_hit(
                         *entity2,
@@ -97,6 +100,7 @@ pub fn handle_collisions(
                         &material,
                         &global_entities,
                         &mut event_writer,
+                        & berserker_query,
                     );
                 }
             }
@@ -184,6 +188,7 @@ fn process_hit(
     material: &Res<ParticleMaterialAsset>,
     global_entities: &Res<GlobalEntityMap>,
     event_writer: &mut EventWriter<HpChangeEvent>,
+    berserker_query: &Query<&Berserker>,
 ) {
     debug!("process hit");
     if let (Ok(damage), Ok(mut tu)) = (damage_query.get(attacker), unit_query.get_mut(target)) {
@@ -243,8 +248,20 @@ fn process_hit(
                         }
                     }
 
-                    let damage_amount = damage.get_amount();
+                    let mut damage_amount = damage.get_amount();
                     let old_hp = tu.hp;
+
+                    // Check for Berserker component on damage source
+                    if let Ok(berserker) = berserker_query.get(damage.source) {
+                        if berserker.level == 1 {
+                            damage_amount *= BERSERKER_FACTOR;
+                            critical_rate *= BERSERKER_FACTOR;
+                            debug!(
+                                "Berserker level 1 bonus applied - damage: {:.1}, critical rate: {:.2}",
+                                damage_amount, critical_rate
+                            );
+                        }
+                    }
 
                     let random_value: f32 = random();
                     let final_critical_rate = critical_rate + critical_expose_bonus;
