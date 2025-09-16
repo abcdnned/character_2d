@@ -102,6 +102,7 @@ impl Default for MoveDatabase {
         moves.insert(SWORD_STUB.to_string(), sword_stub);
         moves.insert(REFLECT.to_string(), reflect);
         moves.insert(SPIN_LEFT.to_string(), spin_left);
+        moves.insert(TUNADO.to_string(), tunado);
         Self { moves }
     }
 }
