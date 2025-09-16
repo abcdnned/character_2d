@@ -119,17 +119,13 @@ pub fn berserker_lifesteal(
         );
 
         // Check if the damage source is a berserker
-        if berserker_check_query.contains(event.source) {
+        if berserker_check_query.contains(event.source) && event.source != event.entity {
             debug!("Damage source is a berserker, applying lifesteal");
 
             // Calculate the damage dealt (old_hp - new_hp)
             let damage_dealt = event.old_hp - event.new_hp;
 
             if damage_dealt > 0.0 {
-                debug!(
-                    "Berserker dealt {} damage, healing for the same amount",
-                    damage_dealt
-                );
 
                 // Heal the berserker for the amount of damage dealt
                 if let Ok(mut berserker_unit) = berserker_uni_query.get_mut(event.source) {
@@ -148,7 +144,7 @@ pub fn berserker_lifesteal(
                                 berserker_unit.hp - old_hp
                             );
                         } else {
-                            debug!(
+                            trace!(
                                 "Berserker active for berserker entity: {:?}, no lifesteal",
                                 event.source
                             );
