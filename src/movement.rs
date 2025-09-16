@@ -1,5 +1,5 @@
 use crate::{
-    ai::{LockType, TargetDetector}, constants::*, float_text::spawn_sprint_ready_text, physics::apply_impulse
+    ai::{LockType, TargetDetector}, berserker::Berserker, constants::*, float_text::spawn_sprint_ready_text, physics::apply_impulse
 };
 use bevy::{ecs::component, prelude::*};
 use bevy_rapier2d::prelude::Velocity;
@@ -19,6 +19,7 @@ pub fn move_player(
     time: Res<Time>,
     mut move_events: EventReader<crate::input::MoveEvent>,
     move_query: Query<&crate::custom_move::PlayerMove, With<crate::Player>>,
+    berserker_query: Query<&Berserker, With<crate::Player>>,
 ) {
     let mut walk_direction = Vec2::ZERO;
     let mut sprint_direction = Vec2::ZERO;
@@ -82,11 +83,22 @@ pub fn move_player(
         // Check if player is currently performing a move (has Move component)
         let is_attacking = move_query.get(player.0).is_ok();
         
-        // Choose speed based on whether player is attacking
-        let current_speed = if is_attacking {
-            ATTACK_SPEED
+        // Determine base speed
+        let base_speed = if is_attacking {
+            PLAYER_SPEED
         } else {
             PLAYER_SPEED
+        };
+        
+        // Check for Berserker component and modify speed if level 1
+        let current_speed = if let Ok(berserker) = berserker_query.get(player.0) {
+            if berserker.level == 1 {
+                BERSERKER_MOVE_SPEED
+            } else {
+                base_speed
+            }
+        } else {
+            base_speed
         };
         
         trace!(
