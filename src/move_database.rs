@@ -83,6 +83,20 @@ impl Default for MoveDatabase {
             best_range_min: 150.0,
         };
 
+        let tunado = MoveMetadata {
+            name: TUNADO.to_string(),
+            radius: 130.0,
+            startup_time: 0.0,
+            active_time: ATTACK_ANIMATION_SPEED * 1.2,
+            recovery_time: 2.0,
+            move_type: MoveType::Swing,
+            accept_input: MoveInput::Attack,
+            next_move: Some(TUNADO.to_string()),
+            kb_force: KNOCK_BACK_LITE,
+            critical_rate: BASE_CRITICAL_RATE * 2.0,
+            best_range_min: 150.0,
+        };
+
         moves.insert(SWING_LEFT.to_string(), swing_left);
         moves.insert(SWING_RIGHT.to_string(), swing_right);
         moves.insert(SWORD_STUB.to_string(), sword_stub);

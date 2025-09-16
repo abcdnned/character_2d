@@ -33,6 +33,10 @@ impl Default for AnimationDatabase {
             SPIN_LEFT.to_string(),
             calculate_left_spin as AnimationFunction,
         );
+        animations.insert(
+            TUNADO.to_string(),
+            calculate_tunado as AnimationFunction,
+        );
         Self { animations }
     }
 }

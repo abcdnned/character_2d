@@ -23,6 +23,7 @@ pub const SWING_RIGHT: &str = "SwingRight";
 pub const SWORD_STUB: &str = "SwordStub";
 pub const REFLECT: &str = "Reflect";
 pub const SPIN_LEFT: &str = "SpinLeft";
+pub const TUNADO: &str = "Tunado";
 
 pub const KNOCK_BACK_LITE: f32 = 300.0;
 pub const KNOCK_BACK_NORMAL: f32 = 500.0;
