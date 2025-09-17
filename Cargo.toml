@@ -12,6 +12,7 @@ bevy-inspector-egui = "0.32"
 bevy_enoki = "0.4"
 rand = "0.8"
 bevy_tweening = "0.13"
+bevy_transform_interpolation = "0.2"
 
 bevy = { version = "0.16.0",features = ["dynamic_linking"]}
 bevy_dylib = "0.16.0"

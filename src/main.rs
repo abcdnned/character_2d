@@ -30,6 +30,7 @@ use bevy::{core_pipeline::bloom::Bloom, prelude::*};
 use bevy_inspector_egui::bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier2d::prelude::*;
+use bevy_transform_interpolation::prelude::TransformInterpolationPlugin;
 use bevy_tweening::TweeningPlugin;
 
 #[derive(Component)]
@@ -90,6 +91,7 @@ fn main() {
         .add_plugins(UnitDeathPlugin)
         .add_plugins(BerserkerPlugin)
         .add_plugins(SprintReadyPlugin)
+        .add_plugins(TransformInterpolationPlugin::default())
         .add_systems(Startup, (setup_scene, setup_instructions, setup_camera))
         .add_systems(
             Update,

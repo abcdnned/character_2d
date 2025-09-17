@@ -4,6 +4,7 @@ use crate::global_entity_map::*;
 use bevy::color::palettes::basic::*;
 use bevy::color::palettes::css::ORANGE_RED;
 use bevy::prelude::*;
+use bevy_transform_interpolation::prelude::TransformInterpolation;
 use bevy_rapier2d::prelude::*;
 
 #[derive(Component, Default)]
@@ -44,6 +45,7 @@ pub fn equip_sword(
         let sword = parent
             .spawn((
                 Transform::from_translation(offset).with_scale(Vec3::splat(scale)),
+                TransformInterpolation,
                 Visibility::default(),
                 crate::weapon::Weapon::new(offset, scale),
             ))
