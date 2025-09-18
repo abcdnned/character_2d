@@ -131,7 +131,7 @@ pub fn calculate_tunado(t: f32, r: f32) -> (Vec2, f32) {
 
     // Calculate the angle for circular motion around the player
     // Start from the right side (0 radians) and rotate counter-clockwise (left spin)
-    let total_rotation = 2.0 * PI; // 540 degrees
+    let total_rotation = 8.0 * PI; // 1440 degrees
     let angle = total_rotation * progress;
 
     // Calculate circular position around the player
