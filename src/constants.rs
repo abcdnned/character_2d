@@ -27,8 +27,8 @@ pub const SPIN_LEFT: &str = "SpinLeft";
 pub const TUNADO: &str = "Tunado";
 
 pub const KNOCK_BACK_LITE: f32 = 300.0;
-pub const KNOCK_BACK_NORMAL: f32 = 500.0;
 pub const KNOCK_BACK_HEAVY: f32 = 1000.0;
+pub const KNOCK_BACK_SUPER: f32 = 3000.0;
 pub const KNOCK_BACK_NONE: f32 = 0.0;
 pub const DURATION_FACTOR: f32 = 2.25 / 800.0;
 pub const ATTACK_ANIMATION_SPEED: f32 = 0.2;
