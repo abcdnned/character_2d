@@ -140,7 +140,6 @@ pub fn ai_movement_system(
     for (ai_brain, mut ai_transform, mut velocity, unit, ai_entity) in ai_query.iter_mut() {
         // Skip if AI entity is stunned
         if stun_query.get(ai_entity).is_ok() {
-            velocity.linvel *= 0.9; // Gradual slowdown when stunned
             continue;
         }
 

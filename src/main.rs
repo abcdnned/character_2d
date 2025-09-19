@@ -136,7 +136,7 @@ fn setup_scene(
             SprintReadyLogged(false),
             Unit::builder()
                 .name("Hero")
-                .hp(100.0)
+                .max_hp(1000.0)
                 .unitType(unit::UnitType::Hero)
                 .build(),
             Force {
@@ -176,7 +176,7 @@ fn setup_scene(
             Velocity::zero(),
             Unit::builder()
                 .name("Guard")
-                .max_hp(50.0)
+                .max_hp(500.0)
                 .unitType(unit::UnitType::SwordMan)
                 .build(),
             crate::ai::TargetDetector {
