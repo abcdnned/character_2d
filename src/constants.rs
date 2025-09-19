@@ -60,4 +60,4 @@ pub const SPRINT_CD: f64 = 2.0;
 pub const BERSERKER_FACTOR: f32 = 1.2;
 
 // Stun effect duration when critical hit is dealt
-pub const STUN_DURATION: f32 = 2.0;
+pub const STUN_DURATION: f32 = 1.0;
