@@ -107,9 +107,12 @@ fn spawn_sword_trails(
         let custom_effect_handle = effects.add(custom_effect);
 
         // Add the particle effect directly to the sword entity
-        commands
-            .entity(entity)
-            .insert(ParticleEffect::new(custom_effect_handle));
+        // Check if entity still exists before trying to insert component
+        if let Ok(mut entity_commands) = commands.get_entity(entity) {
+            entity_commands.insert(ParticleEffect::new(custom_effect_handle));
+        } else {
+            warn!("Entity {:?} no longer exists, skipping sword trail spawn", entity);
+        }
     }
 }
 
@@ -118,10 +121,14 @@ fn despawn_sword_trails(
     query: Query<Entity, (Without<SwordTrail>, With<ParticleEffect>)>,
 ) {
     for entity in query.iter() {
-        commands.entity(entity).remove::<ParticleEffect>();
-        commands.entity(entity).remove::<EffectSpawner>();
-        commands.entity(entity).remove::<CompiledParticleEffect>();
-        debug!("sword trail completely cleaned up");
+        if let Ok(mut entity_commands) = commands.get_entity(entity) {
+            entity_commands.remove::<ParticleEffect>();
+            entity_commands.remove::<EffectSpawner>();
+            entity_commands.remove::<CompiledParticleEffect>();
+            debug!("sword trail completely cleaned up");
+        } else {
+            warn!("Entity {:?} no longer exists, skipping sword trail cleanup", entity);
+        }
     }
 }
 

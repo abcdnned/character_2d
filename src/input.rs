@@ -3,6 +3,7 @@ use bevy::prelude::*;
 use crate::berserker::BerserkerActiveEvent;
 use crate::Player;
 use crate::constants::*;
+use crate::stun::Stun;
 
 #[derive(Event)]
 pub struct MoveEvent {
@@ -36,7 +37,13 @@ pub fn handle_input(
     mut move_events: EventWriter<MoveEvent>,
     mut action_events: EventWriter<ActionEvent>,
     mut berserker_events: EventWriter<BerserkerActiveEvent>,
+    stun_query: Query<&Stun>,
 ) {
+    // Check if player is stunned - if so, ignore all input
+    if stun_query.get(*player).is_ok() {
+        return;
+    }
+
     let mut direction = Vec2::ZERO;
 
     if keyboard_input.pressed(KeyCode::KeyW) {

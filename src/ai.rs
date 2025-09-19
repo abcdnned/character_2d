@@ -1,6 +1,7 @@
 use crate::constants::{STOP_CHASING_RANGE, SWING_LEFT, SWING_RIGHT, SWORD_STUB};
 use crate::force::Force;
 use crate::global_entity_map::GlobalEntityMap;
+use crate::stun::Stun;
 use crate::unit::UnitType;
 use crate::weapon::GearSet;
 use crate::{Player, Unit};
@@ -131,11 +132,18 @@ pub fn ai_target_detection_system(
 
 // System to move AI entities towards their targets
 pub fn ai_movement_system(
-    mut ai_query: Query<(&TargetDetector, &mut Transform, &mut Velocity, &Unit), With<AI>>,
+    mut ai_query: Query<(&TargetDetector, &mut Transform, &mut Velocity, &Unit, Entity), With<AI>>,
     target_query: Query<&Transform, Without<AI>>, // Query for target transforms
+    stun_query: Query<&Stun>,
     time: Res<Time>,
 ) {
-    for (ai_brain, mut ai_transform, mut velocity, unit) in ai_query.iter_mut() {
+    for (ai_brain, mut ai_transform, mut velocity, unit, ai_entity) in ai_query.iter_mut() {
+        // Skip if AI entity is stunned
+        if stun_query.get(ai_entity).is_ok() {
+            velocity.linvel *= 0.9; // Gradual slowdown when stunned
+            continue;
+        }
+
         // Skip if no valid target
         if ai_brain.target == Entity::PLACEHOLDER {
             // Optionally slow down or stop when no target
@@ -168,8 +176,14 @@ pub fn ai_attack_system(
     target_query: Query<&Transform, (Without<AI>)>,
     mut move_events: EventWriter<crate::custom_move::ExecuteMoveEvent>,
     global_entities: ResMut<GlobalEntityMap>,
+    stun_query: Query<&Stun>,
 ) {
     for (ai_brain, ai_transform, mut ai, ai_entity) in ai_query.iter_mut() {
+        // Skip if AI entity is stunned
+        if stun_query.get(ai_entity).is_ok() {
+            continue;
+        }
+
         // Skip if no valid target
         if ai_brain.target == Entity::PLACEHOLDER {
             continue;

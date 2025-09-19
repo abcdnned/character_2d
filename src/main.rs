@@ -60,6 +60,7 @@ mod movement;
 mod particle;
 mod physics;
 mod rotation;
+mod stun;
 mod sword_trail;
 mod unit;
 mod unit_death;
@@ -91,6 +92,7 @@ fn main() {
         .add_plugins(UnitDeathPlugin)
         .add_plugins(BerserkerPlugin)
         .add_plugins(SprintReadyPlugin)
+        .add_plugins(crate::stun::StunPlugin)
         .add_plugins(TransformInterpolationPlugin::default())
         .add_systems(Startup, (setup_scene, setup_instructions, setup_camera))
         .add_systems(
