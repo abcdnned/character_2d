@@ -137,11 +137,18 @@ impl Stun {
     /// Apply stun to an entity
     pub fn apply_to_entity(commands: &mut Commands, entity: Entity, duration: f32) {
         debug!("Applying stun to entity {:?} for {:.2}s", entity, duration);
-        commands.entity(entity).insert(Stun::new(duration));
+        // Check if entity exists before trying to insert component
+        if let Ok(mut entity_commands) = commands.get_entity(entity) {
+            entity_commands.insert(Stun::new(duration));
+        } else {
+            debug!("Cannot apply stun to entity {:?} - entity does not exist", entity);
+        }
     }
 
     /// Remove stun from an entity if it exists
     pub fn remove_from_entity(commands: &mut Commands, entity: Entity) {
-        commands.entity(entity).remove::<Stun>();
+        if let Ok(mut entity_commands) = commands.get_entity(entity) {
+            entity_commands.remove::<Stun>();
+        }
     }
 }

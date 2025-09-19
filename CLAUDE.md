@@ -9,7 +9,6 @@ This is a 2D character action game built with Bevy Engine 0.16.0 and Rust. The g
 ## Development Commands
 
 ### Build and Run
-- `cargo run` - Compile and run the game in development mode
 - `cargo build --release` - Build optimized release version
 - `cargo check` - Quick syntax and type checking without building
 
@@ -103,10 +102,9 @@ All game constants are centralized in `src/constants.rs`:
 - `input.rs` - Input handling system
 
 ## Development Notes
+No need to run cargo run after eatch time code finish.
 
 ### Performance Optimizations
-- Development profile uses opt-level = 1 for faster compilation
-- Dependencies compiled with opt-level = 3 for better runtime performance
 - Dynamic linking enabled for faster iteration during development
 
 ### Physics Setup
@@ -114,10 +112,6 @@ All game constants are centralized in `src/constants.rs`:
 - Debug rendering available via `RapierDebugRenderPlugin`
 - Linear damping: 2.0, Angular damping: 5.0
 
-### Debugging Tools
-- Inspector GUI available (commented out in main.rs)
-- Detailed logging for movement and custom move systems
-- Use `cargo run` with RUST_LOG environment variable for additional logging
 
 ### Code Conventions
 - Bevy ECS patterns: Components, Resources, Systems, Events
