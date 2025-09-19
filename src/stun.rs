@@ -1,4 +1,9 @@
-use bevy::prelude::*;
+use bevy::{
+    prelude::*,
+    reflect::TypePath,
+    render::render_resource::{AsBindGroup, ShaderRef},
+    sprite::{AlphaMode2d, Material2d, Material2dPlugin},
+};
 
 /// Component that represents a stun effect preventing movement and attacks
 #[derive(Component, Debug)]
@@ -33,12 +38,44 @@ impl Stun {
     }
 }
 
+/// This struct defines the data that will be passed to the stun shader
+#[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
+pub struct StunMaterial {
+    #[uniform(0)]
+    pub color: LinearRgba,
+    #[texture(1)]
+    #[sampler(2)]
+    pub color_texture: Option<Handle<Image>>,
+    pub alpha_mode: AlphaMode2d,
+}
+
+impl Default for StunMaterial {
+    fn default() -> Self {
+        Self {
+            color: LinearRgba::RED,  // Red tint for stunned entities
+            color_texture: None,
+            alpha_mode: AlphaMode2d::Blend,
+        }
+    }
+}
+
+impl Material2d for StunMaterial {
+    fn fragment_shader() -> ShaderRef {
+        "shaders/stun_material.wgsl".into()
+    }
+
+    fn alpha_mode(&self) -> AlphaMode2d {
+        self.alpha_mode
+    }
+}
+
 /// Plugin to handle stun mechanics
 pub struct StunPlugin;
 
 impl Plugin for StunPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, update_stun_effects);
+        app.add_plugins(Material2dPlugin::<StunMaterial>::default())
+            .add_systems(Update, (update_stun_effects, apply_stun_shader));
     }
 }
 
@@ -58,6 +95,42 @@ fn update_stun_effects(
         }
     }
 }
+
+/// System that applies red shader to newly stunned entities and removes it when stun expires
+fn apply_stun_shader(
+    mut commands: Commands,
+    mut materials: ResMut<Assets<StunMaterial>>,
+    stunned_query: Query<(Entity, &MeshMaterial2d<ColorMaterial>), (With<Stun>, Without<MeshMaterial2d<StunMaterial>>)>,
+    unstunned_query: Query<Entity, (Without<Stun>, With<MeshMaterial2d<StunMaterial>>)>,
+    mut removed: RemovedComponents<Stun>,
+) {
+    // Apply stun shader to newly stunned entities
+    for (entity, original_material) in stunned_query.iter() {
+        debug!("Applying stun shader to entity {:?}", entity);
+        // Store the original material as a component so we can restore it later
+        commands.entity(entity)
+            .insert(OriginalMaterial(original_material.clone()))
+            .insert(MeshMaterial2d(materials.add(StunMaterial::default())));
+    }
+
+    // Remove stun shader from entities that are no longer stunned
+    for entity in unstunned_query.iter() {
+        debug!("Removing stun shader from entity {:?}", entity);
+        commands.entity(entity).remove::<MeshMaterial2d<StunMaterial>>();
+    }
+
+    // Handle entities where Stun component was removed
+    for entity in removed.read() {
+        if let Ok(mut entity_commands) = commands.get_entity(entity) {
+            // Try to restore original material if it exists
+            entity_commands.remove::<MeshMaterial2d<StunMaterial>>();
+        }
+    }
+}
+
+/// Component to store the original material of an entity before applying stun shader
+#[derive(Component, Clone)]
+pub struct OriginalMaterial(pub MeshMaterial2d<ColorMaterial>);
 
 /// Helper functions for applying/removing stun effects
 impl Stun {
