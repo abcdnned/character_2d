@@ -69,24 +69,42 @@ pub struct TiledMapBundle {
     pub render_settings: TilemapRenderSettings,
 }
 
-struct BytesResourceReader {
-    bytes: Arc<[u8]>,
+struct FilesystemResourceReader {
+    assets_dir: std::path::PathBuf,
 }
 
-impl BytesResourceReader {
-    fn new(bytes: &[u8]) -> Self {
+impl FilesystemResourceReader {
+    fn new() -> Self {
         Self {
-            bytes: Arc::from(bytes),
+            assets_dir: std::path::PathBuf::from("assets"),
         }
     }
 }
 
-impl tiled::ResourceReader for BytesResourceReader {
-    type Resource = Cursor<Arc<[u8]>>;
+impl tiled::ResourceReader for FilesystemResourceReader {
+    type Resource = std::fs::File;
     type Error = std::io::Error;
 
-    fn read_from(&mut self, _path: &Path) -> std::result::Result<Self::Resource, Self::Error> {
-        Ok(Cursor::new(self.bytes.clone()))
+    fn read_from(&mut self, path: &Path) -> std::result::Result<Self::Resource, Self::Error> {
+        info!("Resource reader attempting to load: {:?}", path);
+
+        let full_path = if path.is_absolute() {
+            // Absolute path - use as is
+            path.to_path_buf()
+        } else if path.starts_with("assets") {
+            // Already prefixed with assets - use as is
+            path.to_path_buf()
+        } else {
+            // Relative path - resolve relative to assets/map/ (where our TMX file is)
+            self.assets_dir.join("map").join(path)
+        };
+
+        info!("Resolved file path: {:?}", full_path);
+
+        std::fs::File::open(&full_path).map_err(|e| {
+            error!("Failed to open file {:?}: {}", full_path, e);
+            e
+        })
     }
 }
 
@@ -127,25 +145,32 @@ impl AssetLoader for TiledLoader {
         let mut bytes = Vec::new();
         reader.read_to_end(&mut bytes).await?;
 
+        // Load directly from filesystem path to handle external resources properly
+        let map_path = std::path::PathBuf::from("assets").join(load_context.path());
+
         let mut loader = tiled::Loader::with_cache_and_reader(
             tiled::DefaultResourceCache::new(),
-            BytesResourceReader::new(&bytes),
+            FilesystemResourceReader::new(),
         );
-        let map = loader.load_tmx_map(load_context.path()).map_err(|e| {
-            error!("Could not load TMX map: {}", e);
+
+        let map = loader.load_tmx_map(&map_path).map_err(|e| {
+            error!("Could not load TMX map from {:?}: {}", map_path, e);
             std::io::Error::new(ErrorKind::Other, format!("Could not load TMX map: {e}"))
         })?;
 
         let mut tilemap_textures = HashMap::default();
 
         for (tileset_index, tileset) in map.tilesets().iter().enumerate() {
+            info!("Processing tileset {}: name='{}', image={:?}", tileset_index, tileset.name, tileset.image.as_ref().map(|img| &img.source));
+
             let tilemap_texture = match &tileset.image {
                 None => {
-                    info!("Skipping image collection tileset '{}'", tileset.name);
+                    info!("Skipping image collection tileset '{}' (no image)", tileset.name);
                     continue;
                 }
                 Some(img) => {
                     let texture_path = img.source.to_str().unwrap();
+                    info!("Loading texture from path: {}", texture_path);
                     let texture: Handle<Image> = load_context.load(texture_path);
 
                     TilemapTexture::Single(texture.clone())
@@ -153,6 +178,7 @@ impl AssetLoader for TiledLoader {
             };
 
             tilemap_textures.insert(tileset_index, tilemap_texture);
+            info!("Added tilemap texture for tileset {}", tileset_index);
         }
 
         let asset_map = TiledMap {
