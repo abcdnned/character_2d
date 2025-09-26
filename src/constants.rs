@@ -10,7 +10,7 @@ pub const PLAYER_ROTATION_SPEED: f32 = 10.0; // Rotation speed in radians per se
 pub const ATTACK_SPEED_FACTOR: f32 = 0.8;
 
 // Color
-pub const WORLD_COLOR: Color = Color::srgb(0.2, 0.2, 0.3);
+pub const WORLD_COLOR: Color = Color::srgb(0.2, 0.2, 0.35);
 pub const PLAYER_COLOR: Color = Color::srgb(6.25, 9.4, 9.1);
 pub const ENEMY_COLOR: Color = Color::srgb_u8(109, 119, 129);
 

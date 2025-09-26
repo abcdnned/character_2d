@@ -118,7 +118,7 @@ fn setup_scene(
 ) {
     // World where we move the player
     commands.spawn((
-        Mesh2d(meshes.add(Rectangle::new(1000., 700.))),
+        Mesh2d(meshes.add(Rectangle::new(10000., 10000.))),
         MeshMaterial2d(materials.add(WORLD_COLOR)),
     ));
 
