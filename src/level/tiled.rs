@@ -101,10 +101,16 @@ impl tiled::ResourceReader for FilesystemResourceReader {
 
         info!("Resolved file path: {:?}", full_path);
 
-        std::fs::File::open(&full_path).map_err(|e| {
-            error!("Failed to open file {:?}: {}", full_path, e);
-            e
-        })
+        match std::fs::File::open(&full_path) {
+            Ok(file) => {
+                info!("Successfully opened file: {:?}", full_path);
+                Ok(file)
+            },
+            Err(e) => {
+                error!("Failed to open file {:?}: {}", full_path, e);
+                Err(e)
+            }
+        }
     }
 }
 
@@ -145,14 +151,22 @@ impl AssetLoader for TiledLoader {
         let mut bytes = Vec::new();
         reader.read_to_end(&mut bytes).await?;
 
-        // Load directly from filesystem path to handle external resources properly
-        let map_path = std::path::PathBuf::from("assets").join(load_context.path());
+        // Create a filesystem resource reader that knows about the current map's directory
+        let map_dir = if let Some(parent) = load_context.path().parent() {
+            std::path::PathBuf::from("assets").join(parent)
+        } else {
+            std::path::PathBuf::from("assets")
+        };
+
+        info!("Map directory: {:?}", map_dir);
 
         let mut loader = tiled::Loader::with_cache_and_reader(
             tiled::DefaultResourceCache::new(),
             FilesystemResourceReader::new(),
         );
 
+        // Load from the full filesystem path
+        let map_path = std::path::PathBuf::from("assets").join(load_context.path());
         let map = loader.load_tmx_map(&map_path).map_err(|e| {
             error!("Could not load TMX map from {:?}: {}", map_path, e);
             std::io::Error::new(ErrorKind::Other, format!("Could not load TMX map: {e}"))
@@ -161,7 +175,11 @@ impl AssetLoader for TiledLoader {
         let mut tilemap_textures = HashMap::default();
 
         for (tileset_index, tileset) in map.tilesets().iter().enumerate() {
-            info!("Processing tileset {}: name='{}', image={:?}", tileset_index, tileset.name, tileset.image.as_ref().map(|img| &img.source));
+            info!("Processing tileset {}: name='{}', image={:?}",
+                tileset_index,
+                tileset.name,
+                tileset.image.as_ref().map(|img| &img.source)
+            );
 
             let tilemap_texture = match &tileset.image {
                 None => {
@@ -171,7 +189,17 @@ impl AssetLoader for TiledLoader {
                 Some(img) => {
                     let texture_path = img.source.to_str().unwrap();
                     info!("Loading texture from path: {}", texture_path);
-                    let texture: Handle<Image> = load_context.load(texture_path);
+
+                    // Handle relative paths in tileset images
+                    let resolved_path = if texture_path.starts_with("../") {
+                        // Remove the ../ prefix and use the path relative to assets
+                        texture_path.strip_prefix("../").unwrap_or(texture_path)
+                    } else {
+                        texture_path
+                    };
+
+                    info!("Resolved texture path: {}", resolved_path);
+                    let texture: Handle<Image> = load_context.load(resolved_path);
 
                     TilemapTexture::Single(texture.clone())
                 }
