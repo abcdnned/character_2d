@@ -65,6 +65,7 @@ mod sword_trail;
 mod unit;
 mod unit_death;
 mod weapon;
+mod level;
 
 fn main() {
     App::new()
