@@ -11,7 +11,8 @@ impl Plugin for LevelPlugin {
 }
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let map_handle = TiledMapHandle(asset_server.load("maps/map.tmx"));
+    info!("Loading tiled map from: map/level.tmx");
+    let map_handle = TiledMapHandle(asset_server.load("map/level.tmx"));
 
     commands.spawn(TiledMapBundle {
         tiled_map: map_handle,
